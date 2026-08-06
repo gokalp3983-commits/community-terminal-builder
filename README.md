@@ -1,9 +1,15 @@
 # Community Terminal Builder
 
-## v1.3.1-b UI polish update
+## v1.3.2-b panel alignment update
+
+- Matched the Deployment Dashboard and Connected Deployment panel widths.
+- Preserved responsive alignment on mobile screens.
+
+
+## v1.3.2-b UI polish update
 
 - Removed public-facing Chapter labels from the builder interface.
-- Simplified the header release marker to `v1.3.1-b`.
+- Simplified the header release marker to `v1.3.2-b`.
 - Renamed `OPEN RENDER` to `OPEN PUBLIC TERMINAL`.
 - Added visible progress, completion time, and button state feedback to `CHECK CONNECTIONS`.
 - Updated public acceptance output to identify the current release instead of an outdated chapter.
