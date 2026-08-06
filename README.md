@@ -1,8 +1,8 @@
 # Community Terminal Builder
 
-**Release:** Chapter 11 — Public Deployment Acceptance Toolkit  
-**Builder version:** 1.1.0  
-**Status:** Public-deployment acceptance candidate  
+**Release:** Chapter 11.2 — Public Acceptance, Multi-Quote, Contract Guardrails & Favicons  
+**Builder version:** 1.1.2  
+**Status:** Public builder accepted at https://community-terminal-builder.onrender.com; generated-terminal acceptance in progress  
 **Built by:** Gokalp — X: [@Gokalp8339](https://x.com/Gokalp8339)
 
 ## 1. What this project is
@@ -47,12 +47,16 @@ All enabled pages share one server, one domain and one public port.
 | Builder health, status and production headers | DONE |
 | Public builder acceptance verifier | DONE |
 | Generated-terminal public acceptance verifier | DONE |
-| Actual public Render acceptance run | PENDING USER DEPLOYMENT |
+| Public builder deployed to Render | ACCEPTED |
+| Hosted ZIP generation | ACCEPTED |
+| Generated terminal local landing and commands | PASSED |
+| Multi-quote market selection | FIXED IN 11.1 |
+| Public generated-terminal acceptance | PENDING |
 | Accounts and cloud project storage | NOT INCLUDED |
 | Automatic GitHub/Render account actions | NOT INCLUDED |
 | Payments and subscriptions | NOT INCLUDED |
 
-The technical builder is approximately **97% complete**. Chapter 11 supplies repeatable tests for the actual public builder and terminal URLs. The remaining work is the external deployment itself, live upstream API observation, and optional commercial infrastructure.
+The technical builder is approximately **97% complete**. The public builder is live and has passed the Chapter 11 automated acceptance suite. A real generated JACKET terminal then exposed a WETH-only market-selection assumption on Robinhood Chain; Chapter 11.1 fixes that limitation before the generated terminal is deployed publicly.
 
 ## 3. Chapter history
 
@@ -161,6 +165,44 @@ Added:
 
 Chapter 11 does not create GitHub repositories or Render services automatically. Those actions require the owner's accounts and authorization. It provides repeatable evidence once the services are deployed.
 
+### Chapter 11.1 — Robinhood multi-quote market hotfix
+
+The first real hosted-builder acceptance run was completed at:
+
+```text
+https://community-terminal-builder.onrender.com
+```
+
+The public builder passed homepage, security-header, `/health`, `/status`, `/api/builder-status`, hosted ZIP-generation, filename and ZIP-signature checks.
+
+A real token named **JACKET** was then generated from the hosted builder. Its Landing Page, terminal commands and local routes worked, but Whale Activity Tracker and Meme Intel repeatedly reported:
+
+```text
+No liquid JACKET/WETH market found
+```
+
+The token was valid. The selected Robinhood Chain pool was **JACKET/NVDA**, revealing that the market selector incorrectly required the quote symbol to be WETH or ETH.
+
+The fix:
+
+- removed the hardcoded WETH/ETH quote filter;
+- kept the configured community token as the DexScreener base token so `priceUsd` remains correct;
+- accepted any quote asset with positive USD price and liquidity, including NVDA, USDC, tokenized stocks and future Robinhood assets;
+- ranked matching pools by USD liquidity and selected the strongest usable market;
+- returned `pairName`, `pairBaseSymbol` and `pairQuoteSymbol` dynamically;
+- changed liquidity-pool labels and command descriptions to show the actual pair;
+- replaced repeated full market-error stack traces with compact `[market]` warnings;
+- added release-regression checks proving Whale and Intel no longer contain the WETH-only selector.
+
+The resulting behavior is:
+
+```text
+Before: TOKEN/WETH only
+After:  highest-liquidity TOKEN/ANY-QUOTE market on the configured chain
+```
+
+This does not make the project Robinhood-only. Chain behavior remains configuration-driven through the DexScreener chain ID and Blockscout-compatible explorer API. The hotfix simply makes Robinhood Chain's NVDA and other tokenized-asset pairs first-class valid markets while preserving WETH pairs on every supported chain.
+
 ## 4. Run the builder locally
 
 ```bash
@@ -230,14 +272,16 @@ Render reads render.yaml
 Deploy the Community Terminal Builder
 ```
 
-The Blueprint uses:
+The Blueprint uses the free Render plan and starts from the repository root:
 
 ```text
-Root directory: 05_Community-Terminal-Builder
-Start command: npm start
+Plan: free
+Start command: cd 05_Community-Terminal-Builder && npm start
 Health check: /health
 NODE_ENV: production
 ```
+
+During the Chapter 11 deployment, Render rejected the original `rootDir` Blueprint field in the live setup. The compatible fix was to remove `rootDir` and place the directory change directly in `startCommand`. This exact configuration is now included in the root `render.yaml`.
 
 After deployment, verify:
 
@@ -423,8 +467,8 @@ After stable v1.0, optional product chapters can add accounts, cloud storage, Gi
 Fill this after the real Render deployment:
 
 ```text
-Builder public URL:        PENDING
-Builder acceptance:        PENDING
+Builder public URL:        https://community-terminal-builder.onrender.com
+Builder acceptance:        PASSED — Chapter 11 automated public checks
 Generated project:         PENDING
 Terminal public URL:       PENDING
 Terminal acceptance:       PENDING
@@ -435,3 +479,51 @@ Acceptance date:           PENDING
 ```
 
 A release should be marked **PUBLICLY ACCEPTED** only after both `test:deployed` commands pass and the manual browser checklist is complete.
+
+
+## Chapter 11.2 — Contract guardrails, chain visibility and favicon identity
+
+Chapter 11 public testing revealed two additional product-quality needs after the JACKET/NVDA market-selector hotfix.
+
+### EVM support must be explicit
+
+The current Whale Activity and Meme Intel engines parse EVM wallets, ERC-20 transfers and Blockscout-compatible data. They are configurable across Ethereum and compatible EVM networks, but they are not yet Solana/SPL adapters. The builder now says **EVM ONLY** directly beside the token-contract field rather than leaving that limitation implicit.
+
+The token CA field now performs layered inline checks:
+
+```text
+[ FAIL ] Invalid 0x format
+[ UNSUPPORTED ] Address appears non-EVM
+[ WARN ] Valid EVM address, but market is on a different selected chain
+[ WARN ] Valid format, but no DexScreener market was returned
+[ PASS ] Chain, live pair and liquidity detected
+```
+
+The builder validates the 42-character `0x` format locally, then asks its own `/api/validate-contract` endpoint to inspect DexScreener pairs. A detected market on another chain produces a mismatch warning instead of silently generating a misleading configuration. The server-side generator continues to reject malformed token and NFT contracts even when browser validation is bypassed.
+
+The generated Landing Page now displays the configured chain and a shortened, clickable token contract near the project identity. This makes the deployed terminal's network scope visible to visitors.
+
+### Multi-quote issue found with JACKET
+
+The real JACKET test on Robinhood Chain used a liquid `JACKET/NVDA` pool. Earlier code incorrectly required `TOKEN/WETH`, producing `No liquid JACKET/WETH market found` even though a valid market existed. Chapter 11.1 changed Whale Activity and Meme Intel to select the strongest usable pair on the configured chain and display the actual quote symbol. WETH, NVDA, USDC, WBNB and other liquid quote assets are therefore handled by the same selector.
+
+### Browser-tab identity
+
+The public builder now has a dedicated neon-green `>_` favicon in PNG, ICO and Apple touch-icon formats. The live builder URL is:
+
+```text
+https://community-terminal-builder.onrender.com
+```
+
+Generated terminals use the project's uploaded mascot/logo as their favicon. When no logo is supplied, they receive the default Community Terminal `>_` favicon. Every module page receives the favicon link, so `/`, `/whales`, `/intel` and `/nft` retain the project identity in browser tabs.
+
+### Chapter 11.2 validation additions
+
+The offline suite now verifies:
+
+- the builder favicon route and MIME type;
+- visible EVM contract guidance;
+- generated favicon files and page links;
+- generated chain and contract identity elements;
+- multi-quote selection in both activity modules;
+- the existing hosted-builder and generated-ZIP regression suite.

@@ -94,6 +94,13 @@ function applyConfig() {
   document.getElementById("mascot").alt = branding.mascotAlt;
   document.getElementById("terminalTitle").textContent = title.toUpperCase();
   document.getElementById("terminalSubtitle").innerHTML = `Independent Community Tools <span aria-hidden="true">•</span> ${escapeHtml(project.ecosystem)} Ecosystem`;
+  document.getElementById("networkName").textContent = project.ecosystem || CONFIG.market?.dexScreenerChainId || "EVM";
+  const contract = CONFIG.contracts?.token || "";
+  const contractLink = document.getElementById("contractLink");
+  contractLink.textContent = contract ? `${contract.slice(0, 8)}…${contract.slice(-6)}` : "NOT SET";
+  const explorer = CONFIG.links?.explorer || "";
+  contractLink.href = explorer ? `${explorer.replace(/\/$/, "")}/address/${contract}` : `https://dexscreener.com/${CONFIG.market?.dexScreenerChainId || ""}/${contract}`;
+  contractLink.title = contract;
   document.getElementById("marketPanel").setAttribute("aria-label", `Live ${project.name} market data`);
   document.getElementById("promptLabel").textContent = promptText();
   document.getElementById("footerVersion").textContent = `${title} ver ${project.version}`;

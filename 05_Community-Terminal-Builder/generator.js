@@ -91,24 +91,28 @@ function prefixBrowserRoutes(source, base) {
     .replace(/(["'`])\/script\.js\1/g, `$1${base}/script.js$1`)
     .replace(/(["'`])\/api\//g, `$1${base}/api/`);
 }
-function transformModuleFile(moduleName, relativeName, data) {
+function transformModuleFile(moduleName, relativeName, data, p) {
   let source = data.toString("utf8");
   if (relativeName === "server.js") return Buffer.from(makeMountableServer(source, moduleName));
+  if (relativeName === "public/index.html") {
+    const faviconHref = p.mascot ? `assets/${p.id}-mascot.${p.mascotExt}` : "favicon.png";
+    source = source.replace("</head>", `  <link rel="icon" href="${faviconHref}">\n  <link rel="apple-touch-icon" href="${faviconHref}">\n</head>`);
+  }
   const bases = {"02_Whale-Activity-Tracker":"/whales", "03_NFT-Collection-Terminal":"/nft", "04_Meme-Intel":"/intel"};
   if (bases[moduleName] && relativeName.startsWith("public/") && /\.(html|js)$/.test(relativeName)) {
     source = prefixBrowserRoutes(source, bases[moduleName]);
     return Buffer.from(source);
   }
-  return data;
+  return Buffer.from(source);
 }
-function walkModule(dir, prefix, moduleName, entries, relative = "") {
+function walkModule(dir, prefix, moduleName, entries, p, relative = "") {
   for (const item of fs.readdirSync(dir, { withFileTypes:true })) {
     if (["node_modules", ".git"].includes(item.name)) continue;
     const full = path.join(dir, item.name);
     const relLocal = relative ? path.posix.join(relative, item.name) : item.name;
     const relZip = path.posix.join(prefix, item.name);
-    if (item.isDirectory()) walkModule(full, relZip, moduleName, entries, relLocal);
-    else entries.push({name:relZip,data:transformModuleFile(moduleName, relLocal, fs.readFileSync(full)),mtime:fs.statSync(full).mtime});
+    if (item.isDirectory()) walkModule(full, relZip, moduleName, entries, p, relLocal);
+    else entries.push({name:relZip,data:transformModuleFile(moduleName, relLocal, fs.readFileSync(full), p),mtime:fs.statSync(full).mtime});
   }
 }
 function rootPackage(p) {
@@ -222,6 +226,7 @@ function generatedValidator(p) {
     'pass("Render Blueprint",fs.existsSync("render.yaml"));',
     'pass("environment example",fs.existsSync(".env.example"));',
     'pass("deployment verifier",fs.existsSync("verify-deployment.js"));',
+    'pass("landing favicon",fs.existsSync(path.join("01_Landing-Page","public","favicon.png"))||fs.readFileSync(path.join("01_Landing-Page","public","index.html"),"utf8").includes("assets/"));',
     'const source=fs.readFileSync("server.js","utf8");',
     `pass("health route",source.includes('app.get("/health"'));`,
     `pass("status route",source.includes('app.get("/status"'));`,
@@ -315,7 +320,7 @@ This checks the Landing Page, security headers, \`/health\`, \`/status\`, and ev
 function generate(input) {
   const p = normalize(input); const root = `${p.name.replace(/[^A-Z0-9]+/g, "_")}_Community_Terminal`;
   const entries = [];
-  for (const moduleName of MODULES) walkModule(path.join(MASTER_ROOT, moduleName), `${root}/${moduleName}`, moduleName, entries);
+  for (const moduleName of MODULES) walkModule(path.join(MASTER_ROOT, moduleName), `${root}/${moduleName}`, moduleName, entries, p);
   walk(path.join(MASTER_ROOT, "config"), `${root}/config`, entries);
   for (let i = entries.length - 1; i >= 0; i--) {
     if (/\/config\/projects\//.test(entries[i].name) || /\/config\/project\.config\.js$/.test(entries[i].name)) entries.splice(i, 1);
@@ -330,7 +335,11 @@ function generate(input) {
   entries.push({name:`${root}/render.yaml`,data:renderYaml(p)});
   entries.push({name:`${root}/.env.example`,data:envExample()});
   const mascotData = p.mascot ? Buffer.from(p.mascot.dataBase64, "base64") : defaultMascot(p.name);
-  for (const moduleName of MODULES) entries.push({name:`${root}/${moduleName}/public${p.mascotPath}`,data:mascotData});
+  const defaultFavicon = fs.readFileSync(path.join(__dirname, "public", "favicon.png"));
+  for (const moduleName of MODULES) {
+    entries.push({name:`${root}/${moduleName}/public${p.mascotPath}`,data:mascotData});
+    if (!p.mascot) entries.push({name:`${root}/${moduleName}/public/favicon.png`,data:defaultFavicon});
+  }
   return { buffer:createZip(entries), filename:`${root}.zip`, project:p, entryCount:entries.length };
 }
 module.exports = { generate, normalize };

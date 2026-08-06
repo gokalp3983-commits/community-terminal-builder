@@ -14,6 +14,7 @@ async function jsonRoute(path){const r=await request(path);check(r.status===200,
 (async()=>{
   console.log(`[ ACCEPTANCE ] Public builder: ${base}`);
   const home=await request("/");check(home.status===200,"Builder home returned HTTP 200");const html=await home.text();check(html.includes("COMMUNITY TERMINAL BUILDER"),"Builder identity found");check(Boolean(home.headers.get("content-security-policy")),"Content Security Policy present");check(home.headers.get("x-content-type-options")==="nosniff","nosniff header present");
+ const favicon=await request("/favicon.png");check(favicon.status===200,"Builder favicon returned HTTP 200");check((favicon.headers.get("content-type")||"").includes("image/png"),"Builder favicon is PNG");
   const health=await jsonRoute("/health");check(health.data.status==="healthy","Builder health is healthy");
   const status=await jsonRoute("/status");check(status.data.product==="Community Terminal Builder","Builder status product is correct");check(status.data.storage==="browser-local","Storage model reports browser-local");
   await jsonRoute("/api/builder-status");

@@ -29,7 +29,7 @@ try {
     const cfg=JSON.parse(execFileSync(process.execPath,["-e","const c=require('./config');process.stdout.write(JSON.stringify(c))"],{cwd:dir}).toString());
     check(cfg.project.name===item.name,`${item.name}: active generated profile`);
     check(cfg.features.nftTerminal===Boolean(item.nftContract&&item.features.nftTerminal),`${item.name}: NFT feature state`);
-    for(const file of ["package.json","server.js","render.yaml",".env.example","README.md","validate-generated.js","verify-deployment.js"]) check(fs.existsSync(path.join(dir,file)),`${item.name}: ${file}`);
+    for(const file of ["package.json","server.js","render.yaml",".env.example","README.md","validate-generated.js","verify-deployment.js","01_Landing-Page/public/favicon.png"]) check(fs.existsSync(path.join(dir,file)),`${item.name}: ${file}`);
     const server=fs.readFileSync(path.join(dir,"server.js"),"utf8");
     for(const route of ["/health","/status"]){check(server.includes(`app.get(\"${route}\"`),`${item.name}: ${route} diagnostic route`);routeChecks++;}
     check(server.includes('if(config.features.whaleTracker)'),`${item.name}: feature-aware whale mount`);
@@ -37,7 +37,20 @@ try {
     check(server.includes('if(config.features.nftTerminal)'),`${item.name}: feature-aware NFT mount`);
     execFileSync(process.execPath,["validate-generated.js","verify-deployment.js"],{cwd:dir,stdio:"pipe"});
     const landing=fs.readFileSync(path.join(dir,"01_Landing-Page/public/script.js"),"utf8");
+    const landingHtml=fs.readFileSync(path.join(dir,"01_Landing-Page/public/index.html"),"utf8");
+    check(landingHtml.includes('rel="icon"'),`${item.name}: generated favicon link`);
+    check(landingHtml.includes('networkName')&&landingHtml.includes('contractLink'),`${item.name}: chain and contract identity`);
     check(landing.includes('PAIR NOT FOUND') || landing.includes('reason'),`${item.name}: explicit market error states`);
+    if (item.features.whaleTracker) {
+      const whaleServer = fs.readFileSync(path.join(dir,"02_Whale-Activity-Tracker/server.js"),"utf8");
+      check(!whaleServer.includes('["WETH", "ETH"].includes(quote)'),`${item.name}: whale market selector accepts non-WETH quotes`);
+      check(whaleServer.includes('pairQuoteSymbol'),`${item.name}: whale market reports dynamic quote symbol`);
+    }
+    if (item.features.memeIntel) {
+      const intelServer = fs.readFileSync(path.join(dir,"04_Meme-Intel/server.js"),"utf8");
+      check(!intelServer.includes('["WETH", "ETH"].includes(quote)'),`${item.name}: intel market selector accepts non-WETH quotes`);
+      check(intelServer.includes('pairQuoteSymbol'),`${item.name}: intel market reports dynamic quote symbol`);
+    }
     const textFiles=[];
     function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){const f=path.join(d,e.name);if(e.isDirectory()){if(!["assets","node_modules"].includes(e.name))walk(f)}else if(/\.(js|html|css|json|yaml|md|example)$/.test(e.name))textFiles.push(f)}}
     walk(dir);

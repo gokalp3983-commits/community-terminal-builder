@@ -39,7 +39,7 @@ async function payload(){return {
   mascot:await mascotPayload()
 };}
 
-function configurationReady(){return Boolean(val("projectName")&&val("ticker")&&val("tokenContract")&&(!checked("nftTerminal")||val("nftContract")))}
+function configurationReady(){return Boolean(val("projectName")&&val("ticker")&&isEvmAddress(val("tokenContract"))&&(!checked("nftTerminal")||isEvmAddress(val("nftContract"))))}
 function syncColorLabels(){document.querySelectorAll('.color-field input[type="color"]').forEach(input=>{const code=input.parentElement.querySelector("code");if(code)code.textContent=input.value.toLowerCase()})}
 function updateWorkspaceStatus(){
   const name=val("projectName");
@@ -67,6 +67,36 @@ function update(){
   ].join("\n");
   readiness.textContent=requiredReady?"READY":"WAITING"; readiness.classList.toggle("ready",requiredReady); updateWorkspaceStatus();
 }
+
+
+const contractInput=form.elements.tokenContract;
+const contractCheck=document.querySelector("#contract-check");
+let contractCheckTimer=null;
+let contractCheckSequence=0;
+function isEvmAddress(value){return /^0x[a-fA-F0-9]{40}$/.test(String(value||"").trim())}
+function looksLikeNonEvmAddress(value){return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(String(value||"").trim())&&!String(value||"").startsWith("0x")}
+function showContractCheck(kind,message){contractCheck.className=`contract-check ${kind||""}`.trim();contractCheck.textContent=message}
+async function validateContractField(){
+  const address=val("tokenContract");
+  const chain=val("dexScreenerChainId");
+  const sequence=++contractCheckSequence;
+  if(!address)return showContractCheck("","[ WAIT ] Enter a 42-character 0x contract address.");
+  if(looksLikeNonEvmAddress(address))return showContractCheck("fail","[ UNSUPPORTED ] This appears to be a non-EVM address. The current terminal engine supports 0x EVM contracts only.");
+  if(!isEvmAddress(address))return showContractCheck("fail","[ FAIL ] Invalid EVM contract format. Expected 0x followed by exactly 40 hexadecimal characters.");
+  showContractCheck("","[ CHECKING ] Valid EVM format. Looking for DexScreener markets...");
+  try{
+    const response=await fetch(`/api/validate-contract?address=${encodeURIComponent(address)}&chain=${encodeURIComponent(chain)}`);
+    const data=await response.json();
+    if(sequence!==contractCheckSequence)return;
+    if(!response.ok)throw new Error(data.error||"Contract check failed");
+    if(data.match){showContractCheck("pass",`[ PASS ] Valid EVM address · ${data.match.chainId} · ${data.match.baseSymbol}/${data.match.quoteSymbol} · liquidity ${data.match.liquidityDisplay}`)}
+    else if(data.detectedChains?.length){showContractCheck("warn",`[ WARN ] Address has markets on ${data.detectedChains.join(", ")}, but none on selected chain “${chain}”. Check the ecosystem and DexScreener chain ID.`)}
+    else{showContractCheck("warn","[ WARN ] Valid EVM format, but DexScreener returned no market. Confirm this is the token contract rather than a pool address.")}
+  }catch(error){if(sequence===contractCheckSequence)showContractCheck("warn",`[ WARN ] Address format is valid, but live market validation is unavailable: ${error.message}`)}
+}
+function scheduleContractCheck(){clearTimeout(contractCheckTimer);contractCheckTimer=setTimeout(validateContractField,500)}
+contractInput.addEventListener("input",scheduleContractCheck);
+form.elements.dexScreenerChainId.addEventListener("input",scheduleContractCheck);
 
 const mascotInput=document.querySelector("#mascot");
 const mascotFileName=document.querySelector("#mascot-file-name");
@@ -109,7 +139,7 @@ document.querySelector("#delete-project").addEventListener("click",deleteProject
 savedProjectsSelect.addEventListener("change",()=>{if(savedProjectsSelect.value)loadProject(savedProjectsSelect.value)});
 importProjectFile.addEventListener("change",async()=>{try{const file=importProjectFile.files[0];if(!file)return;importProject(JSON.parse(await file.text()))}catch(err){status.textContent=`[ ERROR ] ${err.message}`}finally{importProjectFile.value=""}});
 
-syncMascotFileName();refreshProjectList();
+syncMascotFileName();refreshProjectList();validateContractField();
 try{const state=JSON.parse(localStorage.getItem(SETTINGS_KEY)||"{}");if(state.activeProjectId&&readProjects()[state.activeProjectId])loadProject(state.activeProjectId);else update()}catch{update()}
 
 function escapeHtml(value){return String(value||"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]))}

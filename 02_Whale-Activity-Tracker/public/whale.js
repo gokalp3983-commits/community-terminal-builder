@@ -360,11 +360,11 @@ async function activityDashboard(){
     <div class="kv"><span>DEX Pair</span>${
       labeledAddress(
         d.pairAddress,
-        d.pairLabel?.label || `${CFG.project.name}/WETH Liquidity Pool`,
+        d.pairLabel?.label || `${d.pairName || CFG.project.name + "/UNKNOWN"} Liquidity Pool`,
         d.pairLabel?.tag || "LP"
       )
     }</div>
-    <div class="muted">Buys and sells are classified from transfers involving the highest-liquidity ${CFG.project.name}/WETH pair.</div>
+    <div class="muted">Buys and sells are classified from transfers involving the highest-liquidity ${d.pairName || CFG.project.name + "/quote"} pair.</div>
     ${d.cache?.rankCoverage==="top-300-immediate"
       ?'<div class="yellow">[ RANKS ] Showing immediate Top-300 ranks while the complete holder-rank cache refreshes in the background.</div>'
       :d.cache?.rankCoverage==="full-cache"

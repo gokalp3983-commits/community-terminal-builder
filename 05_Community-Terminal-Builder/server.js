@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const { generate } = require("./generator");
 
-const VERSION = "1.1.0";
+const VERSION = "1.1.2";
 const PORT = Number(process.env.PORT || 3050);
 const HOST = process.env.HOST || "0.0.0.0";
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -14,7 +14,7 @@ const RATE_WINDOW_MS = 60_000;
 const RATE_LIMIT = Number(process.env.GENERATE_RATE_LIMIT || 12);
 const startedAt = Date.now();
 const requests = new Map();
-const types = {".html":"text/html; charset=utf-8",".js":"application/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".svg":"image/svg+xml",".json":"application/json; charset=utf-8"};
+const types = {".html":"text/html; charset=utf-8",".js":"application/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".svg":"image/svg+xml",".png":"image/png",".ico":"image/x-icon",".json":"application/json; charset=utf-8"};
 
 function securityHeaders(contentType) {
   return {
@@ -44,6 +44,24 @@ const server = http.createServer((req,res) => {
   const url = new URL(req.url,`http://${req.headers.host||"localhost"}`);
   if(req.method==="GET" && url.pathname==="/health") return json(res,200,{ok:true,status:"healthy",product:"Community Terminal Builder",version:VERSION,uptimeSeconds:Math.floor((Date.now()-startedAt)/1000),timestamp:new Date().toISOString()});
   if(req.method==="GET" && (url.pathname==="/status" || url.pathname==="/api/builder-status")) return json(res,200,builderStatus());
+
+  if(req.method==="GET" && url.pathname==="/api/validate-contract") {
+    const address=String(url.searchParams.get("address")||"").trim();
+    const selectedChain=String(url.searchParams.get("chain")||"").trim().toLowerCase();
+    if(!/^0x[a-fA-F0-9]{40}$/.test(address)) return json(res,400,{ok:false,error:"Invalid EVM address format.",code:"INVALID_EVM_ADDRESS"});
+    fetch(`https://api.dexscreener.com/latest/dex/tokens/${encodeURIComponent(address)}`,{headers:{accept:"application/json"},signal:AbortSignal.timeout(8000)})
+      .then(async response=>{if(!response.ok)throw new Error(`DexScreener HTTP ${response.status}`);return response.json();})
+      .then(data=>{
+        const pairs=Array.isArray(data.pairs)?data.pairs:[];
+        const detectedChains=[...new Set(pairs.map(pair=>String(pair.chainId||"").toLowerCase()).filter(Boolean))];
+        const candidates=pairs.filter(pair=>!selectedChain||String(pair.chainId||"").toLowerCase()===selectedChain).filter(pair=>Number(pair.liquidity?.usd||0)>0).sort((a,b)=>Number(b.liquidity?.usd||0)-Number(a.liquidity?.usd||0));
+        const pair=candidates[0];
+        const match=pair?{chainId:pair.chainId,dexId:pair.dexId,baseSymbol:pair.baseToken?.symbol||"TOKEN",quoteSymbol:pair.quoteToken?.symbol||"QUOTE",pairAddress:pair.pairAddress,liquidityUsd:Number(pair.liquidity?.usd||0),liquidityDisplay:new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(Number(pair.liquidity?.usd||0)),url:pair.url}:null;
+        json(res,200,{ok:true,address,selectedChain,detectedChains,match});
+      })
+      .catch(error=>json(res,502,{ok:false,error:error.message,code:"MARKET_VALIDATION_UNAVAILABLE"}));
+    return;
+  }
   if(req.method === "POST" && url.pathname === "/api/generate") {
     if(!rateAllowed(req)) return json(res,429,{error:"Generation rate limit reached. Wait one minute and try again.",code:"RATE_LIMITED"});
     let body="",tooLarge=false;

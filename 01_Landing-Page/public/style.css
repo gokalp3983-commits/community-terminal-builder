@@ -608,3 +608,10 @@ h2{
 /* Mascot artwork is intentionally frameless in generated landing pages. */
 .header>a,.community-header>a{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important}
 .mascot,.community-mascot{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important}
+
+/* Chapter 11.2: visible network and contract identity */
+.network-strip{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.45rem .7rem;margin:.55rem auto .25rem;color:var(--muted);font-size:.72rem;letter-spacing:.04em}
+.network-strip span{color:var(--yellow)}
+.network-strip strong{color:var(--green)}
+.network-strip a{color:var(--cyan);text-decoration:none;border-bottom:1px dotted currentColor}
+.network-strip a:hover{color:#fff}

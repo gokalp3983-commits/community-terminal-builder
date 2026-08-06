@@ -4,6 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#020806">
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#020806">
   <title>Community Terminal Builder</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -64,7 +69,7 @@
             <section class="panel" data-section="contracts">
               <div class="section-heading"><span>02</span><h2>CONTRACTS &amp; DATA</h2><small>ON-CHAIN SOURCE CONFIGURATION</small></div>
               <div class="grid">
-                <label class="span-2"><span>Token CA *</span><input name="tokenContract" required placeholder="0x..."></label>
+                <label class="span-2 contract-field"><span>Token CA * <b class="evm-badge">EVM ONLY</b></span><input name="tokenContract" required placeholder="0x..." autocomplete="off" spellcheck="false"><small class="field-help">Supported: Ethereum and EVM-compatible chains. Paste the token contract, not the liquidity-pool address.</small><output id="contract-check" class="contract-check" aria-live="polite">[ WAIT ] Enter a 42-character 0x contract address.</output></label>
                 <label class="span-2"><span>Optional NFT CA</span><input name="nftContract" placeholder="0x..."></label>
                 <label><span>DexScreener chain ID</span><input name="dexScreenerChainId" value="robinhood"></label>
                 <label><span>Blockscout API base</span><input name="blockscoutApiBase" value="https://robinhoodchain.blockscout.com/api/v2"></label>

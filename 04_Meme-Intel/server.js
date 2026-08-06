@@ -246,7 +246,7 @@ function infrastructureRegistry(market = null) {
 
   if (pairAddress) {
     entries[pairAddress] = {
-      label: `${config.project.name}/WETH Liquidity Pool`,
+      label: `${market?.pairName || config.project.name + "/UNKNOWN"} Liquidity Pool`,
       tag: "LP",
       type: "liquidity_pool",
       excludeFromWhaleStats: true,
@@ -489,12 +489,15 @@ async function getMarket() {
         const pair = (Array.isArray(pairs) ? pairs : [])
           .filter((item) => {
             const base = String(item?.baseToken?.address || "").toLowerCase();
-            const quote = String(item?.quoteToken?.symbol || "").toUpperCase();
+            const liquidityUsd = Number(item?.liquidity?.usd || 0);
 
+            // DexScreener priceUsd describes the base token. Keep the tracked
+            // community token as the base asset, but accept any usable quote
+            // asset (WETH, NVDA, USDC, tokenized stocks, and future pairs).
             return (
               base === tokenLower &&
-              ["WETH", "ETH"].includes(quote) &&
-              Number(item?.priceUsd) > 0
+              Number(item?.priceUsd) > 0 &&
+              liquidityUsd > 0
             );
           })
           .sort(
@@ -503,7 +506,18 @@ async function getMarket() {
               Number(a?.liquidity?.usd || 0)
           )[0];
 
-        if (!pair) throw new Error(`No liquid ${config.project.name}/WETH market found`);
+        if (!pair) {
+          throw new Error(
+            `No liquid ${config.project.name} market found on ${DEX_CHAIN}`
+          );
+        }
+
+        const baseSymbol = String(
+          pair?.baseToken?.symbol || config.project.name
+        ).toUpperCase();
+        const quoteSymbol = String(
+          pair?.quoteToken?.symbol || "UNKNOWN"
+        ).toUpperCase();
 
         marketCache = {
           fetchedAt: Date.now(),
@@ -514,12 +528,15 @@ async function getMarket() {
           volume24hUsd: Number(pair?.volume?.h24 || 0),
           priceChange24h: Number(pair?.priceChange?.h24 || 0),
           pairAddress: String(pair?.pairAddress || ""),
+          pairBaseSymbol: baseSymbol,
+          pairQuoteSymbol: quoteSymbol,
+          pairName: `${baseSymbol}/${quoteSymbol}`,
           dexId: String(pair?.dexId || ""),
         };
 
         return marketCache;
     } catch (error) {
-      console.error("Market refresh failed:", error);
+      console.warn(`[market] ${error.message}`);
 
       if (canUseStale(marketCache, "fetchedAt")) {
         return withCacheState(
@@ -969,6 +986,9 @@ async function activityPayload(hours = 24) {
     hours: safeHours,
     generatedAt: Date.now(),
     pairAddress: market.pairAddress,
+    pairName: market.pairName,
+    pairBaseSymbol: market.pairBaseSymbol,
+    pairQuoteSymbol: market.pairQuoteSymbol,
     pairLabel: labelForAddress(market.pairAddress, market),
     infrastructure: infrastructureList(market),
     dexId: market.dexId,
