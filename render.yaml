@@ -2,10 +2,9 @@ services:
   - type: web
     name: community-terminal-builder
     runtime: node
-    plan: free 
-    RootDir: 05_Community-Terminal-Builder
+    plan: free
     buildCommand: ""
-    startCommand: npm start
+    startCommand: cd 05_Community-Terminal-Builder && npm start
     healthCheckPath: /health
     autoDeploy: true
     envVars:
