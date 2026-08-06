@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#020806">
+  <title>Community Terminal Builder</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <div class="terminal-window">
+      <div class="window-bar">
+        <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="window-title">community-terminal-builder — build session // BUILDER: GOKALP</div>
+        <div class="window-state">SYSTEM // READY</div>
+      </div>
+
+      <header class="hero">
+        <div class="hero-kicker"><span class="prompt-mark">builder@localhost:~$</span> initialize --new-project</div>
+        <h1>COMMUNITY TERMINAL BUILDER</h1>
+        <p class="tagline">CONFIGURE <span>//</span> VALIDATE <span>//</span> GENERATE</p>
+        <div class="boot-log" aria-label="Builder boot status">
+          <div><span class="ok">[ OK ]</span> Master template loaded</div>
+          <div><span class="ok">[ OK ]</span> Unified single-port architecture online</div>
+          <div><span class="wait">[ ... ]</span> Awaiting project configuration</div>
+        </div>
+      </header>
+
+      <form id="builder" autocomplete="off">
+
+        <section class="project-toolbar" aria-label="Project workspace">
+          <div class="project-current">
+            <span class="workspace-label">PROJECT WORKSPACE</span>
+            <strong id="current-project">UNSAVED PROJECT</strong>
+            <b id="project-state">DRAFT</b>
+          </div>
+          <div class="project-controls">
+            <select id="saved-projects" aria-label="Saved projects"><option value="">LOAD SAVED PROJECT...</option></select>
+            <button id="new-project" type="button">NEW</button>
+            <button id="save-project" type="button">SAVE</button>
+            <button id="duplicate-project" type="button">DUPLICATE</button>
+            <button id="export-project" type="button">EXPORT</button>
+            <button id="import-project" type="button">IMPORT</button>
+            <button id="delete-project" class="danger-button" type="button">DELETE</button>
+            <input id="import-project-file" class="upload-native" type="file" accept="application/json,.json">
+          </div>
+        </section>
+        <div class="workspace">
+          <div class="form-stack">
+            <section class="panel" data-section="identity">
+              <div class="section-heading"><span>01</span><h2>IDENTITY</h2><small>WHO IS THIS TERMINAL FOR?</small></div>
+              <div class="grid">
+                <label><span>Project name *</span><input name="projectName" required placeholder="CATCOIN"></label>
+                <label><span>Ticker *</span><input name="ticker" required placeholder="CAT"></label>
+                <label><span>Version</span><input name="version" value="1.0.0"></label>
+                <label><span>Terminal user</span><input name="promptUser" placeholder="catcoin"></label>
+                <label><span>Terminal host</span><input name="promptHost" value="terminal"></label>
+                <label><span>Ecosystem</span><input name="ecosystem" value="Robinhood Chain"></label>
+              </div>
+              <label class="wide"><span>Description</span><textarea name="description" placeholder="Terminal-style intelligence tools for the community."></textarea></label>
+            </section>
+
+            <section class="panel" data-section="contracts">
+              <div class="section-heading"><span>02</span><h2>CONTRACTS &amp; DATA</h2><small>ON-CHAIN SOURCE CONFIGURATION</small></div>
+              <div class="grid">
+                <label class="span-2"><span>Token CA *</span><input name="tokenContract" required placeholder="0x..."></label>
+                <label class="span-2"><span>Optional NFT CA</span><input name="nftContract" placeholder="0x..."></label>
+                <label><span>DexScreener chain ID</span><input name="dexScreenerChainId" value="robinhood"></label>
+                <label><span>Blockscout API base</span><input name="blockscoutApiBase" value="https://robinhoodchain.blockscout.com/api/v2"></label>
+              </div>
+            </section>
+
+            <section class="panel" data-section="branding">
+              <div class="section-heading"><span>03</span><h2>BRANDING</h2><small>VISUAL SYSTEM &amp; MASCOT</small></div>
+              <div class="color-grid">
+                <label><span>Primary</span><div class="color-field"><input name="primary" type="color" value="#39ff14"><code>#39ff14</code></div></label>
+                <label><span>Accent</span><div class="color-field"><input name="accent" type="color" value="#ff6a00"><code>#ff6a00</code></div></label>
+                <label><span>Background</span><div class="color-field"><input name="background" type="color" value="#020806"><code>#020806</code></div></label>
+                <label><span>Panel</span><div class="color-field"><input name="panel" type="color" value="#03100b"><code>#03100b</code></div></label>
+              </div>
+              <div class="upload">
+                <span class="upload-label">Mascot / logo</span>
+                <input id="mascot" class="upload-native" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+                <label class="upload-control" for="mascot">
+                  <strong>[ SELECT FILE ]</strong>
+                  <span id="mascot-file-name">No file selected</span>
+                </label>
+                <em>PNG, JPG, WEBP or SVG</em>
+              </div>
+            </section>
+
+            <section class="panel" data-section="links">
+              <div class="section-heading"><span>04</span><h2>LINKS</h2><small>COMMUNITY &amp; MARKET ROUTES</small></div>
+              <div class="grid">
+                <label><span>Home URL</span><input name="home" placeholder="http://localhost:3000"></label>
+                <label><span>Website</span><input name="website" placeholder="https://..."></label>
+                <label><span>X / Twitter</span><input name="x" placeholder="https://x.com/..."></label>
+                <label><span>Telegram</span><input name="telegram" placeholder="https://t.me/..."></label>
+                <label><span>Explorer</span><input name="explorer" placeholder="https://..."></label>
+                <label><span>DexScreener</span><input name="dexScreener" placeholder="https://dexscreener.com/..."></label>
+                <label><span>OpenSea</span><input name="openSea" placeholder="Optional"></label>
+                <label><span>OpenSea slug</span><input name="openSeaSlug" placeholder="Optional"></label>
+              </div>
+            </section>
+
+            <section class="panel" data-section="features">
+              <div class="section-heading"><span>05</span><h2>FEATURE FLAGS</h2><small>SELECT MODULES TO PACKAGE</small></div>
+              <div class="checks">
+                <label><input name="whaleTracker" type="checkbox" checked><span><strong>WHALE TRACKER</strong><small>Holder and transfer intelligence</small></span></label>
+                <label><input name="memeIntel" type="checkbox" checked><span><strong>MEME INTEL</strong><small>Risk, concentration and market commands</small></span></label>
+                <label><input name="nftTerminal" type="checkbox"><span><strong>NFT TERMINAL</strong><small>Enabled only with NFT configuration</small></span></label>
+                <label><input name="liveMarket" type="checkbox" checked><span><strong>LANDING PAGE MARKET DATA</strong><small>Show live price, market cap, holders and 24h volume</small></span></label>
+              </div>
+            </section>
+          </div>
+
+          <aside class="console-panel">
+            <div class="console-heading"><span>BUILD CONSOLE</span><b id="readiness">WAITING</b></div>
+            <pre id="preview" aria-live="polite">[ WAIT ] Complete the required fields.</pre>
+            <div class="command-line"><span>builder@localhost:~$</span><span class="cursor" aria-hidden="true"></span></div>
+          </aside>
+        </div>
+
+        <div class="action-bar">
+          <div class="action-copy"><span class="ok">[ READY ]</span><p>Exports one unified terminal app for <code>localhost:3000</code>.</p></div>
+          <div class="action-buttons">
+            <button class="preview-button" id="open-preview" type="button"><span>&gt;_</span> PREVIEW LANDING PAGE</button>
+            <button type="submit"><span>&gt;_</span> GENERATE TERMINAL ZIP</button>
+          </div>
+        </div>
+        <p id="status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+    <footer class="builder-footer">
+      <div class="footer-title">COMMUNITY TERMINAL BUILDER</div>
+      <div class="footer-credit">Built by Gokalp <span class="footer-dot">·</span> <a href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp on X"><svg class="x-logo" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"/></svg><span>@Gokalp8339</span></a></div>
+    </footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

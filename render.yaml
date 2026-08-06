@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: community-terminal-builder
+    runtime: node
+    rootDir: 05_Community-Terminal-Builder
+    buildCommand: ""
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GENERATE_RATE_LIMIT
+        value: "12"
+      - key: MAX_GENERATE_BODY_BYTES
+        value: "12000000"

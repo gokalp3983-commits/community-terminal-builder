@@ -1,0 +1,16 @@
+{
+  "name": "community-terminal-nft-collection",
+  "version": "2.4.2",
+  "private": true,
+  "description": "Configurable Community Terminal NFT collection terminal.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
