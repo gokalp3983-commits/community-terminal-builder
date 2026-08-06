@@ -3,7 +3,7 @@ services:
     name: community-terminal-builder
     runtime: node
     plan: free 
-    RtDir: 05_Community-Terminal-Builder
+    RootDir: 05_Community-Terminal-Builder
     buildCommand: ""
     startCommand: npm start
     healthCheckPath: /health
