@@ -24,8 +24,8 @@
       <header class="hero">
         <div class="hero-kicker"><span class="prompt-mark">builder@localhost:~$</span> initialize --new-project</div>
         <h1>COMMUNITY TERMINAL BUILDER</h1>
-        <p class="tagline">CONFIGURE <span>//</span> VALIDATE <span>//</span> GENERATE</p>
-        <div class="version-strip">CTB CORE v1.2.1 <span>//</span> CONFIG SCHEMA v1 <span>//</span> TERMINAL ENGINE v1.0.0</div>
+        <p class="tagline">CONFIGURE <span>//</span> GENERATE <span>//</span> DEPLOY</p>
+        <div class="version-strip">CTB CORE v1.3.0-A <span>//</span> CONFIG SCHEMA v1 <span>//</span> TERMINAL ENGINE v1.0.0</div>
         <div class="boot-log" aria-label="Builder boot status">
           <div><span class="ok">[ OK ]</span> Master template loaded</div>
           <div><span class="ok">[ OK ]</span> Unified single-port architecture online</div>
@@ -51,6 +51,24 @@
             <button id="delete-project" class="danger-button" type="button">DELETE</button>
             <input id="import-project-file" class="upload-native" type="file" accept="application/json,.json">
           </div>
+        </section>
+
+        <section class="deployment-dashboard" aria-label="Deployment dashboard">
+          <div class="deployment-dashboard-head">
+            <div><span>CHAPTER 13A</span><strong>DEPLOYMENT DASHBOARD</strong></div>
+            <b id="deployment-state">NOT DEPLOYED</b>
+          </div>
+          <div class="deployment-grid">
+            <label><span>GitHub repository URL</span><input id="github-repository-url" type="url" placeholder="https://github.com/username/project"></label>
+            <label><span>Public Render URL</span><input id="public-terminal-url" type="url" placeholder="https://project.onrender.com"></label>
+          </div>
+          <div class="deployment-dashboard-actions">
+            <button id="save-deployment" type="button">SAVE DEPLOYMENT</button>
+            <button id="open-github" type="button">OPEN GITHUB</button>
+            <button id="open-render" type="button">OPEN RENDER</button>
+            <button id="verify-public-terminal" type="button">RUN PUBLIC ACCEPTANCE</button>
+          </div>
+          <pre id="deployment-result">[ WAIT ] Add the GitHub and Render URLs after deployment.</pre>
         </section>
         <div class="workspace">
           <div class="form-stack">
@@ -165,7 +183,7 @@
           <button id="copy-render-guide" type="button">COPY RENDER GUIDE</button>
         </div>
         <pre id="deployment-command-preview">Select an action to copy deployment commands.</pre>
-        <p class="build-note">The builder prepares deployment-ready source code. GitHub and Render account authorization remain manual in Chapter 12.</p>
+        <p class="build-note">The builder prepares deployment-ready source code. Chapter 13A guides, records, and verifies deployment. Account authorization remains manual; Chapter 13B will prototype connected deployment.</p>
       </div>
     </dialog>
   <script src="app.js"></script>

@@ -11,6 +11,7 @@ const importProjectFile=document.querySelector("#import-project-file");
 const STORAGE_KEY="ctb.projects.v1";
 const SETTINGS_KEY="ctb.workspace.v1";
 const SCHEMA_VERSION=1;
+const DEPLOYMENT_KEY="ctb.deployments.v1";
 let activeProjectId="";
 let persistedMascot=null;
 
@@ -123,7 +124,7 @@ function applyPayload(p){
   setValue("openSeaSlug",p.nft?.openSeaSlug);for(const k of ["whaleTracker","memeIntel","nftTerminal","liveMarket"])setValue(k,p.features?.[k]);
   persistedMascot=p.mascot||null; mascotInput.value=""; syncMascotFileName(); update();
 }
-function resetForm(){form.reset();setValue("version","1.0.0");setValue("promptHost","terminal");setValue("ecosystem","Robinhood Chain");setValue("dexScreenerChainId","robinhood");setValue("blockscoutApiBase","https://robinhoodchain.blockscout.com/api/v2");setValue("primary","#39ff14");setValue("accent","#ff6a00");setValue("background","#020806");setValue("panel","#03100b");setValue("whaleTracker",true);setValue("memeIntel",true);setValue("liveMarket",true);activeProjectId="";persistedMascot=null;mascotInput.value="";syncMascotFileName();localStorage.removeItem(SETTINGS_KEY);update();status.textContent="[ NEW ] Blank project workspace ready."}
+function resetForm(){form.reset();setValue("version","1.0.0");setValue("promptHost","terminal");setValue("ecosystem","Robinhood Chain");setValue("dexScreenerChainId","robinhood");setValue("blockscoutApiBase","https://robinhoodchain.blockscout.com/api/v2");setValue("primary","#39ff14");setValue("accent","#ff6a00");setValue("background","#020806");setValue("panel","#03100b");setValue("whaleTracker",true);setValue("memeIntel",true);setValue("liveMarket",true);activeProjectId="";persistedMascot=null;mascotInput.value="";syncMascotFileName();localStorage.removeItem(SETTINGS_KEY);update();status.textContent="[ NEW ] Blank project workspace ready.";loadDeployment()}
 function refreshProjectList(){
   const projects=readProjects(); const current=savedProjectsSelect.value; savedProjectsSelect.innerHTML='<option value="">LOAD SAVED PROJECT...</option>';
   Object.values(projects).sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).forEach(item=>{const option=document.createElement("option");option.value=item.id;option.textContent=`${item.name} // ${item.state} // ${new Date(item.updatedAt).toLocaleDateString()}`;savedProjectsSelect.append(option)});
@@ -133,11 +134,11 @@ async function saveProject({duplicate=false}={}){
   const data=await payload(); if(!data.projectName)throw new Error("Project name is required before saving.");
   let id=slugify(data.projectName); const projects=readProjects();
   if(duplicate){let n=2;const base=id;while(projects[id])id=`${base}-copy-${n++}`;data.projectName=`${data.projectName} COPY`;data.tokenContract="";data.nftContract="";data.links={};data.nft={};data.features.nftTerminal=false;}
-  const existing=projects[id];const timestamp=nowIso();projects[id]={id,name:data.projectName.toUpperCase(),ticker:data.ticker,state:(data.projectName&&data.ticker&&data.tokenContract&&(!data.features.nftTerminal||data.nftContract))?"READY":"DRAFT",createdAt:existing?.createdAt||timestamp,updatedAt:timestamp,lastGeneratedAt:existing?.lastGeneratedAt||null,schemaVersion:SCHEMA_VERSION,builderVersion:"1.0.0",data};writeProjects(projects);activeProjectId=id;applyPayload(data);refreshProjectList();savedProjectsSelect.value=id;status.textContent=`[ SAVED ] ${data.projectName.toUpperCase()} stored locally.`;
+  const existing=projects[id];const timestamp=nowIso();projects[id]={id,name:data.projectName.toUpperCase(),ticker:data.ticker,state:(data.projectName&&data.ticker&&data.tokenContract&&(!data.features.nftTerminal||data.nftContract))?"READY":"DRAFT",createdAt:existing?.createdAt||timestamp,updatedAt:timestamp,lastGeneratedAt:existing?.lastGeneratedAt||null,schemaVersion:SCHEMA_VERSION,builderVersion:"1.3.0-A",data};writeProjects(projects);activeProjectId=id;applyPayload(data);refreshProjectList();savedProjectsSelect.value=id;status.textContent=`[ SAVED ] ${data.projectName.toUpperCase()} stored locally.`;
 }
-function loadProject(id){const item=readProjects()[id];if(!item)return;activeProjectId=id;applyPayload(item.data);savedProjectsSelect.value=id;localStorage.setItem(SETTINGS_KEY,JSON.stringify({activeProjectId:id}));status.textContent=`[ LOADED ] ${item.name}`}
+function loadProject(id){const item=readProjects()[id];if(!item)return;activeProjectId=id;applyPayload(item.data);savedProjectsSelect.value=id;localStorage.setItem(SETTINGS_KEY,JSON.stringify({activeProjectId:id}));status.textContent=`[ LOADED ] ${item.name}`;loadDeployment()}
 function deleteProject(){if(!activeProjectId){status.textContent="[ WARN ] No saved project is active.";return}const projects=readProjects();const item=projects[activeProjectId];if(!item)return;const answer=prompt(`Type ${item.name} to delete this saved project:`);if(answer!==item.name){status.textContent="[ SKIP ] Project deletion cancelled.";return}delete projects[activeProjectId];writeProjects(projects);resetForm();refreshProjectList();status.textContent=`[ DELETED ] ${item.name} removed from this browser.`}
-async function exportProject(){const data=await payload();const bundle={schemaVersion:SCHEMA_VERSION,builderVersion:"1.2.1",terminalEngineVersion:"1.0.0",exportedAt:nowIso(),project:data};const blob=new Blob([JSON.stringify(bundle,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${slugify(data.projectName)||"community-terminal"}-config.json`;a.click();URL.revokeObjectURL(a.href);status.textContent="[ EXPORTED ] Project configuration downloaded."}
+async function exportProject(){const data=await payload();const bundle={schemaVersion:SCHEMA_VERSION,builderVersion:"1.3.0-A",terminalEngineVersion:"1.0.0",exportedAt:nowIso(),project:data};const blob=new Blob([JSON.stringify(bundle,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${slugify(data.projectName)||"community-terminal"}-config.json`;a.click();URL.revokeObjectURL(a.href);status.textContent="[ EXPORTED ] Project configuration downloaded."}
 function importProject(bundle){if(!bundle||bundle.schemaVersion!==SCHEMA_VERSION||!bundle.project)throw new Error("Unsupported or invalid project configuration.");activeProjectId="";applyPayload(bundle.project);status.textContent="[ IMPORTED ] Configuration loaded. Press SAVE to keep it locally."}
 function noteGenerated(){if(!activeProjectId)return;const projects=readProjects();if(projects[activeProjectId]){projects[activeProjectId].lastGeneratedAt=nowIso();projects[activeProjectId].updatedAt=nowIso();writeProjects(projects);refreshProjectList();savedProjectsSelect.value=activeProjectId}}
 
@@ -151,7 +152,32 @@ document.querySelector("#delete-project").addEventListener("click",deleteProject
 savedProjectsSelect.addEventListener("change",()=>{if(savedProjectsSelect.value)loadProject(savedProjectsSelect.value)});
 importProjectFile.addEventListener("change",async()=>{try{const file=importProjectFile.files[0];if(!file)return;importProject(JSON.parse(await file.text()))}catch(err){status.textContent=`[ ERROR ] ${err.message}`}finally{importProjectFile.value=""}});
 
-syncMascotFileName();refreshProjectList();validateContractField();
+
+function readDeployments(){try{return JSON.parse(localStorage.getItem(DEPLOYMENT_KEY)||"{}")||{}}catch{return {}}}
+function deploymentId(){return activeProjectId||slugify(val("projectName"))||"unsaved"}
+function deploymentForm(){return {githubUrl:document.querySelector("#github-repository-url").value.trim(),publicUrl:document.querySelector("#public-terminal-url").value.trim()}}
+function renderDeploymentRecord(record={}){
+  document.querySelector("#github-repository-url").value=record.githubUrl||"";
+  document.querySelector("#public-terminal-url").value=record.publicUrl||"";
+  const label=document.querySelector("#deployment-state");
+  const accepted=record.acceptance?.ok===true;label.textContent=accepted?"PUBLIC ACCEPTED":record.publicUrl?"URL SAVED":"NOT DEPLOYED";label.classList.toggle("live",accepted);
+  const out=document.querySelector("#deployment-result");
+  if(record.acceptance){out.textContent=record.acceptance.lines.join("\n");out.className=`deployment-result ${accepted?"pass":"fail"}`}
+  else{out.textContent="[ WAIT ] Add the GitHub and Render URLs after deployment.";out.className="deployment-result"}
+}
+function loadDeployment(){renderDeploymentRecord(readDeployments()[deploymentId()]||{})}
+function saveDeployment(){const all=readDeployments(),id=deploymentId(),prior=all[id]||{};all[id]={...prior,...deploymentForm(),updatedAt:nowIso()};localStorage.setItem(DEPLOYMENT_KEY,JSON.stringify(all));renderDeploymentRecord(all[id]);status.textContent="[ SAVED ] Deployment handoff stored in this browser."}
+function openDeployment(kind){const record=deploymentForm();const url=kind==="github"?record.githubUrl:record.publicUrl;if(!url)return status.textContent=`[ WAIT ] Add the ${kind==="github"?"GitHub":"Render"} URL first.`;try{const parsed=new URL(url);if(parsed.protocol!=="https:")throw new Error();window.open(parsed.href,"_blank","noopener")}catch{status.textContent="[ ERROR ] Enter a valid HTTPS URL."}}
+async function verifyPublicTerminal(){
+  const record=deploymentForm();if(!record.publicUrl)return status.textContent="[ WAIT ] Add the public Render URL first.";
+  const out=document.querySelector("#deployment-result"),btn=document.querySelector("#verify-public-terminal");btn.disabled=true;out.className="deployment-result";out.textContent="[ CHECKING ] Public landing, security, health, status and enabled routes...";
+  try{const response=await fetch("/api/verify-terminal",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url:record.publicUrl,expected:{whales:checked("whaleTracker"),intel:checked("memeIntel"),nft:checked("nftTerminal")&&Boolean(val("nftContract"))}})});const data=await response.json();if(!response.ok&& !data.checks)throw new Error(data.error||"Acceptance failed");const lines=[`[ ${data.ok?"ACCEPTED":"FAILED"} ] ${data.url||record.publicUrl}`,...(data.checks||[]).map(x=>`[ ${x.pass?"PASS":"FAIL"} ] ${x.name}`),`[ TIME ] ${data.checkedAt||nowIso()}`];const all=readDeployments(),id=deploymentId();all[id]={...(all[id]||{}),...record,acceptance:{ok:Boolean(data.ok),checkedAt:data.checkedAt||nowIso(),lines},updatedAt:nowIso()};localStorage.setItem(DEPLOYMENT_KEY,JSON.stringify(all));renderDeploymentRecord(all[id]);status.textContent=data.ok?"[ ACCEPTED ] Public terminal passed Chapter 13A checks.":"[ FAIL ] Public terminal did not pass every check."}catch(error){out.className="deployment-result fail";out.textContent=`[ FAIL ] ${error.message}`;status.textContent=`[ ERROR ] ${error.message}`}finally{btn.disabled=false}}
+document.querySelector("#save-deployment").addEventListener("click",saveDeployment);
+document.querySelector("#open-github").addEventListener("click",()=>openDeployment("github"));
+document.querySelector("#open-render").addEventListener("click",()=>openDeployment("render"));
+document.querySelector("#verify-public-terminal").addEventListener("click",verifyPublicTerminal);
+
+syncMascotFileName();refreshProjectList();validateContractField();loadDeployment();
 try{const state=JSON.parse(localStorage.getItem(SETTINGS_KEY)||"{}");if(state.activeProjectId&&readProjects()[state.activeProjectId])loadProject(state.activeProjectId);else update()}catch{update()}
 
 function escapeHtml(value){return String(value||"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]))}

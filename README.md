@@ -567,7 +567,7 @@ deployment-guide.txt
 
 ### Visible version identity
 
-The builder interface now displays:
+The Chapter 12 builder interface displayed:
 
 ```text
 CTB CORE v1.2.1 // CONFIG SCHEMA v1 // TERMINAL ENGINE v1.0.0
@@ -634,3 +634,29 @@ CHAPTER 12 END-TO-END ACCEPTANCE    COMPLETE
 ## Recommended Chapter 13
 
 The next major chapter can prototype optional one-click GitHub + Render publishing. Chapter 12 has now completed local, hosted-builder, generated-terminal, and public Render acceptance successfully. The integration must use explicit OAuth permissions, minimal scopes, safe token handling, visible deployment progress and failure recovery.
+
+
+## Chapter 13A — Deployment Dashboard & Guided Handoff
+
+Chapter 13A advances the hosted builder to `CTB CORE v1.3.0-A` while keeping config schema v1 and terminal engine v1.0.0. The `A` suffix identifies the guided handoff stage; Chapter 13B is reserved for connected account deployment.
+
+Chapter 13A turns the proven manual deployment process into a guided, persistent workflow without requesting GitHub or Render credentials. Each locally saved project can now record its GitHub repository URL, public Render URL, and latest public-acceptance result. The dashboard provides direct links to GitHub and Render and can run server-side acceptance checks against the deployed terminal, avoiding browser CORS restrictions.
+
+The public acceptance action verifies the Landing Page, security headers, `/healthz`, `/status`, and every module enabled in the current builder profile. Results are stored in browser-local deployment metadata and displayed as `PUBLIC ACCEPTED`, `URL SAVED`, or `NOT DEPLOYED`. This keeps the Chapter 8 local-first privacy model intact.
+
+Chapter 13A deliberately does **not** request OAuth tokens, create repositories, or create Render services. Those connected-account capabilities are reserved for **Chapter 13B — GitHub + Render Integration Prototype**. Chapter 13B will examine user-owned GitHub and Render authorization, automatic repository creation, source upload, service creation, deployment polling, and live-URL return.
+
+### Chapter 13A acceptance target
+
+```text
+GENERATE TERMINAL ZIP                 SUPPORTED
+COPY LOCAL / GITHUB / RENDER STEPS    SUPPORTED
+SAVE GITHUB REPOSITORY URL            SUPPORTED
+SAVE PUBLIC RENDER URL                SUPPORTED
+OPEN DEPLOYMENT DESTINATIONS          SUPPORTED
+RUN PUBLIC ACCEPTANCE FROM BUILDER    SUPPORTED
+STORE ACCEPTANCE RESULT LOCALLY       SUPPORTED
+CONNECTED ACCOUNT DEPLOYMENT          RESERVED FOR CHAPTER 13B
+```
+
+Chapter 12 remains the completed and proven end-to-end baseline: local tests, public builder tests, hosted ZIP generation, public JACKET deployment, Render diagnostics, and JACKET/NVDA live-market tests completed successfully.

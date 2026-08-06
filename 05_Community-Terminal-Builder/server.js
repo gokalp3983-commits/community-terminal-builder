@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const { generate } = require("./generator");
 
-const VERSION = "1.2.1";
+const VERSION = "1.3.0-A";
 const PORT = Number(process.env.PORT || 3050);
 const HOST = process.env.HOST || "0.0.0.0";
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -38,7 +38,7 @@ function rateAllowed(req){
   if(prior.length>=RATE_LIMIT){requests.set(ip,prior);return false;}
   prior.push(now);requests.set(ip,prior);return true;
 }
-function builderStatus(){return {ok:true,product:"Community Terminal Builder",version:VERSION,environment:NODE_ENV,mode:NODE_ENV==="production"?"hosted":"local",storage:"browser-local",versions:{builder:"1.2.1",configSchema:1,terminalEngine:"1.0.0"},uptimeSeconds:Math.floor((Date.now()-startedAt)/1000),generation:{rateLimitPerMinute:RATE_LIMIT,maxRequestBytes:MAX_BODY},timestamp:new Date().toISOString()};}
+function builderStatus(){return {ok:true,product:"Community Terminal Builder",version:VERSION,environment:NODE_ENV,mode:NODE_ENV==="production"?"hosted":"local",storage:"browser-local",versions:{builder:"1.3.0-A",configSchema:1,terminalEngine:"1.0.0"},uptimeSeconds:Math.floor((Date.now()-startedAt)/1000),generation:{rateLimitPerMinute:RATE_LIMIT,maxRequestBytes:MAX_BODY},timestamp:new Date().toISOString()};}
 
 const server = http.createServer((req,res) => {
   const url = new URL(req.url,`http://${req.headers.host||"localhost"}`);
@@ -60,6 +60,35 @@ const server = http.createServer((req,res) => {
         json(res,200,{ok:true,address,selectedChain,detectedChains,match});
       })
       .catch(error=>json(res,502,{ok:false,error:error.message,code:"MARKET_VALIDATION_UNAVAILABLE"}));
+    return;
+  }
+  if(req.method === "POST" && url.pathname === "/api/verify-terminal") {
+    let body="",tooLarge=false;
+    req.on("data",chunk=>{body+=chunk;if(Buffer.byteLength(body)>20_000){tooLarge=true;json(res,413,{ok:false,error:"Verification request is too large."});req.destroy();}});
+    req.on("end",async()=>{
+      if(tooLarge)return;
+      try{
+        const input=JSON.parse(body||"{}");
+        const target=new URL(String(input.url||""));
+        if(target.protocol!=="https:"||target.username||target.password||target.port||target.hostname==="localhost"||/^\d+\.\d+\.\d+\.\d+$/.test(target.hostname))throw new Error("Use a public HTTPS terminal URL.");
+        const base=`https://${target.hostname}${target.pathname.replace(/\/$/,"")}`;
+        const expected=input.expected&&typeof input.expected==="object"?input.expected:{};
+        async function probe(pathname){const response=await fetch(`${base}${pathname}`,{redirect:"follow",signal:AbortSignal.timeout(45_000),headers:{accept:"application/json,text/html"}});const text=await response.text();let data=null;try{data=JSON.parse(text)}catch{}return {status:response.status,ok:response.ok,headers:Object.fromEntries(response.headers),text,data};}
+        const home=await probe("/");
+        const health=await probe("/healthz");
+        const statusResult=await probe("/status");
+        const routes=[];
+        for(const name of ["whales","intel","nft"]){if(expected[name])routes.push({name,...await probe(`/${name}`)});}
+        const checks=[
+          {name:"Landing Page",pass:home.status===200},
+          {name:"Security headers",pass:home.headers["x-content-type-options"]==="nosniff"},
+          {name:"/healthz",pass:health.status===200&&health.data?.ok===true},
+          {name:"/status",pass:statusResult.status===200&&statusResult.data?.ok===true},
+          ...routes.map(item=>({name:`/${item.name}`,pass:item.status===200}))
+        ];
+        json(res,checks.every(x=>x.pass)?200:422,{ok:checks.every(x=>x.pass),url:base,checkedAt:new Date().toISOString(),checks,status:statusResult.data||null});
+      }catch(error){json(res,400,{ok:false,error:error.message,code:"PUBLIC_ACCEPTANCE_FAILED"});}
+    });
     return;
   }
   if(req.method === "POST" && url.pathname === "/api/generate") {
