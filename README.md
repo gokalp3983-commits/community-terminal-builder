@@ -1,3 +1,13 @@
+# Community Terminal Builder
+
+## v1.3.1-b UI polish update
+
+- Removed public-facing Chapter labels from the builder interface.
+- Simplified the header release marker to `v1.3.1-b`.
+- Renamed `OPEN RENDER` to `OPEN PUBLIC TERMINAL`.
+- Added visible progress, completion time, and button state feedback to `CHECK CONNECTIONS`.
+- Updated public acceptance output to identify the current release instead of an outdated chapter.
+
 # Community Terminal Builder — Chapters 1–12
 
 **Release:** Chapter 12 — Deployment Assistant & Release Provenance  

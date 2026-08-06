@@ -44,7 +44,7 @@ async function publishGitHub(fetchImpl,c,result,{repoName,visibility="public",al
     tree.push({path:file.path,mode:"100644",type:"blob",sha:blob.sha});
   }
   const createdTree=await githubRequest(fetchImpl,c,`/repos/${owner}/${repoName}/git/trees`,{method:"POST",body:{tree,...(baseTree?{base_tree:baseTree}:{})}});
-  const commit=await githubRequest(fetchImpl,c,`/repos/${owner}/${repoName}/git/commits`,{method:"POST",body:{message:`Publish ${result.project.name} Community Terminal via CTB 1.3.0-B`,tree:createdTree.sha,parents:parentSha?[parentSha]:[]}});
+  const commit=await githubRequest(fetchImpl,c,`/repos/${owner}/${repoName}/git/commits`,{method:"POST",body:{message:`Publish ${result.project.name} Community Terminal via CTB 1.3.1-B`,tree:createdTree.sha,parents:parentSha?[parentSha]:[]}});
   if(parentSha)await githubRequest(fetchImpl,c,`/repos/${owner}/${repoName}/git/refs/heads/main`,{method:"PATCH",body:{sha:commit.sha,force:false}});
   else await githubRequest(fetchImpl,c,`/repos/${owner}/${repoName}/git/refs`,{method:"POST",body:{ref:"refs/heads/main",sha:commit.sha}});
   if(ensured.repo.default_branch!=="main"){

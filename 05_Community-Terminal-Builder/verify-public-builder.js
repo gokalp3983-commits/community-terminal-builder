@@ -21,5 +21,5 @@ async function jsonRoute(path){const r=await request(path);check(r.status===200,
   const payload={projectName:"ACCEPTANCE",ticker:"ACC",tokenContract:"0x1111111111111111111111111111111111111111",features:{whaleTracker:true,memeIntel:true,nftTerminal:false,liveMarket:true}};
   const zip=await request("/api/generate",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
   check(zip.status===200,"Hosted ZIP generation returned HTTP 200");check((zip.headers.get("content-type")||"").includes("application/zip"),"Hosted generation returned a ZIP");check((zip.headers.get("content-disposition")||"").includes("ACCEPTANCE_Community_Terminal.zip"),"Generated ZIP filename is correct");const bytes=new Uint8Array(await zip.arrayBuffer());check(bytes.length>4&&bytes[0]===0x50&&bytes[1]===0x4b,"Generated ZIP signature is valid");
-  console.log("\n[ ACCEPTED ] Public builder deployment passed Chapter 11 checks.");
+  console.log("\n[ ACCEPTED ] Public builder deployment passed v1.3.1-b checks.");
 })().catch(error=>{console.error(`\n[ FAIL ] ${error.name==="AbortError"?`Timed out after ${timeoutMs}ms`:error.message}`);process.exit(1)});

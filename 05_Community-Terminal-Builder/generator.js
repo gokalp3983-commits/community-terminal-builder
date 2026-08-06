@@ -4,7 +4,7 @@ const path = require("path");
 const { createZip } = require("./zip");
 const MASTER_ROOT = path.resolve(__dirname, "..");
 const MODULES = ["01_Landing-Page", "02_Whale-Activity-Tracker", "03_NFT-Collection-Terminal", "04_Meme-Intel"];
-const BUILDER_VERSION = "1.3.0-B";
+const BUILDER_VERSION = "1.3.1-B";
 const CONFIG_SCHEMA_VERSION = 1;
 const TERMINAL_ENGINE_VERSION = "1.0.0";
 
@@ -266,7 +266,7 @@ function generatedDeploymentVerifier(p) {
     ' const health=await get("/healthz");check(health.status===200,"/healthz returned HTTP 200");const h=await health.json();check(h.ok===true&&h.status==="healthy","/healthz is healthy");',
     ' const status=await get("/status");check(status.status===200,"/status returned HTTP 200");const s=await status.json();check(s.ok===true,"/status returned ok:true");check(s.modules.whales===expected.whales&&s.modules.intel===expected.intel&&s.modules.nft===expected.nft,"Mounted modules match generated profile");',
     ' for(const [name,on] of Object.entries(expected)){if(!on)continue;const r=await get(`/${name}`);check(r.status===200,`/${name} returned HTTP 200`)}',
-    ' console.log("\\n[ ACCEPTED ] Public terminal deployment passed Chapter 11 checks.");',
+    ' console.log("\\n[ ACCEPTED ] Public terminal deployment passed current release checks.");',
     '})().catch(e=>{console.error(`\\n[ FAIL ] ${e.name==="AbortError"?`Timed out after ${timeoutMs}ms`:e.message}`);process.exit(1)});',
     ''
   ].join("\n");

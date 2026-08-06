@@ -25,7 +25,7 @@
         <div class="hero-kicker"><span class="prompt-mark">builder@localhost:~$</span> initialize --new-project</div>
         <h1>COMMUNITY TERMINAL BUILDER</h1>
         <p class="tagline">CONFIGURE <span>//</span> GENERATE <span>//</span> DEPLOY</p>
-        <div class="version-strip">CTB CORE v1.3.0-B <span>//</span> CONFIG SCHEMA v1 <span>//</span> TERMINAL ENGINE v1.0.0</div>
+        <div class="version-strip">v1.3.1-b</div>
         <div class="boot-log" aria-label="Builder boot status">
           <div><span class="ok">[ OK ]</span> Master template loaded</div>
           <div><span class="ok">[ OK ]</span> Unified single-port architecture online</div>
@@ -55,7 +55,7 @@
 
         <section class="deployment-dashboard" aria-label="Deployment dashboard">
           <div class="deployment-dashboard-head">
-            <div><span>CHAPTER 13A</span><strong>DEPLOYMENT DASHBOARD</strong></div>
+            <div><span>MANUAL HANDOFF</span><strong>DEPLOYMENT DASHBOARD</strong></div>
             <b id="deployment-state">NOT DEPLOYED</b>
           </div>
           <div class="deployment-grid">
@@ -65,7 +65,7 @@
           <div class="deployment-dashboard-actions">
             <button id="save-deployment" type="button">SAVE DEPLOYMENT</button>
             <button id="open-github" type="button">OPEN GITHUB</button>
-            <button id="open-render" type="button">OPEN RENDER</button>
+            <button id="open-render" type="button">OPEN PUBLIC TERMINAL</button>
             <button id="verify-public-terminal" type="button">RUN PUBLIC ACCEPTANCE</button>
           </div>
           <pre id="deployment-result">[ WAIT ] Add the GitHub and Render URLs after deployment.</pre>
@@ -73,7 +73,7 @@
 
         <section class="connected-dashboard" aria-label="Connected deployment prototype">
           <div class="deployment-dashboard-head">
-            <div><span>CHAPTER 13B</span><strong>CONNECTED DEPLOYMENT PROTOTYPE</strong></div>
+            <div><span>SERVER-SIDE PUBLISHING</span><strong>CONNECTED DEPLOYMENT</strong></div>
             <b id="integration-state">CHECKING</b>
           </div>
           <p class="connected-note">GitHub and Render credentials remain on the builder server. They are never returned to or stored by the browser.</p>
@@ -204,7 +204,7 @@
           <button id="copy-render-guide" type="button">COPY RENDER GUIDE</button>
         </div>
         <pre id="deployment-command-preview">Select an action to copy deployment commands.</pre>
-        <p class="build-note">The builder prepares deployment-ready source code. Chapter 13A guides and verifies manual deployment. Chapter 13B adds an opt-in server-credential prototype for publishing to GitHub and creating or redeploying a Render service.</p>
+        <p class="build-note">The builder prepares deployment-ready source code, supports guided public verification, and can optionally publish to GitHub and create or redeploy a Render service using server-side credentials.</p>
       </div>
     </dialog>
   <script src="app.js"></script>

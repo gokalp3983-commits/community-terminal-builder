@@ -5,7 +5,7 @@ const path = require("path");
 const { generate } = require("./generator");
 const { connectedDeploy, publicStatus: integrationStatus } = require("./connected-deploy");
 
-const VERSION = "1.3.0-B";
+const VERSION = "1.3.1-B";
 const PORT = Number(process.env.PORT || 3050);
 const HOST = process.env.HOST || "0.0.0.0";
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -39,7 +39,7 @@ function rateAllowed(req){
   if(prior.length>=RATE_LIMIT){requests.set(ip,prior);return false;}
   prior.push(now);requests.set(ip,prior);return true;
 }
-function builderStatus(){return {ok:true,product:"Community Terminal Builder",version:VERSION,environment:NODE_ENV,mode:NODE_ENV==="production"?"hosted":"local",storage:"browser-local",versions:{builder:"1.3.0-B",configSchema:1,terminalEngine:"1.0.0"},uptimeSeconds:Math.floor((Date.now()-startedAt)/1000),generation:{rateLimitPerMinute:RATE_LIMIT,maxRequestBytes:MAX_BODY},timestamp:new Date().toISOString()};}
+function builderStatus(){return {ok:true,product:"Community Terminal Builder",version:VERSION,environment:NODE_ENV,mode:NODE_ENV==="production"?"hosted":"local",storage:"browser-local",versions:{builder:"1.3.1-B",configSchema:1,terminalEngine:"1.0.0"},uptimeSeconds:Math.floor((Date.now()-startedAt)/1000),generation:{rateLimitPerMinute:RATE_LIMIT,maxRequestBytes:MAX_BODY},timestamp:new Date().toISOString()};}
 
 const server = http.createServer((req,res) => {
   const url = new URL(req.url,`http://${req.headers.host||"localhost"}`);
