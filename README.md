@@ -1,8 +1,8 @@
 # Community Terminal Builder — Chapters 1–12
 
-**Release:** Chapter 11.2 — Public Acceptance, Multi-Quote, Contract Guardrails & Favicons  
-**Builder version:** 1.1.2  
-**Status:** Public builder accepted at https://community-terminal-builder.onrender.com; generated-terminal acceptance in progress  
+**Release:** Chapter 12 — Deployment Assistant & Release Provenance  
+**Builder version:** 1.2.0  
+**Status:** Chapter 12 is live at https://community-terminal-builder.onrender.com; offline and public builder regression suites passed; generated-terminal public acceptance remains in progress  
 **Built by:** Gokalp — X: [@Gokalp8339](https://x.com/Gokalp8339)
 
 ## 1. What this project is
@@ -48,6 +48,9 @@ All enabled pages share one server, one domain and one public port.
 | Public builder acceptance verifier | DONE |
 | Generated-terminal public acceptance verifier | DONE |
 | Public builder deployed to Render | ACCEPTED |
+| Chapter 12 deployed from GitHub to Render | ACCEPTED |
+| Chapter 12 offline regression suite | PASSED |
+| Chapter 12 public deployment regression suite | PASSED |
 | Hosted ZIP generation | ACCEPTED |
 | Generated terminal local landing and commands | PASSED |
 | Multi-quote market selection | FIXED IN 11.1 |
@@ -56,7 +59,7 @@ All enabled pages share one server, one domain and one public port.
 | Automatic GitHub/Render account actions | NOT INCLUDED |
 | Payments and subscriptions | NOT INCLUDED |
 
-The technical builder is approximately **97% complete**. The public builder is live and has passed the Chapter 11 automated acceptance suite. A real generated JACKET terminal then exposed a WETH-only market-selection assumption on Robinhood Chain; Chapter 11.1 fixes that limitation before the generated terminal is deployed publicly.
+The technical builder is approximately **97% complete**. The public builder is live and has passed both the original Chapter 11 acceptance suite and the Chapter 12 post-deployment regression run. Chapter 12 was pushed to GitHub, automatically redeployed by Render, and verified with the complete local and public test suites. A real generated JACKET terminal previously exposed a WETH-only market-selection assumption on Robinhood Chain; Chapter 11.1 fixed that limitation before the generated terminal is deployed publicly.
 
 ## 3. Chapter history
 
@@ -259,7 +262,7 @@ The repository root contains `render.yaml` configured for the builder in `05_Com
 Recommended workflow:
 
 ```text
-Push Chapter 10 to a GitHub repository
+Push the current chapter to the GitHub repository
         ↓
 Open Render
         ↓
@@ -372,7 +375,7 @@ Use **EXPORT** and **IMPORT** to move projects between computers, browsers or or
 
 Clearing browser site data removes locally saved projects. Exported JSON is the portable backup.
 
-## 8. Generate and run a terminal
+## 9. Generate and run a terminal
 
 1. Create or load a project.
 2. Fill identity, contracts, branding, links and feature settings.
@@ -395,7 +398,7 @@ http://localhost:3000/health
 http://localhost:3000/status
 ```
 
-## 9. Security and operational boundaries
+## 10. Security and operational boundaries
 
 Chapter 10 includes practical baseline protection, not enterprise security certification.
 
@@ -418,7 +421,7 @@ Important boundaries:
 - Browser-saved projects are not backed up by the hosted server.
 - Public deployment should be monitored for resource use and abuse.
 
-## 10. Current workflow
+## 11. Current workflow
 
 ```text
 Open local or hosted Community Terminal Builder
@@ -440,7 +443,7 @@ Push generated terminal to GitHub
 Deploy with its generated render.yaml
 ```
 
-## 11. Public deployment acceptance plan
+## 12. Public deployment acceptance plan
 
 ### Chapter 11 — Live Deployment Acceptance and Stable v1.0
 
@@ -469,13 +472,19 @@ Fill this after the real Render deployment:
 ```text
 Builder public URL:        https://community-terminal-builder.onrender.com
 Builder acceptance:        PASSED — Chapter 11 automated public checks
-Generated project:         PENDING
+Chapter 12 deployment:     PASSED — GitHub push and automatic Render redeploy
+Chapter 12 offline tests:  PASSED
+Chapter 12 public tests:   PASSED
+Hosted ZIP generation:     PASSED
+Security headers:          PASSED
+Health/status routes:      PASSED
+Generated project:         JACKET — local landing, commands and routes passed
 Terminal public URL:       PENDING
 Terminal acceptance:       PENDING
-Cold-start observation:    PENDING
-Live API observation:      PENDING
-Critical issues:           PENDING
-Acceptance date:           PENDING
+Cold-start observation:    Builder recovered and passed public verifier
+Live API observation:      Multi-quote issue found and fixed for JACKET/NVDA
+Critical issues:           0 known in current builder regression suites
+Acceptance date:           2026-08-06
 ```
 
 A release should be marked **PUBLICLY ACCEPTED** only after both `test:deployed` commands pass and the manual browser checklist is complete.
@@ -584,7 +593,21 @@ The offline release suite now verifies that all four generated scenarios include
 https://community-terminal-builder.onrender.com
 ```
 
-After this Chapter 12 source is pushed to `main`, Render should redeploy the builder automatically. Run the public builder acceptance test again after the deployment reports **Live**.
+Chapter 12 was pushed to the GitHub `main` branch and Render redeployed the public builder automatically. After the deployment reported **Live**, the complete offline suite and the public `test:deployed` regression suite both passed.
+
+Confirmed Chapter 12 public state:
+
+```text
+PUBLIC BUILDER                 LIVE
+CHAPTER 12 DEPLOYMENT          COMPLETE
+OFFLINE TEST SUITE             PASS
+PUBLIC DEPLOYMENT TEST         PASS
+HOSTED ZIP GENERATION          PASS
+SECURITY HEADERS               PASS
+HEALTH / STATUS ROUTES         PASS
+```
+
+This proves that the Deployment Assistant and release-provenance changes did not regress the already accepted hosted-builder behavior. The remaining end-to-end milestone is to deploy one generated terminal publicly and run that terminal's own `test:deployed` command.
 
 ## Recommended Chapter 13
 
