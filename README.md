@@ -1,4 +1,4 @@
-# Community Terminal Builder
+# Community Terminal Builder — Chapters 1–12
 
 **Release:** Chapter 11.2 — Public Acceptance, Multi-Quote, Contract Guardrails & Favicons  
 **Builder version:** 1.1.2  
@@ -440,7 +440,7 @@ Push generated terminal to GitHub
 Deploy with its generated render.yaml
 ```
 
-## 11. Recommended next chapter
+## 11. Public deployment acceptance plan
 
 ### Chapter 11 — Live Deployment Acceptance and Stable v1.0
 
@@ -459,7 +459,7 @@ Acceptance targets:
 - mobile browser acceptance;
 - first stable release checklist and version tag.
 
-After stable v1.0, optional product chapters can add accounts, cloud storage, GitHub publishing, one-click deployment, custom domains, branding plans and payments.
+Chapter 11 established the public builder and acceptance toolkit. Chapter 12 now adds the deployment assistant and release provenance described later in this README.
 
 
 ## Chapter 11 acceptance record
@@ -527,3 +527,65 @@ The offline suite now verifies:
 - generated chain and contract identity elements;
 - multi-quote selection in both activity modules;
 - the existing hosted-builder and generated-ZIP regression suite.
+
+
+## Chapter 12 — Deployment Assistant and release provenance
+
+Chapter 12 turns a successful ZIP generation into a guided release workflow. The terminal engine remains local-first and deployment-provider neutral; this chapter does not store GitHub or Render credentials and does not create services automatically.
+
+### Post-generation launch screen
+
+After a ZIP is returned, the builder now opens a **BUILD COMPLETE** panel showing the project, package name, enabled modules and deployment readiness. The user can download the same ZIP again without rebuilding and copy project-specific commands for:
+
+- local installation, validation and startup;
+- Git initialization and first GitHub push;
+- Render Blueprint deployment and public acceptance testing.
+
+The dialog makes the next action explicit while retaining the normal browser download. Chapter 12 therefore bridges the gap between “a ZIP appeared” and “this project is ready to launch.”
+
+### Generated release files
+
+Every generated terminal now contains:
+
+```text
+terminal-release.json
+deployment-guide.txt
+```
+
+`terminal-release.json` records the builder version, config-schema version, terminal-engine version, generation timestamp, EVM chain configuration, enabled modules, mounted routes and deployment-ready status. It provides machine-readable provenance for support, migration and future regeneration.
+
+`deployment-guide.txt` contains copy-ready local, GitHub, Render and public-acceptance instructions using the generated project name and recommended repository slug. The project still contains only one Markdown file: its root `README.md`.
+
+### Visible version identity
+
+The builder interface now displays:
+
+```text
+CTB CORE v1.2.0 // CONFIG SCHEMA v1 // TERMINAL ENGINE v1.0.0
+```
+
+Exported browser project JSON also records the builder and terminal-engine versions. These identifiers separate three concepts that will evolve independently:
+
+- the hosted builder product;
+- the saved configuration schema;
+- the generated terminal runtime engine.
+
+### Chapter 12 boundaries
+
+Chapter 12 is a deployment assistant, not yet one-click deployment. Users still authorize GitHub and Render manually. No OAuth token, repository credential or cloud project is stored by the Community Terminal Builder. This keeps the current public service safe and simple while preparing the exact workflow that a later integration chapter can automate.
+
+### Validation additions
+
+The offline release suite now verifies that all four generated scenarios include valid release metadata, an enabled-module manifest, the deployment guide and the existing generated validator. Hosted-builder tests verify the Chapter 12 completion dialog and visible version strip alongside the Chapter 11 favicon and EVM-contract guardrails.
+
+### Current public service
+
+```text
+https://community-terminal-builder.onrender.com
+```
+
+After this Chapter 12 source is pushed to `main`, Render should redeploy the builder automatically. Run the public builder acceptance test again after the deployment reports **Live**.
+
+## Recommended Chapter 13
+
+The next major chapter can prototype optional one-click GitHub + Render publishing. It should begin only after Chapter 12 is deployed and the generated JACKET terminal completes its own public acceptance. The integration must use explicit OAuth permissions, minimal scopes, safe token handling, visible deployment progress and failure recovery.

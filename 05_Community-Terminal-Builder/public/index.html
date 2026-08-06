@@ -25,6 +25,7 @@
         <div class="hero-kicker"><span class="prompt-mark">builder@localhost:~$</span> initialize --new-project</div>
         <h1>COMMUNITY TERMINAL BUILDER</h1>
         <p class="tagline">CONFIGURE <span>//</span> VALIDATE <span>//</span> GENERATE</p>
+        <div class="version-strip">CTB CORE v1.2.0 <span>//</span> CONFIG SCHEMA v1 <span>//</span> TERMINAL ENGINE v1.0.0</div>
         <div class="boot-log" aria-label="Builder boot status">
           <div><span class="ok">[ OK ]</span> Master template loaded</div>
           <div><span class="ok">[ OK ]</span> Unified single-port architecture online</div>
@@ -142,6 +143,31 @@
       <div class="footer-credit">Built by Gokalp <span class="footer-dot">·</span> <a href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp on X"><svg class="x-logo" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"/></svg><span>@Gokalp8339</span></a></div>
     </footer>
   </main>
+
+    <dialog id="build-complete" class="build-complete">
+      <div class="build-modal">
+        <div class="build-modal-head"><span>[ BUILD COMPLETE ]</span><button id="close-build-complete" type="button" aria-label="Close">×</button></div>
+        <div class="build-summary">
+          <strong id="built-project">COMMUNITY TERMINAL</strong>
+          <p id="built-package">Package ready.</p>
+          <div id="built-modules" class="built-modules"></div>
+        </div>
+        <div class="deployment-readiness">
+          <div>[ PASS ] Generated ZIP returned</div>
+          <div>[ PASS ] Render Blueprint included</div>
+          <div>[ PASS ] Health and status diagnostics included</div>
+          <div>[ READY ] Run npm test before deployment</div>
+        </div>
+        <div class="build-actions">
+          <button id="download-again" type="button">DOWNLOAD ZIP</button>
+          <button id="copy-local-commands" type="button">COPY LOCAL COMMANDS</button>
+          <button id="copy-github-commands" type="button">COPY GITHUB COMMANDS</button>
+          <button id="copy-render-guide" type="button">COPY RENDER GUIDE</button>
+        </div>
+        <pre id="deployment-command-preview">Select an action to copy deployment commands.</pre>
+        <p class="build-note">The builder prepares deployment-ready source code. GitHub and Render account authorization remain manual in Chapter 12.</p>
+      </div>
+    </dialog>
   <script src="app.js"></script>
 </body>
 </html>

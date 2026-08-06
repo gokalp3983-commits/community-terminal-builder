@@ -181,3 +181,15 @@ footer a:hover{
 .contract-check.pass{color:var(--green);border-color:rgba(57,255,20,.55)}
 .contract-check.warn{color:var(--yellow);border-color:rgba(255,106,0,.55)}
 .contract-check.fail{color:#ff5a67;border-color:rgba(255,90,103,.6)}
+
+
+/* Chapter 12: deployment assistant and release provenance */
+.version-strip{margin-top:7px;text-align:center;color:var(--muted);font-size:.62rem;letter-spacing:.08em}.version-strip span{color:var(--green)}
+.build-complete{width:min(760px,calc(100% - 24px));padding:0;border:1px solid var(--green);background:#020806;color:var(--text);box-shadow:0 0 80px rgba(57,255,20,.18)}
+.build-complete::backdrop{background:rgba(0,0,0,.82);backdrop-filter:blur(3px)}
+.build-modal{padding:0}.build-modal-head{display:flex;justify-content:space-between;align-items:center;padding:13px 15px;border-bottom:1px solid var(--line);background:#04110b;color:var(--green);font-weight:800;letter-spacing:.09em}.build-modal-head button{padding:2px 9px;border-color:var(--danger);background:transparent;color:var(--danger);box-shadow:none;font-size:1.2rem}
+.build-summary{padding:18px;border-bottom:1px solid var(--line)}.build-summary strong{display:block;color:var(--orange);font-size:1.18rem;letter-spacing:.08em}.build-summary p{margin:6px 0;color:var(--muted)}.built-modules{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.built-modules span{padding:4px 7px;border:1px solid var(--line-bright);color:var(--cyan);font-size:.68rem}
+.deployment-readiness{padding:14px 18px;color:var(--green);font-size:.74rem;line-height:1.7;border-bottom:1px solid var(--line)}
+.build-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:14px 18px}.build-actions button{padding:11px;background:#04110b;color:var(--green);font-size:.7rem;box-shadow:none}.build-actions button:hover{background:#07180f}
+#deployment-command-preview{margin:0 18px 14px;padding:12px;min-height:92px;border:1px solid var(--line);background:#010503;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:.7rem;line-height:1.55}.build-note{margin:0;padding:0 18px 18px;color:var(--muted);font-size:.66rem}
+@media(max-width:620px){.build-actions{grid-template-columns:1fr}}

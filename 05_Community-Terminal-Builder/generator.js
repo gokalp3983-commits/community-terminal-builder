@@ -4,6 +4,9 @@ const path = require("path");
 const { createZip } = require("./zip");
 const MASTER_ROOT = path.resolve(__dirname, "..");
 const MODULES = ["01_Landing-Page", "02_Whale-Activity-Tracker", "03_NFT-Collection-Terminal", "04_Meme-Intel"];
+const BUILDER_VERSION = "1.2.0";
+const CONFIG_SCHEMA_VERSION = 1;
+const TERMINAL_ENGINE_VERSION = "1.0.0";
 
 function text(v, fallback = "") { return typeof v === "string" ? v.trim() : fallback; }
 function bool(v, fallback = false) { return typeof v === "boolean" ? v : fallback; }
@@ -226,6 +229,8 @@ function generatedValidator(p) {
     'pass("Render Blueprint",fs.existsSync("render.yaml"));',
     'pass("environment example",fs.existsSync(".env.example"));',
     'pass("deployment verifier",fs.existsSync("verify-deployment.js"));',
+    'pass("release metadata",fs.existsSync("terminal-release.json"));',
+    'pass("deployment guide",fs.existsSync("deployment-guide.txt"));',
     'pass("landing favicon",fs.existsSync(path.join("01_Landing-Page","public","favicon.png"))||fs.readFileSync(path.join("01_Landing-Page","public","index.html"),"utf8").includes("assets/"));',
     'const source=fs.readFileSync("server.js","utf8");',
     `pass("health route",source.includes('app.get("/health"'));`,
@@ -263,11 +268,73 @@ function generatedDeploymentVerifier(p) {
   ].join("\n");
 }
 
+function releaseMetadata(p) {
+  return JSON.stringify({
+    product: "Community Terminal",
+    project: { id:p.id, name:p.name, ticker:p.ticker, version:p.version, ecosystem:p.ecosystem },
+    builder: { version:BUILDER_VERSION, configSchemaVersion:CONFIG_SCHEMA_VERSION, terminalEngineVersion:TERMINAL_ENGINE_VERSION },
+    generatedAt: new Date().toISOString(),
+    releaseStatus: "deployment-ready",
+    chain: { type:"EVM", dexScreenerChainId:p.dexChain, blockscoutApiBase:p.blockscout },
+    enabledModules: ["landing", ...(p.features.whaleTracker?["whales"]:[]), ...(p.features.memeIntel?["intel"]:[]), ...(p.features.nftTerminal?["nft"]:[])],
+    routes: { home:"/", health:"/health", status:"/status", whales:p.features.whaleTracker?"/whales":null, intel:p.features.memeIntel?"/intel":null, nft:p.features.nftTerminal?"/nft":null },
+    deployment: { provider:"Render Blueprint compatible", blueprint:"render.yaml", publicAcceptanceCommand:"npm run test:deployed -- https://YOUR-TERMINAL.onrender.com" }
+  }, null, 2) + "\n";
+}
+function deploymentGuide(p) {
+  const repo=`${p.id}-community-terminal`;
+  return `[ COMMUNITY TERMINAL DEPLOYMENT GUIDE ]
+
+PROJECT: ${p.name}
+REPOSITORY SUGGESTION: ${repo}
+BUILDER VERSION: ${BUILDER_VERSION}
+CONFIG SCHEMA: ${CONFIG_SCHEMA_VERSION}
+TERMINAL ENGINE: ${TERMINAL_ENGINE_VERSION}
+
+1. LOCAL VALIDATION
+
+cd ${p.name.replace(/[^A-Z0-9]+/g, "_")}_Community_Terminal
+npm install
+npm test
+npm start
+
+Open http://localhost:3000 and verify /health and /status.
+
+2. GITHUB
+
+git init
+git add .
+git commit -m "Initial ${p.name} Community Terminal"
+git branch -M main
+git remote add origin https://github.com/YOUR-USERNAME/${repo}.git
+git push -u origin main
+
+3. RENDER
+
+Create a new Blueprint from the GitHub repository. Render reads render.yaml, installs dependencies, starts the service, and checks /health.
+
+4. PUBLIC ACCEPTANCE
+
+npm run test:deployed -- https://YOUR-TERMINAL.onrender.com
+
+Keep terminal-release.json with the deployment. It records the builder, schema, engine, modules, routes and generation time.
+`;
+}
 function generatedReadme(p) { return `# ${p.name} Community Terminal
 
-Generated with Community Terminal Builder.
+Generated with Community Terminal Builder **v${BUILDER_VERSION}**.
+
+Release metadata: \`terminal-release.json\`  
+Copy-ready deployment instructions: \`deployment-guide.txt\`
 
 Built by Gokalp — X: @Gokalp8339 (https://x.com/Gokalp8339)
+
+## Release provenance
+
+- Builder: v${BUILDER_VERSION}
+- Config schema: v${CONFIG_SCHEMA_VERSION}
+- Terminal engine: v${TERMINAL_ENGINE_VERSION}
+- Release status: deployment-ready
 
 ## Local run
 
@@ -332,6 +399,8 @@ function generate(input) {
   entries.push({name:`${root}/server.js`,data:rootServer()});
   entries.push({name:`${root}/validate-generated.js`,data:generatedValidator(p)});
   entries.push({name:`${root}/verify-deployment.js`,data:generatedDeploymentVerifier(p)});
+  entries.push({name:`${root}/terminal-release.json`,data:releaseMetadata(p)});
+  entries.push({name:`${root}/deployment-guide.txt`,data:deploymentGuide(p)});
   entries.push({name:`${root}/render.yaml`,data:renderYaml(p)});
   entries.push({name:`${root}/.env.example`,data:envExample()});
   const mascotData = p.mascot ? Buffer.from(p.mascot.dataBase64, "base64") : defaultMascot(p.name);

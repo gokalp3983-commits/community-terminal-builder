@@ -29,7 +29,10 @@ try {
     const cfg=JSON.parse(execFileSync(process.execPath,["-e","const c=require('./config');process.stdout.write(JSON.stringify(c))"],{cwd:dir}).toString());
     check(cfg.project.name===item.name,`${item.name}: active generated profile`);
     check(cfg.features.nftTerminal===Boolean(item.nftContract&&item.features.nftTerminal),`${item.name}: NFT feature state`);
-    for(const file of ["package.json","server.js","render.yaml",".env.example","README.md","validate-generated.js","verify-deployment.js","01_Landing-Page/public/favicon.png"]) check(fs.existsSync(path.join(dir,file)),`${item.name}: ${file}`);
+    const release=JSON.parse(fs.readFileSync(path.join(dir,"terminal-release.json"),"utf8"));
+    check(release.builder.version==="1.2.0"&&release.releaseStatus==="deployment-ready",`${item.name}: release provenance metadata`);
+    check(Array.isArray(release.enabledModules)&&release.enabledModules.includes("landing"),`${item.name}: release module manifest`);
+    for(const file of ["package.json","server.js","render.yaml",".env.example","README.md","validate-generated.js","verify-deployment.js","terminal-release.json","deployment-guide.txt","01_Landing-Page/public/favicon.png"]) check(fs.existsSync(path.join(dir,file)),`${item.name}: ${file}`);
     const server=fs.readFileSync(path.join(dir,"server.js"),"utf8");
     for(const route of ["/health","/status"]){check(server.includes(`app.get(\"${route}\"`),`${item.name}: ${route} diagnostic route`);routeChecks++;}
     check(server.includes('if(config.features.whaleTracker)'),`${item.name}: feature-aware whale mount`);
