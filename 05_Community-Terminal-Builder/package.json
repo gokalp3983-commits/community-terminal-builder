@@ -1,12 +1,12 @@
 {
   "name": "community-terminal-builder",
-  "version": "1.3.0-a",
+  "version": "1.3.0-b",
   "private": true,
   "description": "Hosted-ready generator for configurable community terminal applications.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node validate-release.js && node test-hosted-builder.js && node test-acceptance-toolkit.js",
+    "test": "node validate-release.js && node test-hosted-builder.js && node test-acceptance-toolkit.js && node test-connected-deploy.js",
     "test:deployed": "node verify-public-builder.js"
   },
   "engines": {

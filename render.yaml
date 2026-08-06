@@ -14,3 +14,15 @@ services:
         value: "12"
       - key: MAX_GENERATE_BODY_BYTES
         value: "12000000"
+      - key: CONNECTED_DEPLOYMENTS_ENABLED
+        value: "false"
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GITHUB_OWNER
+        sync: false
+      - key: RENDER_API_KEY
+        sync: false
+      - key: RENDER_OWNER_ID
+        sync: false
+      - key: RENDER_REGION
+        value: oregon

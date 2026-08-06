@@ -25,7 +25,7 @@
         <div class="hero-kicker"><span class="prompt-mark">builder@localhost:~$</span> initialize --new-project</div>
         <h1>COMMUNITY TERMINAL BUILDER</h1>
         <p class="tagline">CONFIGURE <span>//</span> GENERATE <span>//</span> DEPLOY</p>
-        <div class="version-strip">CTB CORE v1.3.0-A <span>//</span> CONFIG SCHEMA v1 <span>//</span> TERMINAL ENGINE v1.0.0</div>
+        <div class="version-strip">CTB CORE v1.3.0-B <span>//</span> CONFIG SCHEMA v1 <span>//</span> TERMINAL ENGINE v1.0.0</div>
         <div class="boot-log" aria-label="Builder boot status">
           <div><span class="ok">[ OK ]</span> Master template loaded</div>
           <div><span class="ok">[ OK ]</span> Unified single-port architecture online</div>
@@ -69,6 +69,27 @@
             <button id="verify-public-terminal" type="button">RUN PUBLIC ACCEPTANCE</button>
           </div>
           <pre id="deployment-result">[ WAIT ] Add the GitHub and Render URLs after deployment.</pre>
+        </section>
+
+        <section class="connected-dashboard" aria-label="Connected deployment prototype">
+          <div class="deployment-dashboard-head">
+            <div><span>CHAPTER 13B</span><strong>CONNECTED DEPLOYMENT PROTOTYPE</strong></div>
+            <b id="integration-state">CHECKING</b>
+          </div>
+          <p class="connected-note">GitHub and Render credentials remain on the builder server. They are never returned to or stored by the browser.</p>
+          <div class="deployment-grid">
+            <label><span>Repository name</span><input id="connected-repo-name" placeholder="jacket-community-terminal"></label>
+            <label><span>Render service name</span><input id="connected-service-name" placeholder="jacket-community-terminal"></label>
+          </div>
+          <div class="connected-options">
+            <label><input id="connected-private" type="checkbox"><span>Private GitHub repository</span></label>
+            <label><input id="connected-update" type="checkbox" checked><span>Update repository when it already exists</span></label>
+          </div>
+          <div class="deployment-dashboard-actions">
+            <button id="refresh-integrations" type="button">CHECK CONNECTIONS</button>
+            <button id="connected-deploy" type="button" disabled>PUBLISH &amp; DEPLOY</button>
+          </div>
+          <pre id="connected-result">[ WAIT ] Configure server-side GitHub and Render credentials to enable connected deployment.</pre>
         </section>
         <div class="workspace">
           <div class="form-stack">
@@ -183,7 +204,7 @@
           <button id="copy-render-guide" type="button">COPY RENDER GUIDE</button>
         </div>
         <pre id="deployment-command-preview">Select an action to copy deployment commands.</pre>
-        <p class="build-note">The builder prepares deployment-ready source code. Chapter 13A guides, records, and verifies deployment. Account authorization remains manual; Chapter 13B will prototype connected deployment.</p>
+        <p class="build-note">The builder prepares deployment-ready source code. Chapter 13A guides and verifies manual deployment. Chapter 13B adds an opt-in server-credential prototype for publishing to GitHub and creating or redeploying a Render service.</p>
       </div>
     </dialog>
   <script src="app.js"></script>

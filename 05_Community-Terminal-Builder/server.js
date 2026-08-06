@@ -3,8 +3,9 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { generate } = require("./generator");
+const { connectedDeploy, publicStatus: integrationStatus } = require("./connected-deploy");
 
-const VERSION = "1.3.0-A";
+const VERSION = "1.3.0-B";
 const PORT = Number(process.env.PORT || 3050);
 const HOST = process.env.HOST || "0.0.0.0";
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -38,7 +39,7 @@ function rateAllowed(req){
   if(prior.length>=RATE_LIMIT){requests.set(ip,prior);return false;}
   prior.push(now);requests.set(ip,prior);return true;
 }
-function builderStatus(){return {ok:true,product:"Community Terminal Builder",version:VERSION,environment:NODE_ENV,mode:NODE_ENV==="production"?"hosted":"local",storage:"browser-local",versions:{builder:"1.3.0-A",configSchema:1,terminalEngine:"1.0.0"},uptimeSeconds:Math.floor((Date.now()-startedAt)/1000),generation:{rateLimitPerMinute:RATE_LIMIT,maxRequestBytes:MAX_BODY},timestamp:new Date().toISOString()};}
+function builderStatus(){return {ok:true,product:"Community Terminal Builder",version:VERSION,environment:NODE_ENV,mode:NODE_ENV==="production"?"hosted":"local",storage:"browser-local",versions:{builder:"1.3.0-B",configSchema:1,terminalEngine:"1.0.0"},uptimeSeconds:Math.floor((Date.now()-startedAt)/1000),generation:{rateLimitPerMinute:RATE_LIMIT,maxRequestBytes:MAX_BODY},timestamp:new Date().toISOString()};}
 
 const server = http.createServer((req,res) => {
   const url = new URL(req.url,`http://${req.headers.host||"localhost"}`);
@@ -62,6 +63,15 @@ const server = http.createServer((req,res) => {
       .catch(error=>json(res,502,{ok:false,error:error.message,code:"MARKET_VALIDATION_UNAVAILABLE"}));
     return;
   }
+
+  if(req.method==="GET" && url.pathname==="/api/integrations") return json(res,200,{ok:true,...integrationStatus()});
+  if(req.method==="POST" && url.pathname==="/api/deploy-connected") {
+    if(!rateAllowed(req)) return json(res,429,{ok:false,error:"Connected deployment rate limit reached. Wait one minute and try again.",code:"RATE_LIMITED"});
+    let body="",tooLarge=false;
+    req.on("data",chunk=>{if(tooLarge)return;body+=chunk;if(Buffer.byteLength(body)>MAX_BODY){tooLarge=true;json(res,413,{ok:false,error:"Connected deployment request is too large.",code:"PAYLOAD_TOO_LARGE"});req.destroy();}});
+    req.on("end",async()=>{if(tooLarge)return;try{const result=await connectedDeploy(JSON.parse(body||"{}"));json(res,202,result);}catch(error){json(res,error.status&&error.status<500?400:503,{ok:false,error:error.message,code:"CONNECTED_DEPLOYMENT_FAILED"});}});
+    return;
+  }
   if(req.method === "POST" && url.pathname === "/api/verify-terminal") {
     let body="",tooLarge=false;
     req.on("data",chunk=>{body+=chunk;if(Buffer.byteLength(body)>20_000){tooLarge=true;json(res,413,{ok:false,error:"Verification request is too large."});req.destroy();}});
@@ -73,7 +83,7 @@ const server = http.createServer((req,res) => {
         if(target.protocol!=="https:"||target.username||target.password||target.port||target.hostname==="localhost"||/^\d+\.\d+\.\d+\.\d+$/.test(target.hostname))throw new Error("Use a public HTTPS terminal URL.");
         const base=`https://${target.hostname}${target.pathname.replace(/\/$/,"")}`;
         const expected=input.expected&&typeof input.expected==="object"?input.expected:{};
-        async function probe(pathname){const response=await fetch(`${base}${pathname}`,{redirect:"follow",signal:AbortSignal.timeout(45_000),headers:{accept:"application/json,text/html"}});const text=await response.text();let data=null;try{data=JSON.parse(text)}catch{}return {status:response.status,ok:response.ok,headers:Object.fromEntries(response.headers),text,data};}
+        async function probe(pathname,attempts=5){let last=null;for(let attempt=1;attempt<=attempts;attempt++){try{const response=await fetch(`${base}${pathname}`,{redirect:"follow",signal:AbortSignal.timeout(45_000),headers:{accept:"application/json,text/html"}});const text=await response.text();let data=null;try{data=JSON.parse(text)}catch{}const value={status:response.status,ok:response.ok,headers:Object.fromEntries(response.headers),text,data,attempt};const transient=(response.status===404&&value.headers["x-render-routing"]==="no-server")||[502,503,504].includes(response.status);if(!transient)return value;last=value;}catch(error){last={status:0,ok:false,headers:{},text:"",data:null,error:error.message,attempt};}if(attempt<attempts)await new Promise(resolve=>setTimeout(resolve,3000));}return last||{status:0,ok:false,headers:{},text:"",data:null};}
         const home=await probe("/");
         const health=await probe("/healthz");
         const statusResult=await probe("/status");

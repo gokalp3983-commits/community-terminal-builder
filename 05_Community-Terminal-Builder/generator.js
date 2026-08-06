@@ -4,7 +4,7 @@ const path = require("path");
 const { createZip } = require("./zip");
 const MASTER_ROOT = path.resolve(__dirname, "..");
 const MODULES = ["01_Landing-Page", "02_Whale-Activity-Tracker", "03_NFT-Collection-Terminal", "04_Meme-Intel"];
-const BUILDER_VERSION = "1.2.1";
+const BUILDER_VERSION = "1.3.0-B";
 const CONFIG_SCHEMA_VERSION = 1;
 const TERMINAL_ENGINE_VERSION = "1.0.0";
 
@@ -414,6 +414,6 @@ function generate(input) {
     entries.push({name:`${root}/${moduleName}/public${p.mascotPath}`,data:mascotData});
     if (!p.mascot) entries.push({name:`${root}/${moduleName}/public/favicon.png`,data:defaultFavicon});
   }
-  return { buffer:createZip(entries), filename:`${root}.zip`, project:p, entryCount:entries.length };
+  return { buffer:createZip(entries), filename:`${root}.zip`, project:p, entryCount:entries.length, root, entries };
 }
 module.exports = { generate, normalize };

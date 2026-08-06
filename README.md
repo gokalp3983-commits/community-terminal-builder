@@ -638,7 +638,7 @@ The next major chapter can prototype optional one-click GitHub + Render publishi
 
 ## Chapter 13A — Deployment Dashboard & Guided Handoff
 
-Chapter 13A advances the hosted builder to `CTB CORE v1.3.0-A` while keeping config schema v1 and terminal engine v1.0.0. The `A` suffix identifies the guided handoff stage; Chapter 13B is reserved for connected account deployment.
+Chapter 13A advances the hosted builder to `CTB CORE v1.3.0-B` while keeping config schema v1 and terminal engine v1.0.0. The `A` suffix identifies the guided handoff stage; Chapter 13B is reserved for connected account deployment.
 
 Chapter 13A turns the proven manual deployment process into a guided, persistent workflow without requesting GitHub or Render credentials. Each locally saved project can now record its GitHub repository URL, public Render URL, and latest public-acceptance result. The dashboard provides direct links to GitHub and Render and can run server-side acceptance checks against the deployed terminal, avoiding browser CORS restrictions.
 
@@ -660,3 +660,50 @@ CONNECTED ACCOUNT DEPLOYMENT          RESERVED FOR CHAPTER 13B
 ```
 
 Chapter 12 remains the completed and proven end-to-end baseline: local tests, public builder tests, hosted ZIP generation, public JACKET deployment, Render diagnostics, and JACKET/NVDA live-market tests completed successfully.
+
+
+### Chapter 13A — Deployment Dashboard & Guided Handoff
+
+Chapter 13A added browser-local deployment records for each saved project. It stores the GitHub repository URL, Render public URL and latest public acceptance result, and it can verify the Landing Page, security headers, `/healthz`, `/status` and enabled module routes through the builder backend. The JACKET deployment was loaded into the live builder and reached `PUBLIC ACCEPTED`. During testing, a sleeping free Render instance initially caused every route to fail. The verifier now retries temporary `404 x-render-routing: no-server`, `502`, `503`, `504`, timeout and fetch failures before producing a final result.
+
+### Chapter 13B — GitHub + Render Integration Prototype
+
+Chapter 13B adds an opt-in connected deployment path while preserving the Chapter 13A manual workflow.
+
+The prototype can:
+
+- generate the terminal source in memory;
+- create a GitHub repository or update an existing one;
+- publish the complete generated tree to the `main` branch using GitHub's Git Data API;
+- create a Render web service from that repository, or trigger a redeploy of an existing same-name service;
+- return repository, commit, service and public-URL metadata to the dashboard;
+- store only non-secret deployment metadata in browser-local storage.
+
+Security boundaries:
+
+- connected deployment is disabled by default;
+- GitHub and Render credentials exist only as server environment variables;
+- API keys are never returned to JavaScript or saved in browser storage;
+- the UI reports connection readiness without exposing secret values;
+- the existing ZIP export and manual deployment path remains available at all times;
+- this is an operator-connected prototype, not yet per-user OAuth or a multi-tenant account system.
+
+Required server variables:
+
+```text
+CONNECTED_DEPLOYMENTS_ENABLED=true
+GITHUB_TOKEN=<server-side GitHub token>
+GITHUB_OWNER=<optional GitHub username>
+RENDER_API_KEY=<server-side Render API key>
+RENDER_OWNER_ID=<Render workspace ID>
+RENDER_REGION=oregon
+```
+
+The live public builder should remain in disconnected mode until the operator intentionally configures these secrets in Render. A later account chapter can replace operator credentials with user-owned OAuth sessions, encrypted token storage, permission scopes, revocation and multi-user isolation.
+
+```text
+CHAPTER 13A GUIDED HANDOFF TESTS       COMPLETED SUCCESSFULLY
+CHAPTER 13A PUBLIC ACCEPTANCE          COMPLETED SUCCESSFULLY
+CHAPTER 13B OFFLINE PROVIDER MOCKS     COMPLETED SUCCESSFULLY
+CONNECTED DEPLOYMENT LIVE TEST         PENDING OPERATOR CREDENTIALS
+```

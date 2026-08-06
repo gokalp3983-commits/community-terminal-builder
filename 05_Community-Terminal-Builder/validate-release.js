@@ -30,7 +30,7 @@ try {
     check(cfg.project.name===item.name,`${item.name}: active generated profile`);
     check(cfg.features.nftTerminal===Boolean(item.nftContract&&item.features.nftTerminal),`${item.name}: NFT feature state`);
     const release=JSON.parse(fs.readFileSync(path.join(dir,"terminal-release.json"),"utf8"));
-    check(release.builder.version==="1.2.1"&&release.releaseStatus==="deployment-ready",`${item.name}: release provenance metadata`);
+    check(release.builder.version==="1.3.0-B"&&release.releaseStatus==="deployment-ready",`${item.name}: release provenance metadata`);
     check(Array.isArray(release.enabledModules)&&release.enabledModules.includes("landing"),`${item.name}: release module manifest`);
     for(const file of ["package.json","server.js","render.yaml",".env.example","README.md","validate-generated.js","verify-deployment.js","terminal-release.json","deployment-guide.txt","01_Landing-Page/public/favicon.png"]) check(fs.existsSync(path.join(dir,file)),`${item.name}: ${file}`);
     const server=fs.readFileSync(path.join(dir,"server.js"),"utf8");
