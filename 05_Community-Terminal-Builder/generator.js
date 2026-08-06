@@ -4,7 +4,7 @@ const path = require("path");
 const { createZip } = require("./zip");
 const MASTER_ROOT = path.resolve(__dirname, "..");
 const MODULES = ["01_Landing-Page", "02_Whale-Activity-Tracker", "03_NFT-Collection-Terminal", "04_Meme-Intel"];
-const BUILDER_VERSION = "1.2.0";
+const BUILDER_VERSION = "1.2.1";
 const CONFIG_SCHEMA_VERSION = 1;
 const TERMINAL_ENGINE_VERSION = "1.0.0";
 
@@ -148,13 +148,15 @@ function rootServer() {
     '  res.setHeader("Cross-Origin-Resource-Policy","same-origin");',
     '  next();',
     '});',
-    'app.get("/health",(req,res)=>res.status(200).json({ok:true,status:"healthy",project:config.project.name,version:config.project.version,uptimeSeconds:Math.floor(process.uptime()),timestamp:new Date().toISOString()}));',
+    'const healthHandler=(_req,res)=>res.status(200).json({ok:true,status:"healthy",project:config.project.name,version:config.project.version,uptimeSeconds:Math.floor(process.uptime()),timestamp:new Date().toISOString()});',
+    'app.get("/health",healthHandler);',
+    'app.get("/healthz",healthHandler);',
     'app.get("/status",(req,res)=>res.status(200).json({',
     '  ok:true,',
     '  project:{id:config.project.id,name:config.project.name,ticker:config.project.ticker,version:config.project.version},',
     '  server:{startedAt:startedAt.toISOString(),uptimeSeconds:Math.floor(process.uptime()),environment:process.env.NODE_ENV||"development",port},',
     '  modules:{landing:true,whales:Boolean(config.features.whaleTracker),intel:Boolean(config.features.memeIntel),nft:Boolean(config.features.nftTerminal),landingMarket:Boolean(config.features.liveMarket)},',
-    '  routes:{home:"/",health:"/health",status:"/status",whales:config.features.whaleTracker?"/whales":null,intel:config.features.memeIntel?"/intel":null,nft:config.features.nftTerminal?"/nft":null}',
+    '  routes:{home:"/",health:"/healthz",healthLegacy:"/health",status:"/status",whales:config.features.whaleTracker?"/whales":null,intel:config.features.memeIntel?"/intel":null,nft:config.features.nftTerminal?"/nft":null}',
     '}));',
     'if(config.features.whaleTracker) app.use("/whales",require("./02_Whale-Activity-Tracker/server"));',
     'if(config.features.nftTerminal) app.use("/nft",require("./03_NFT-Collection-Terminal/server"));',
@@ -167,7 +169,7 @@ function rootServer() {
     '});',
     'app.listen(port,"0.0.0.0",()=>{',
     '  console.log(`\n[ READY ] ${config.project.name} Community Terminal: http://localhost:${port}`);',
-    '  console.log(`[ READY ] Health: http://localhost:${port}/health`);',
+    '  console.log(`[ READY ] Health: http://localhost:${port}/healthz`);',
     '  console.log(`[ READY ] Status: http://localhost:${port}/status`);',
     '  if(config.features.whaleTracker) console.log(`[ READY ] Whale Tracker: http://localhost:${port}/whales`);',
     '  if(config.features.memeIntel) console.log(`[ READY ] Meme Intel: http://localhost:${port}/intel`);',
@@ -187,7 +189,7 @@ function renderYaml(p) {
     plan: free
     buildCommand: npm install
     startCommand: npm start
-    healthCheckPath: /health
+    healthCheckPath: /healthz
     autoDeploy: true
     envVars:
       - key: NODE_ENV
@@ -234,6 +236,7 @@ function generatedValidator(p) {
     'pass("landing favicon",fs.existsSync(path.join("01_Landing-Page","public","favicon.png"))||fs.readFileSync(path.join("01_Landing-Page","public","index.html"),"utf8").includes("assets/"));',
     'const source=fs.readFileSync("server.js","utf8");',
     `pass("health route",source.includes('app.get("/health"'));`,
+    `pass("healthz route",source.includes('app.get("/healthz"'));`,
     `pass("status route",source.includes('app.get("/status"'));`,
     'execFileSync(process.execPath,["--check","server.js"]);',
     'execFileSync(process.execPath,["--check","verify-deployment.js"]);',
@@ -255,11 +258,12 @@ function generatedDeploymentVerifier(p) {
     'const timeoutMs=Number(process.env.ACCEPTANCE_TIMEOUT_MS||30000);',
     'function pass(x){console.log(`[ PASS ] ${x}`)}',
     'function check(ok,x){if(!ok)throw new Error(x);pass(x)}',
-    'async function get(path){const c=new AbortController();const t=setTimeout(()=>c.abort(),timeoutMs);try{return await fetch(`${base}${path}`,{redirect:"follow",signal:c.signal})}finally{clearTimeout(t)}}',
+    'const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));',
+    'async function get(path,attempts=5){let lastError;for(let attempt=1;attempt<=attempts;attempt+=1){const c=new AbortController();const t=setTimeout(()=>c.abort(),timeoutMs);try{const response=await fetch(`${base}${path}`,{redirect:"follow",signal:c.signal});const transient=(response.status===404&&response.headers.get("x-render-routing")==="no-server")||[502,503,504].includes(response.status);if(!transient)return response;lastError=new Error(`${path} returned HTTP ${response.status}`)}catch(error){lastError=error}finally{clearTimeout(t)}if(attempt<attempts){console.log(`[ RETRY ] ${path} attempt ${attempt}/${attempts}`);await sleep(3000)}}throw lastError}',
     '(async()=>{',
     ' console.log(`[ ACCEPTANCE ] Public terminal: ${base}`);',
     ' const home=await get("/");check(home.status===200,"Landing Page returned HTTP 200");const html=await home.text();check(html.length>100,"Landing Page returned content");check(home.headers.get("x-content-type-options")==="nosniff","Security headers present");',
-    ' const health=await get("/health");check(health.status===200,"/health returned HTTP 200");const h=await health.json();check(h.ok===true&&h.status==="healthy","/health is healthy");',
+    ' const health=await get("/healthz");check(health.status===200,"/healthz returned HTTP 200");const h=await health.json();check(h.ok===true&&h.status==="healthy","/healthz is healthy");',
     ' const status=await get("/status");check(status.status===200,"/status returned HTTP 200");const s=await status.json();check(s.ok===true,"/status returned ok:true");check(s.modules.whales===expected.whales&&s.modules.intel===expected.intel&&s.modules.nft===expected.nft,"Mounted modules match generated profile");',
     ' for(const [name,on] of Object.entries(expected)){if(!on)continue;const r=await get(`/${name}`);check(r.status===200,`/${name} returned HTTP 200`)}',
     ' console.log("\\n[ ACCEPTED ] Public terminal deployment passed Chapter 11 checks.");',
@@ -277,7 +281,7 @@ function releaseMetadata(p) {
     releaseStatus: "deployment-ready",
     chain: { type:"EVM", dexScreenerChainId:p.dexChain, blockscoutApiBase:p.blockscout },
     enabledModules: ["landing", ...(p.features.whaleTracker?["whales"]:[]), ...(p.features.memeIntel?["intel"]:[]), ...(p.features.nftTerminal?["nft"]:[])],
-    routes: { home:"/", health:"/health", status:"/status", whales:p.features.whaleTracker?"/whales":null, intel:p.features.memeIntel?"/intel":null, nft:p.features.nftTerminal?"/nft":null },
+    routes: { home:"/", health:"/healthz", healthLegacy:"/health", status:"/status", whales:p.features.whaleTracker?"/whales":null, intel:p.features.memeIntel?"/intel":null, nft:p.features.nftTerminal?"/nft":null },
     deployment: { provider:"Render Blueprint compatible", blueprint:"render.yaml", publicAcceptanceCommand:"npm run test:deployed -- https://YOUR-TERMINAL.onrender.com" }
   }, null, 2) + "\n";
 }
@@ -298,7 +302,7 @@ npm install
 npm test
 npm start
 
-Open http://localhost:3000 and verify /health and /status.
+Open http://localhost:3000 and verify /healthz and /status.
 
 2. GITHUB
 
@@ -311,7 +315,7 @@ git push -u origin main
 
 3. RENDER
 
-Create a new Blueprint from the GitHub repository. Render reads render.yaml, installs dependencies, starts the service, and checks /health.
+Create a new Blueprint from the GitHub repository. Render reads render.yaml, installs dependencies, starts the service, and checks /healthz.
 
 4. PUBLIC ACCEPTANCE
 
@@ -359,7 +363,8 @@ npm test
 - Whale Tracker: /whales (${p.features.whaleTracker ? "enabled" : "disabled"})
 - Meme Intel: /intel (${p.features.memeIntel ? "enabled" : "disabled"})
 - NFT Terminal: /nft (${p.features.nftTerminal ? "enabled" : "disabled"})
-- Health check: /health
+- Render health check: /healthz
+- Legacy health alias: /health
 - Runtime status: /status
 
 All enabled pages share one Node server and one port.
@@ -369,7 +374,7 @@ All enabled pages share one Node server and one port.
 1. Extract this folder and test it locally.
 2. Create a GitHub repository and push the complete folder.
 3. In Render, create a new **Blueprint** and select the repository.
-4. Render reads \`render.yaml\`, installs dependencies, starts the server, and checks \`/health\`.
+4. Render reads \`render.yaml\`, installs dependencies, starts the server, and checks \`/healthz\`.
 5. After deployment, open your Render URL. Internal routes remain relative, so they work on the public domain automatically.
 
 The generated \`.env.example\` documents optional local environment variables. Do not commit private secrets to the project.
@@ -382,7 +387,7 @@ After deployment, verify the real public URL from this root folder:
 npm run test:deployed -- https://YOUR-TERMINAL.onrender.com
 \`\`\`
 
-This checks the Landing Page, security headers, \`/health\`, \`/status\`, and every enabled module route. Free hosting may cold-start, so the acceptance tool allows a 30-second response window by default.
+This checks the Landing Page, security headers, \`/healthz\`, \`/status\`, and every enabled module route. Free hosting may cold-start, so the acceptance tool allows a 30-second response window by default.
 `; }
 function generate(input) {
   const p = normalize(input); const root = `${p.name.replace(/[^A-Z0-9]+/g, "_")}_Community_Terminal`;

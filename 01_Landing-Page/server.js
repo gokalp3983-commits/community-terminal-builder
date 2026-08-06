@@ -58,12 +58,20 @@ async function getProjectMarket() {
   const selected = pairs
     .filter((pair) => {
       const baseAddress = String(pair?.baseToken?.address || "").toLowerCase();
-      const quoteSymbol = String(pair?.quoteToken?.symbol || "").toUpperCase();
-      return baseAddress === tokenLower && ["WETH", "ETH"].includes(quoteSymbol) && Number(pair?.priceUsd) > 0 && Number(pair?.priceNative) > 0;
+      const quoteAddress = String(pair?.quoteToken?.address || "").toLowerCase();
+      const tokenMatches = baseAddress === tokenLower || quoteAddress === tokenLower;
+      const liquidityUsd = Number(pair?.liquidity?.usd || 0);
+      const priceUsd = Number(pair?.priceUsd || 0);
+      return tokenMatches && liquidityUsd > 0 && priceUsd > 0;
     })
-    .sort((a, b) => Number(b?.liquidity?.usd || 0) - Number(a?.liquidity?.usd || 0))[0];
+    .sort((a, b) => {
+      const aBase = String(a?.baseToken?.address || "").toLowerCase() === tokenLower ? 1 : 0;
+      const bBase = String(b?.baseToken?.address || "").toLowerCase() === tokenLower ? 1 : 0;
+      if (aBase !== bBase) return bBase - aBase;
+      return Number(b?.liquidity?.usd || 0) - Number(a?.liquidity?.usd || 0);
+    })[0];
 
-  if (!selected) throw new Error(`No liquid ${config.project.name}/WETH pair found`);
+  if (!selected) throw new Error(`No liquid ${config.project.name} pair found`);
 
   let holdersCount = null;
   try {
@@ -77,7 +85,9 @@ async function getProjectMarket() {
   priceCache = {
     fetchedAt: Date.now(),
     priceUsd: Number(selected.priceUsd),
-    priceEth: Number(selected.priceNative),
+    priceQuote: Number(selected.priceNative),
+    quoteSymbol: String(selected?.quoteToken?.symbol || "QUOTE").toUpperCase(),
+    pairLabel: `${selected?.baseToken?.symbol || config.project.name}/${selected?.quoteToken?.symbol || "QUOTE"}`,
     marketCapUsd: Number(selected.marketCap || selected.fdv || 0),
     volume24hUsd: Number(selected?.volume?.h24 || 0),
     holdersCount,
@@ -92,7 +102,12 @@ app.get("/api/config", (_req, res) => {
     links: config.links,
     features: config.features,
     modules: config.modules,
-    market: { refreshMs: config.market.refreshMs },
+    contracts: config.contracts,
+    market: {
+      refreshMs: config.market.refreshMs,
+      dexScreenerChainId: config.market.dexScreenerChainId,
+      blockscoutApiBase: config.market.blockscoutApiBase,
+    },
   });
 });
 
@@ -103,7 +118,9 @@ app.get("/api/price", async (_req, res) => {
     res.json({
       available: true,
       priceUsd: formatPriceUsd(market.priceUsd),
-      priceEth: formatPriceEth(market.priceEth),
+      priceQuote: formatPriceEth(market.priceQuote),
+      quoteSymbol: market.quoteSymbol,
+      pairLabel: market.pairLabel,
       marketCapDisplay: formatCompactUsd(market.marketCapUsd),
       holdersDisplay: Number.isFinite(market.holdersCount) ? market.holdersCount.toLocaleString("en-US") : "NO HOLDER DATA",
       volume24hDisplay: formatCompactUsd(market.volume24hUsd) || "NO VOLUME DATA",

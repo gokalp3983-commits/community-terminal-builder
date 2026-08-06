@@ -23,11 +23,23 @@ function nowIso(){return new Date().toISOString()}
 function readProjects(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}")||{}}catch{return {}}}
 function writeProjects(projects){localStorage.setItem(STORAGE_KEY,JSON.stringify(projects))}
 
+async function fileDataUrl(file){return new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(String(r.result));r.onerror=no;r.readAsDataURL(file)})}
+async function optimizeMascot(file){
+  const original=await fileDataUrl(file);
+  if(file.type==="image/svg+xml")return {dataBase64:original.split(",")[1],extension:"svg",name:file.name,optimized:false};
+  try{
+    const image=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=original});
+    const max=384;const scale=Math.min(1,max/Math.max(image.naturalWidth||1,image.naturalHeight||1));
+    const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+    const ctx=canvas.getContext("2d",{alpha:true});ctx.drawImage(image,0,0,canvas.width,canvas.height);
+    const optimized=canvas.toDataURL("image/webp",0.82);
+    return {dataBase64:optimized.split(",")[1],extension:"webp",name:file.name,optimized:true,width:canvas.width,height:canvas.height};
+  }catch{return {dataBase64:original.split(",")[1],extension:(file.name.split(".").pop()||"png").toLowerCase(),name:file.name,optimized:false}}
+}
 async function mascotPayload(){
   const f=document.querySelector("#mascot").files[0];
   if(!f)return persistedMascot;
-  const data=await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(",")[1]);r.onerror=no;r.readAsDataURL(f)});
-  return {dataBase64:data,extension:(f.name.split(".").pop()||"png").toLowerCase(),name:f.name};
+  return optimizeMascot(f);
 }
 
 async function payload(){return {
@@ -125,7 +137,7 @@ async function saveProject({duplicate=false}={}){
 }
 function loadProject(id){const item=readProjects()[id];if(!item)return;activeProjectId=id;applyPayload(item.data);savedProjectsSelect.value=id;localStorage.setItem(SETTINGS_KEY,JSON.stringify({activeProjectId:id}));status.textContent=`[ LOADED ] ${item.name}`}
 function deleteProject(){if(!activeProjectId){status.textContent="[ WARN ] No saved project is active.";return}const projects=readProjects();const item=projects[activeProjectId];if(!item)return;const answer=prompt(`Type ${item.name} to delete this saved project:`);if(answer!==item.name){status.textContent="[ SKIP ] Project deletion cancelled.";return}delete projects[activeProjectId];writeProjects(projects);resetForm();refreshProjectList();status.textContent=`[ DELETED ] ${item.name} removed from this browser.`}
-async function exportProject(){const data=await payload();const bundle={schemaVersion:SCHEMA_VERSION,builderVersion:"1.2.0",terminalEngineVersion:"1.0.0",exportedAt:nowIso(),project:data};const blob=new Blob([JSON.stringify(bundle,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${slugify(data.projectName)||"community-terminal"}-config.json`;a.click();URL.revokeObjectURL(a.href);status.textContent="[ EXPORTED ] Project configuration downloaded."}
+async function exportProject(){const data=await payload();const bundle={schemaVersion:SCHEMA_VERSION,builderVersion:"1.2.1",terminalEngineVersion:"1.0.0",exportedAt:nowIso(),project:data};const blob=new Blob([JSON.stringify(bundle,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${slugify(data.projectName)||"community-terminal"}-config.json`;a.click();URL.revokeObjectURL(a.href);status.textContent="[ EXPORTED ] Project configuration downloaded."}
 function importProject(bundle){if(!bundle||bundle.schemaVersion!==SCHEMA_VERSION||!bundle.project)throw new Error("Unsupported or invalid project configuration.");activeProjectId="";applyPayload(bundle.project);status.textContent="[ IMPORTED ] Configuration loaded. Press SAVE to keep it locally."}
 function noteGenerated(){if(!activeProjectId)return;const projects=readProjects();if(projects[activeProjectId]){projects[activeProjectId].lastGeneratedAt=nowIso();projects[activeProjectId].updatedAt=nowIso();writeProjects(projects);refreshProjectList();savedProjectsSelect.value=activeProjectId}}
 

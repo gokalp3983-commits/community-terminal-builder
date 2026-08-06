@@ -131,7 +131,7 @@ async function refreshMarketWidget() {
   setMarketStatus(hasMarketData ? "REFRESHING" : "CONNECTING");
   try {
     const market = await getLiveMarket();
-    marketPrice.textContent = `$${market.priceUsd} USD / ${market.priceEth} ETH`;
+    marketPrice.textContent = `$${market.priceUsd} USD / ${market.priceQuote} ${market.quoteSymbol || "QUOTE"}`;
     marketCap.textContent = market.marketCapDisplay || "NO MARKET CAP DATA";
     marketHolders.textContent = market.holdersDisplay || "NO HOLDER DATA";
     marketVolume.textContent = market.volume24hDisplay || "NO VOLUME DATA";

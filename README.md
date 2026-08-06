@@ -1,7 +1,7 @@
 # Community Terminal Builder — Chapters 1–12
 
 **Release:** Chapter 12 — Deployment Assistant & Release Provenance  
-**Builder version:** 1.2.0  
+**Builder version:** 1.2.1  
 **Status:** Chapter 12 is live at https://community-terminal-builder.onrender.com; offline and public builder regression suites passed; generated-terminal public acceptance remains in progress  
 **Built by:** Gokalp — X: [@Gokalp8339](https://x.com/Gokalp8339)
 
@@ -570,7 +570,7 @@ deployment-guide.txt
 The builder interface now displays:
 
 ```text
-CTB CORE v1.2.0 // CONFIG SCHEMA v1 // TERMINAL ENGINE v1.0.0
+CTB CORE v1.2.1 // CONFIG SCHEMA v1 // TERMINAL ENGINE v1.0.0
 ```
 
 Exported browser project JSON also records the builder and terminal-engine versions. These identifiers separate three concepts that will evolve independently:
@@ -607,8 +607,30 @@ SECURITY HEADERS               PASS
 HEALTH / STATUS ROUTES         PASS
 ```
 
-This proves that the Deployment Assistant and release-provenance changes did not regress the already accepted hosted-builder behavior. The remaining end-to-end milestone is to deploy one generated terminal publicly and run that terminal's own `test:deployed` command.
+This proves that the Deployment Assistant and release-provenance changes did not regress the already accepted hosted-builder behavior. The generated JACKET terminal was then deployed publicly at:
+
+```text
+https://jacket-community-terminal.onrender.com
+```
+
+Its public acceptance suite passed the Landing Page, security headers, `/healthz`, `/status`, `/whales`, `/intel`, and generated-module manifest checks. The same generated terminal was also validated locally, including live `JACKET/NVDA` market data.
+
+### Chapter 12 real-world fixes
+
+The JACKET deployment exposed several issues that were fixed in the Chapter 12 codebase and generator templates:
+
+- Render intermittently returned `x-render-routing: no-server` for `/health`; generated projects now preserve `/health` as a compatibility alias, use `/healthz` for Render health checks, and public verification retries transient routing failures.
+- the Landing Page `/api/config` response omitted `contracts` and chain fields; generated pages now receive the token contract, DexScreener chain ID, and Blockscout API base.
+- the Landing Page retained an old WETH/ETH-only pair filter; it now chooses the strongest valid liquid pair and reports the real quote symbol, including `JACKET/NVDA`.
+- uploaded mascot images could be unnecessarily large and slow on free hosting; raster uploads are now resized to a maximum of 384 pixels and converted to optimized WebP before generation. SVG uploads remain unchanged.
+
+```text
+LOCAL TESTS                         COMPLETED SUCCESSFULLY
+RENDER DEPLOYMENT TESTS             COMPLETED SUCCESSFULLY
+PUBLIC GENERATED TERMINAL TESTS     COMPLETED SUCCESSFULLY
+CHAPTER 12 END-TO-END ACCEPTANCE    COMPLETE
+```
 
 ## Recommended Chapter 13
 
-The next major chapter can prototype optional one-click GitHub + Render publishing. It should begin only after Chapter 12 is deployed and the generated JACKET terminal completes its own public acceptance. The integration must use explicit OAuth permissions, minimal scopes, safe token handling, visible deployment progress and failure recovery.
+The next major chapter can prototype optional one-click GitHub + Render publishing. Chapter 12 has now completed local, hosted-builder, generated-terminal, and public Render acceptance successfully. The integration must use explicit OAuth permissions, minimal scopes, safe token handling, visible deployment progress and failure recovery.

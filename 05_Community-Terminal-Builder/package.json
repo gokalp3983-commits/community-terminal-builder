@@ -1,6 +1,6 @@
 {
   "name": "community-terminal-builder",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "description": "Hosted-ready generator for configurable community terminal applications.",
   "main": "server.js",

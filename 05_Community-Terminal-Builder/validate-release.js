@@ -30,20 +30,28 @@ try {
     check(cfg.project.name===item.name,`${item.name}: active generated profile`);
     check(cfg.features.nftTerminal===Boolean(item.nftContract&&item.features.nftTerminal),`${item.name}: NFT feature state`);
     const release=JSON.parse(fs.readFileSync(path.join(dir,"terminal-release.json"),"utf8"));
-    check(release.builder.version==="1.2.0"&&release.releaseStatus==="deployment-ready",`${item.name}: release provenance metadata`);
+    check(release.builder.version==="1.2.1"&&release.releaseStatus==="deployment-ready",`${item.name}: release provenance metadata`);
     check(Array.isArray(release.enabledModules)&&release.enabledModules.includes("landing"),`${item.name}: release module manifest`);
     for(const file of ["package.json","server.js","render.yaml",".env.example","README.md","validate-generated.js","verify-deployment.js","terminal-release.json","deployment-guide.txt","01_Landing-Page/public/favicon.png"]) check(fs.existsSync(path.join(dir,file)),`${item.name}: ${file}`);
     const server=fs.readFileSync(path.join(dir,"server.js"),"utf8");
-    for(const route of ["/health","/status"]){check(server.includes(`app.get(\"${route}\"`),`${item.name}: ${route} diagnostic route`);routeChecks++;}
+    for(const route of ["/health","/healthz","/status"]){check(server.includes(`app.get(\"${route}\"`),`${item.name}: ${route} diagnostic route`);routeChecks++;}
     check(server.includes('if(config.features.whaleTracker)'),`${item.name}: feature-aware whale mount`);
     check(server.includes('if(config.features.memeIntel)'),`${item.name}: feature-aware intel mount`);
     check(server.includes('if(config.features.nftTerminal)'),`${item.name}: feature-aware NFT mount`);
     execFileSync(process.execPath,["validate-generated.js","verify-deployment.js"],{cwd:dir,stdio:"pipe"});
+    const landingServer=fs.readFileSync(path.join(dir,"01_Landing-Page/server.js"),"utf8");
+    check(landingServer.includes("contracts: config.contracts")&&landingServer.includes("dexScreenerChainId: config.market.dexScreenerChainId"),`${item.name}: landing receives contract and chain config`);
+    check(!landingServer.includes('["WETH", "ETH"].includes(quoteSymbol)')&&landingServer.includes("quoteSymbol"),`${item.name}: landing market selector accepts dynamic quote assets`);
     const landing=fs.readFileSync(path.join(dir,"01_Landing-Page/public/script.js"),"utf8");
     const landingHtml=fs.readFileSync(path.join(dir,"01_Landing-Page/public/index.html"),"utf8");
     check(landingHtml.includes('rel="icon"'),`${item.name}: generated favicon link`);
     check(landingHtml.includes('networkName')&&landingHtml.includes('contractLink'),`${item.name}: chain and contract identity`);
     check(landing.includes('PAIR NOT FOUND') || landing.includes('reason'),`${item.name}: explicit market error states`);
+    check(landing.includes('market.quoteSymbol'),`${item.name}: landing displays dynamic quote symbol`);
+    const render=fs.readFileSync(path.join(dir,"render.yaml"),"utf8");
+    check(render.includes("healthCheckPath: /healthz"),`${item.name}: Render uses healthz`);
+    const verifier=fs.readFileSync(path.join(dir,"verify-deployment.js"),"utf8");
+    check(verifier.includes('get("/healthz")')&&verifier.includes("[ RETRY ]"),`${item.name}: public verifier uses healthz with retries`);
     if (item.features.whaleTracker) {
       const whaleServer = fs.readFileSync(path.join(dir,"02_Whale-Activity-Tracker/server.js"),"utf8");
       check(!whaleServer.includes('["WETH", "ETH"].includes(quote)'),`${item.name}: whale market selector accepts non-WETH quotes`);
