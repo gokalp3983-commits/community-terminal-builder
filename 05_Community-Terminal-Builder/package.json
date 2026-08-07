@@ -6,8 +6,12 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node validate-release.js && node test-hosted-builder.js && node test-acceptance-toolkit.js && node test-connected-deploy.js",
-    "test:deployed": "node verify-public-builder.js"
+    "test": "node validate-release.js && node test-hosted-builder.js && node test-acceptance-toolkit.js && node test-connected-deploy.js && node test-release-readiness.js && node test-build-fingerprint.js && node test-protected-release.js && node test-provider-validation.js",
+    "test:release-readiness": "node test-release-readiness.js",
+    "test:protected-release": "node test-protected-release.js",
+    "test:deployed": "node verify-public-builder.js",
+    "test:build-fingerprint": "node test-build-fingerprint.js",
+    "test:provider-validation": "node test-provider-validation.js"
   },
   "engines": {
     "node": ">=18"

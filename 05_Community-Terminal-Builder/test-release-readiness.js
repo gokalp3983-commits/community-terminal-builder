@@ -1,0 +1,15 @@
+"use strict";
+const {releaseReadiness}=require("./release-readiness");
+const {buildFingerprint}=require("./build-fingerprint");
+const project={projectName:"TEST",ticker:"TST",tokenContract:"0x1111111111111111111111111111111111111111",features:{whaleTracker:false,memeIntel:false,nftTerminal:false,liveMarket:false}};
+const baseEnv={CONNECTED_DEPLOYMENTS_ENABLED:"true",GITHUB_TOKEN:"gh-test",GITHUB_OWNER:"tester",RENDER_API_KEY:"rnd-test",RENDER_OWNER_ID:"tea-test",RENDER_REGION:"oregon",RELEASE_ACTIONS_ENABLED:"false"};
+const fp=buildFingerprint(project);
+const ready=releaseReadiness({project,repoName:"test-community-terminal",serviceName:"test-community-terminal",generatedFingerprint:fp,publicAcceptance:true},{env:baseEnv});
+if(!ready.ready||ready.canRelease||ready.releaseControlEnabled||ready.secretsExposed)throw new Error("14A readiness/policy lock failed");
+const missing=releaseReadiness({project,generatedFingerprint:"",publicAcceptance:false},{env:{...baseEnv,GITHUB_TOKEN:""}});
+if(missing.ready||!missing.checks.some(x=>x.id==="build"&&!x.ready)||!missing.checks.some(x=>x.id==="github"&&!x.ready)||!missing.checks.some(x=>x.id==="acceptance"&&!x.ready))throw new Error("14A blocked prerequisites failed");
+const enabled=releaseReadiness({project,generatedFingerprint:fp,publicAcceptance:true},{env:{...baseEnv,RELEASE_ACTIONS_ENABLED:"true"}});
+if(!enabled.ready||!enabled.canRelease)throw new Error("14A future release gate test failed");
+console.log("[ PASS ] Chapter 14A release readiness aggregation");
+console.log("[ PASS ] Chapter 14A release policy lock");
+console.log("[ PASS ] Chapter 14A secret-safe public status");

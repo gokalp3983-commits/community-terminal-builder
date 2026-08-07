@@ -1,0 +1,21 @@
+"use strict";
+const {buildFingerprint}=require("./build-fingerprint");
+const {releaseReadiness}=require("./release-readiness");
+const project={projectName:"TEST",ticker:"TST",tokenContract:"0x1111111111111111111111111111111111111111",features:{whaleTracker:false,memeIntel:false,nftTerminal:false,liveMarket:false}};
+const fp=buildFingerprint(project);
+if(fp!==buildFingerprint({...project}))throw new Error("Build fingerprint is not deterministic");
+const env={CONNECTED_DEPLOYMENTS_ENABLED:"true",RELEASE_ACTIONS_ENABLED:"true",GITHUB_TOKEN:"x",RENDER_API_KEY:"y",RENDER_OWNER_ID:"tea-test"};
+const ready=releaseReadiness({project,generatedFingerprint:fp,publicAcceptance:true,repoName:"test-community-terminal",serviceName:"test-community-terminal"},{env});
+if(!ready.checks.find(x=>x.id==="build")?.ready)throw new Error("Matching persisted build fingerprint was not accepted");
+const stale=releaseReadiness({project:{...project,ticker:"NEW"},generatedFingerprint:fp,publicAcceptance:true,repoName:"test-community-terminal",serviceName:"test-community-terminal"},{env});
+if(stale.checks.find(x=>x.id==="build")?.ready)throw new Error("Stale persisted build fingerprint was accepted");
+console.log("[ PASS ] Chapter 14B persisted generated-build fingerprint");
+console.log("[ PASS ] Chapter 14B stale-build invalidation");
+const fs=require("fs");
+const appSource=fs.readFileSync(require("path").join(__dirname,"public","app.js"),"utf8");
+if(!appSource.includes('generatedFingerprint:existing?.generatedFingerprint||""'))throw new Error("Saved-project updates do not preserve generatedFingerprint");
+console.log("[ PASS ] Chapter 14B saved-project fingerprint preservation");
+
+if(!appSource.includes('project auto-saved'))throw new Error("Successful generation does not report automatic project saving");
+if(!appSource.includes('activeProjectId||slugify(project.projectName)'))throw new Error("Generation auto-save does not persist an unsaved project");
+console.log("[ PASS ] Chapter 14C generation auto-save");

@@ -1,5 +1,44 @@
 # Community Terminal Builder
 
+## Chapter 14B — Protected Publish Action
+
+- Adds a two-step protected release flow: `PREPARE RELEASE` followed by an exact confirmation phrase and `CONFIRM PUBLISH & DEPLOY`.
+- A prepared release receives a server-generated, one-time authorization that expires after five minutes.
+- The authorization is bound to the exact project, repository name, Render service name, visibility, and release action. Any target change invalidates it.
+- A release authorization can be consumed only once; replay attempts are rejected.
+- Direct calls to the connected deployment engine without a valid prepared authorization are rejected before GitHub or Render mutations begin.
+- Release intent is explicit: `CREATE NEW RELEASE` refuses existing GitHub/Render targets, while `UPDATE EXISTING RELEASE` refuses missing targets.
+- Existing Chapter 14A readiness checks remain mandatory. `CONNECTED_DEPLOYMENTS_ENABLED=true` and `RELEASE_ACTIONS_ENABLED=true` are both required server-side.
+- GitHub and Render credentials remain server-side and are never returned to or stored by the browser.
+- The manual ZIP / GitHub / Render handoff remains available.
+
+### Chapter 14B release sequence
+
+```text
+CHECK CONNECTIONS
+      ↓
+CHECK RELEASE READINESS
+      ↓
+PREPARE RELEASE
+      ↓
+TYPE EXACT CONFIRMATION PHRASE
+      ↓
+CONFIRM PUBLISH & DEPLOY
+      ↓
+ONE-TIME AUTHORIZATION CONSUMED
+```
+
+**Default safety state:** protected release actions remain disabled until the builder operator explicitly enables both connected deployment and release actions on the server.
+
+## Chapter 14A — Secure Release Readiness
+
+- Adds a server-evaluated release-readiness endpoint and product-facing Secure Release Control panel.
+- Aggregates project validation, generated-build state, repository target, GitHub/Render server configuration, public acceptance, and secret-protection status.
+- Adds a separate `RELEASE_ACTIONS_ENABLED` server policy lock. It defaults to `false`.
+- Connected publish actions now require both connected deployments and release actions to be explicitly enabled server-side.
+- Browser clients receive only safe readiness booleans/status details; GitHub and Render secrets remain server-side.
+- Chapter 14A does not enable production publishing by default.
+
 ## v1.3.2-b panel alignment update
 
 - Matched the Deployment Dashboard and Connected Deployment panel widths.
@@ -723,3 +762,142 @@ CHAPTER 13A PUBLIC ACCEPTANCE          COMPLETED SUCCESSFULLY
 CHAPTER 13B OFFLINE PROVIDER MOCKS     COMPLETED SUCCESSFULLY
 CONNECTED DEPLOYMENT LIVE TEST         PENDING OPERATOR CREDENTIALS
 ```
+
+## Chapter 14 — Secure Deployment Control & Release Workflow
+
+Chapter 14 turns the Chapter 13B connected-deployment prototype into a guarded release system. The deployment provider credentials remain server-side and the connected release path remains opt-in.
+
+### Chapter 14A — Release Readiness Layer
+
+Chapter 14A introduced a server-evaluated release-readiness model. A release candidate is evaluated across project validity, generated-build state, repository/service target, GitHub connectivity, Render connectivity, latest saved public acceptance, and secret-protection status. The release policy is a separate server-side gate controlled by `RELEASE_ACTIONS_ENABLED`; a technically ready project is still blocked from release while that policy is off.
+
+The JACKET acceptance exercise confirmed the intended separation:
+
+```text
+PROJECT CONFIGURATION          READY
+GENERATED BUILD                READY
+REPOSITORY TARGET              READY
+PUBLIC ACCEPTANCE              READY
+SERVER CREDENTIALS PROTECTED   READY
+GITHUB / RENDER CONNECTIONS    READY WHEN OPERATOR-CONFIGURED
+RELEASE POLICY                 INDEPENDENT SERVER-SIDE LOCK
+SECRETS EXPOSED TO BROWSER     NO
+```
+
+### Chapter 14B — Protected Publish Action
+
+Chapter 14B adds a deliberate two-stage protected release flow:
+
+```text
+CHECK RELEASE READINESS
+        ↓
+PREPARE RELEASE
+        ↓
+ONE-TIME AUTHORIZATION (5 MINUTES)
+        ↓
+EXACT HUMAN CONFIRMATION PHRASE
+        ↓
+CONFIRM PUBLISH & DEPLOY
+```
+
+A prepared authorization is tied to the exact project, GitHub repository, Render service, repository visibility, and CREATE/UPDATE release mode. It is one-time, expires after five minutes, and becomes unusable when the target changes. The browser receives only non-secret authorization metadata; GitHub and Render credentials remain on the Builder server.
+
+Chapter 14B local acceptance exposed and fixed an Enter-key form bug: pressing Enter after an incorrect confirmation phrase previously fell through to the Builder's main generation form and downloaded another terminal ZIP. Enter is now intercepted inside the release-confirmation field and cannot generate or deploy anything.
+
+The finalization patch adds a three-attempt confirmation guard. An incorrect phrase submitted with Enter produces an in-app warning with the remaining attempts. After three failed attempts, the prepared release authorization is invalidated server-side and the user must run `PREPARE RELEASE` again. An exact phrase enables the final publish/deploy control but still does not publish until the user explicitly clicks it.
+
+### Persistent generated-build fingerprint
+
+During Chapter 14B testing, loading a previously saved project caused `Generated build` to return to `BLOCKED` after a Builder restart even when the project had not changed. The Builder had been treating generation as an in-memory session event.
+
+The finalization patch now persists a server-generated SHA-256 build fingerprint with the saved project when ZIP generation succeeds. Release Readiness compares that fingerprint against the current project configuration:
+
+```text
+UNCHANGED SAVED PROJECT + MATCHING FINGERPRINT   GENERATED BUILD = READY
+PROJECT MODIFIED AFTER GENERATION                GENERATED BUILD = STALE / BLOCKED
+LEGACY PROJECT WITHOUT FINGERPRINT               REGENERATE ONCE
+```
+
+This keeps release state conservative without requiring users to regenerate an identical package after every Builder restart.
+
+During final browser acceptance, the first persistence implementation exposed one more edge case: pressing `SAVE` after generation rebuilt the saved-project record but preserved `lastGeneratedAt` only, accidentally dropping `generatedFingerprint`. The result was `Generated build = BLOCKED` after restart even though the unchanged project had been generated successfully. The final persistence hotfix now preserves both `lastGeneratedAt` and `generatedFingerprint` whenever an existing saved project is updated.
+
+### Chapter 14B finalization verification
+
+The offline regression suite passes with the finalization patch, including existing generator, hosted-builder, acceptance-toolkit, connected-deployment, Chapter 14A readiness, and Chapter 14B protected-release coverage. New automated checks verify deterministic build fingerprints, stale-build invalidation, exact confirmation, one-time/replay protection, target-change invalidation, and three-attempt confirmation lockout.
+
+```text
+ENTER-KEY RELEASE CONFIRMATION HOTFIX       PASS
+INCORRECT PHRASE DOES NOT GENERATE ZIP      PASS
+EXACT PHRASE ENABLES FINAL CONTROL           PASS
+PERSISTED BUILD FINGERPRINT TEST             PASS
+STALE BUILD INVALIDATION TEST                PASS
+THREE-ATTEMPT SERVER LOCKOUT TEST            PASS
+FULL OFFLINE REGRESSION SUITE                PASS
+FIRST REAL PROTECTED UPDATE                  PENDING FINAL LOCAL ACCEPTANCE
+```
+
+`README.md` is intentionally maintained as the project's running history as well as its setup and operating reference. Chapter discoveries, acceptance results, safety decisions, and hotfixes should continue to be recorded here as the Builder evolves.
+
+
+## Chapter 14C — Final Polish/Fix
+
+Chapter 14C finalizes the protected-release experience discovered through live Chapter 14B acceptance testing. It keeps the Chapter 14 security boundary intact while making release state more trustworthy and the operator workflow clearer.
+
+- **Real provider validation before release:** `CHECK CONNECTIONS` now performs read-only API verification against GitHub and Render instead of only checking whether environment variables exist. GitHub verifies the authenticated account; Render verifies that the configured workspace is accessible. Invalid credentials stay blocked before release preparation.
+- **Generation auto-save:** a successful ZIP generation now automatically saves the active project, generated timestamp, and build fingerprint. Users no longer need to remember a separate SAVE action after generation.
+- **Confirmation phrase UX:** the required phrase is labeled explicitly as `Confirmation phrase:` above the input field. The label remains green and the exact phrase is highlighted in orange.
+- **Three-attempt confirmation guard retained:** three incorrect Enter-key validations invalidate the one-time release authorization and require `PREPARE RELEASE` again.
+- **Build Console polish:** the panel is now explicitly `BUILD CONSOLE / STATUS OUTPUT`. The fake editable command prompt/blinking cursor was removed because the panel is diagnostic output, not an interactive shell. Its existing side-panel location is retained for now.
+- **Disabled controls:** disabled release controls use a `not-allowed` cursor instead of a busy/wait cursor.
+- **Security boundary:** GitHub and Render secrets remain server-side and are never returned to or stored by the browser. Release policy remains environment-controlled.
+
+### Chapter 14C acceptance focus
+
+1. Generate once and verify the project is auto-saved with its build fingerprint.
+2. Restart/load the project and verify `Generated build` remains READY without regenerating.
+3. Verify valid GitHub/Render credentials show PASS and an invalid token shows FAIL during `CHECK CONNECTIONS`, before release preparation.
+4. Verify the confirmation phrase appears above its input with the updated labeling.
+5. Verify the Build Console behaves as status output rather than suggesting an interactive shell.
+
+### Chapter 14C — Final Polish/Fix (final UI polish)
+
+- Established a page-wide text hierarchy: section/status accents remain neon, field labels use a distinct medium terminal green, real loaded/user-entered values render bright white, and placeholders/help text remain intentionally dim. Auto-restored values use the same bright treatment as manually entered values because both represent real project data.
+- Added a prominent temporary `ZIP generated — project auto-saved ✓` toast after successful generation while retaining the detailed status-line message. Generation continues to persist the build fingerprint automatically.
+- Fixed the Build Console `[ LIVE ]` status alignment so the marker remains intact on narrow layouts and only the explanatory copy may wrap.
+- Retained the Chapter 14C real read-only GitHub/Render credential validation, protected-release phrase layout, three-attempt authorization lockout, and server-side secret boundary.
+
+
+
+## Chapter 14C — Accepted Release Workflow + Final UI Cleanup (2026-08-07)
+
+Chapter 14C completed a real protected **UPDATE EXISTING RELEASE** acceptance run against the existing `jacket-community-terminal` GitHub repository and Render service. The Builder created a new GitHub commit, started the Render deployment, and the deployed public terminal subsequently passed Public Acceptance for the landing page, security headers, `/healthz`, `/status`, `/whales`, and `/intel`.
+
+Final cleanup applied after acceptance (no repeat 14C acceptance run required):
+
+- restored/auto-loaded repository and Render service values use the same bright-white treatment as manually entered real values;
+- field labels remain medium terminal green and placeholders/help copy remain dim;
+- Repository visibility checkbox and label are aligned as one control;
+- disabled Release action selects retain a dark terminal background and readable muted text;
+- protected-release output now uses semantic terminal colors for action, URLs, commit, status, success, and failure;
+- release progress now says **Deploying the website...** instead of leaving a terse raw `deploying` state;
+- a non-blocking deployment notification explains that the user should wait for completion;
+- the Builder now polls Render after starting a deployment and automatically transitions the release display to **live/success**, **failed**, or a bounded **status unknown** state rather than remaining stuck on `deploying`;
+- Chapter 14C remains on the existing visible `v1.3.2-b` baseline until a later intentional version bump.
+
+Scope note: Chapter 14C proved the **update-existing** path. Full first-time provisioning / **CREATE NEW RELEASE** acceptance (new GitHub repository + new Render service from the Builder) remains a separate next-phase concern for Chapter 15.
+
+
+## Chapter 14 — Closed (2026-08-07)
+
+Chapter 14 is formally closed after successful end-to-end acceptance of the protected **UPDATE EXISTING RELEASE** workflow and the final operator-feedback refinements. The accepted path is: generated build → saved build fingerprint → Public Acceptance → verified GitHub/Render connections → Release Readiness → one-time protected authorization → exact confirmation phrase → GitHub update → Render deployment → automatic Render status polling → live public terminal.
+
+The final closure refinement separates transient progress feedback from completion acknowledgement:
+
+- **Deployment started** remains a non-blocking toast and now stays visible for approximately five seconds.
+- **Deployment successful** is now a persistent terminal-styled modal that does not auto-dismiss. It displays the public URL and requires the operator to choose **OPEN WEBSITE** or **OK / CLOSE**.
+- The live URL opens in a new tab with `noopener,noreferrer`; no credential or secret data is included in the completion dialog.
+- Render polling remains authoritative for the Builder's transition from `Deploying the website...` to `live`, `failed`, or bounded `status unknown`.
+- The real Chapter 14 acceptance run finished with the deployed JACKET terminal passing Public Acceptance across the landing page, security headers, `/healthz`, `/status`, `/whales`, and `/intel`.
+
+No additional Chapter 14 acceptance run is required for this final presentation-only refinement. The same deployment completion behavior can be exercised naturally during Chapter 15 work. **Chapter 15 begins from this closed Chapter 14 baseline.**

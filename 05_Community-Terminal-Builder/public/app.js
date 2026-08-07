@@ -134,13 +134,18 @@ async function saveProject({duplicate=false}={}){
   const data=await payload(); if(!data.projectName)throw new Error("Project name is required before saving.");
   let id=slugify(data.projectName); const projects=readProjects();
   if(duplicate){let n=2;const base=id;while(projects[id])id=`${base}-copy-${n++}`;data.projectName=`${data.projectName} COPY`;data.tokenContract="";data.nftContract="";data.links={};data.nft={};data.features.nftTerminal=false;}
-  const existing=projects[id];const timestamp=nowIso();projects[id]={id,name:data.projectName.toUpperCase(),ticker:data.ticker,state:(data.projectName&&data.ticker&&data.tokenContract&&(!data.features.nftTerminal||data.nftContract))?"READY":"DRAFT",createdAt:existing?.createdAt||timestamp,updatedAt:timestamp,lastGeneratedAt:existing?.lastGeneratedAt||null,schemaVersion:SCHEMA_VERSION,builderVersion:"1.3.1-B",data};writeProjects(projects);activeProjectId=id;applyPayload(data);refreshProjectList();savedProjectsSelect.value=id;status.textContent=`[ SAVED ] ${data.projectName.toUpperCase()} stored locally.`;
+  const existing=projects[id];const timestamp=nowIso();projects[id]={id,name:data.projectName.toUpperCase(),ticker:data.ticker,state:(data.projectName&&data.ticker&&data.tokenContract&&(!data.features.nftTerminal||data.nftContract))?"READY":"DRAFT",createdAt:existing?.createdAt||timestamp,updatedAt:timestamp,lastGeneratedAt:existing?.lastGeneratedAt||null,generatedFingerprint:existing?.generatedFingerprint||"",schemaVersion:SCHEMA_VERSION,builderVersion:"1.3.1-B",data};writeProjects(projects);activeProjectId=id;applyPayload(data);refreshProjectList();savedProjectsSelect.value=id;status.textContent=`[ SAVED ] ${data.projectName.toUpperCase()} stored locally.`;
 }
 function loadProject(id){const item=readProjects()[id];if(!item)return;activeProjectId=id;applyPayload(item.data);savedProjectsSelect.value=id;localStorage.setItem(SETTINGS_KEY,JSON.stringify({activeProjectId:id}));status.textContent=`[ LOADED ] ${item.name}`;loadDeployment()}
 function deleteProject(){if(!activeProjectId){status.textContent="[ WARN ] No saved project is active.";return}const projects=readProjects();const item=projects[activeProjectId];if(!item)return;const answer=prompt(`Type ${item.name} to delete this saved project:`);if(answer!==item.name){status.textContent="[ SKIP ] Project deletion cancelled.";return}delete projects[activeProjectId];writeProjects(projects);resetForm();refreshProjectList();status.textContent=`[ DELETED ] ${item.name} removed from this browser.`}
 async function exportProject(){const data=await payload();const bundle={schemaVersion:SCHEMA_VERSION,builderVersion:"1.3.1-B",terminalEngineVersion:"1.0.0",exportedAt:nowIso(),project:data};const blob=new Blob([JSON.stringify(bundle,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${slugify(data.projectName)||"community-terminal"}-config.json`;a.click();URL.revokeObjectURL(a.href);status.textContent="[ EXPORTED ] Project configuration downloaded."}
 function importProject(bundle){if(!bundle||bundle.schemaVersion!==SCHEMA_VERSION||!bundle.project)throw new Error("Unsupported or invalid project configuration.");activeProjectId="";applyPayload(bundle.project);status.textContent="[ IMPORTED ] Configuration loaded. Press SAVE to keep it locally."}
-function noteGenerated(){if(!activeProjectId)return;const projects=readProjects();if(projects[activeProjectId]){projects[activeProjectId].lastGeneratedAt=nowIso();projects[activeProjectId].updatedAt=nowIso();writeProjects(projects);refreshProjectList();savedProjectsSelect.value=activeProjectId}}
+function noteGenerated(project,fingerprint){
+  const id=activeProjectId||slugify(project.projectName);if(!id)return false;
+  const projects=readProjects(),existing=projects[id],timestamp=nowIso();
+  projects[id]={id,name:String(project.projectName||id).toUpperCase(),ticker:project.ticker||"",state:configurationReady()?"READY":"DRAFT",createdAt:existing?.createdAt||timestamp,updatedAt:timestamp,lastGeneratedAt:timestamp,generatedFingerprint:String(fingerprint||""),schemaVersion:SCHEMA_VERSION,builderVersion:"1.3.1-B",data:project};
+  writeProjects(projects);activeProjectId=id;localStorage.setItem(SETTINGS_KEY,JSON.stringify({activeProjectId:id}));refreshProjectList();savedProjectsSelect.value=id;updateWorkspaceStatus();return true;
+}
 
 form.addEventListener("input",update);form.addEventListener("change",update);
 document.querySelector("#new-project").addEventListener("click",()=>{if(confirm("Start a new project? Unsaved form changes will be cleared."))resetForm()});
@@ -215,7 +220,16 @@ async function openLandingPreview(){
 document.querySelector("#open-preview").addEventListener("click",()=>{openLandingPreview().catch(err=>{status.textContent=`[ ERROR ] ${err.message}`})});
 
 
-let lastBuild={url:"",filename:"",project:null};
+let autoSaveToastTimer=null;
+function showAutoSaveToast(){
+  const toast=document.querySelector("#auto-save-toast");
+  if(!toast)return;
+  toast.classList.add("show");
+  clearTimeout(autoSaveToastTimer);
+  autoSaveToastTimer=setTimeout(()=>toast.classList.remove("show"),3200);
+}
+
+let lastBuild={url:"",filename:"",project:null,fingerprint:""};
 function downloadBuild(){if(!lastBuild.url)return;const a=document.createElement("a");a.href=lastBuild.url;a.download=lastBuild.filename;a.click()}
 function enabledModuleNames(project){const names=["LANDING"];if(project.features?.whaleTracker)names.push("WHALES");if(project.features?.memeIntel)names.push("INTEL");if(project.features?.nftTerminal&&project.nftContract)names.push("NFT");return names}
 function deploymentCommands(kind){const p=lastBuild.project||{};const folder=(String(p.projectName||"PROJECT").toUpperCase().replace(/[^A-Z0-9]+/g,"_")+"_Community_Terminal");const repo=(String(p.projectName||"project").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+"-community-terminal");if(kind==="local")return `cd ${folder}\nnpm install\nnpm test\nnpm start`;if(kind==="github")return `git init\ngit add .\ngit commit -m "Initial ${p.projectName||"Community"} Community Terminal"\ngit branch -M main\ngit remote add origin https://github.com/YOUR-USERNAME/${repo}.git\ngit push -u origin main`;return `1. Push the generated root folder to GitHub.\n2. In Render choose New → Blueprint.\n3. Select the repository and main branch.\n4. Keep Blueprint Path as render.yaml.\n5. Confirm the Free plan before deployment.\n6. After it is Live, run:\n\nnpm run test:deployed -- https://YOUR-TERMINAL.onrender.com`; }
@@ -226,8 +240,8 @@ form.addEventListener("submit",async e=>{
   try{
     const project=await payload();const response=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(project)});
     if(!response.ok){const x=await response.json();throw new Error(x.error||"Generation failed")}
-    const blob=await response.blob(); const disposition=response.headers.get("content-disposition")||""; const filename=/filename="([^"]+)"/.exec(disposition)?.[1]||"Community_Terminal.zip";
-    if(lastBuild.url)URL.revokeObjectURL(lastBuild.url);lastBuild={url:URL.createObjectURL(blob),filename,project};downloadBuild();noteGenerated();status.textContent=`[ DONE ] Generated ${filename}`;showBuildComplete(project,filename);
+    const blob=await response.blob(); const disposition=response.headers.get("content-disposition")||""; const filename=/filename="([^"]+)"/.exec(disposition)?.[1]||"Community_Terminal.zip"; const fingerprint=response.headers.get("x-ctb-build-fingerprint")||"";
+    if(lastBuild.url)URL.revokeObjectURL(lastBuild.url);lastBuild={url:URL.createObjectURL(blob),filename,project,fingerprint};downloadBuild();const autoSaved=noteGenerated(project,fingerprint);status.textContent=`[ DONE ] Generated ${filename}${autoSaved?" · project auto-saved":""}`;if(autoSaved)showAutoSaveToast();showBuildComplete(project,filename);
   }catch(err){status.textContent=`[ ERROR ] ${err.message}`}finally{button.disabled=false}
 });
 document.querySelector("#close-build-complete").addEventListener("click",()=>document.querySelector("#build-complete").close());
@@ -248,13 +262,139 @@ async function syncBuilderRuntime(){
 syncBuilderRuntime();
 
 
-// Chapter 13B: connected GitHub + Render deployment prototype.
+// Chapter 13B + 14A/14B: server-side integrations, readiness, and protected one-time release authorization.
 let integrationReady=false;
+let releaseCanDeploy=false;
+let releaseAuthorization=null;
+function showReleaseAlert(message,kind="warn"){const alert=document.querySelector("#release-alert");alert.textContent=message;alert.className=`release-alert ${kind}`;alert.hidden=false;clearTimeout(showReleaseAlert.timer);showReleaseAlert.timer=setTimeout(()=>{alert.hidden=true},4500)}
 function connectedNames(){const base=slugify(val("projectName"))||"community-terminal";return {repo:document.querySelector("#connected-repo-name").value.trim()||`${base}-community-terminal`,service:document.querySelector("#connected-service-name").value.trim()||`${base}-community-terminal`}}
-async function refreshIntegrations(manual=false){const label=document.querySelector("#integration-state"),out=document.querySelector("#connected-result"),deployButton=document.querySelector("#connected-deploy"),checkButton=document.querySelector("#refresh-integrations");label.textContent="CHECKING";label.classList.remove("live");deployButton.disabled=true;checkButton.disabled=true;checkButton.textContent="CHECKING...";if(manual)out.textContent="[ CHECKING ] Testing GitHub and Render server configuration...";try{const response=await fetch("/api/integrations",{cache:"no-store"});const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||`Connection check returned HTTP ${response.status}`);integrationReady=Boolean(data.enabled&&data.github?.configured&&data.render?.configured);label.textContent=integrationReady?"CONNECTED":data.enabled?"INCOMPLETE":"DISABLED";label.classList.toggle("live",integrationReady);deployButton.disabled=!integrationReady;const checkedAt=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});out.textContent=[`[ CHECKED ] Connection check completed at ${checkedAt}`,`[ ${data.enabled?"OK":"OFF"} ] Connected deployments ${data.enabled?"enabled":"disabled"}`,`[ ${data.github?.configured?"PASS":"WAIT"} ] GitHub server credential`,`[ ${data.render?.configured?"PASS":"WAIT"} ] Render server credential + workspace`,`[ SAFE ] Secrets exposed to browser: ${data.secretsExposed?"YES":"NO"}`].join("\n");}catch(error){integrationReady=false;label.textContent="UNAVAILABLE";deployButton.disabled=true;out.textContent=`[ FAIL ] ${error.message}`}finally{checkButton.disabled=false;checkButton.textContent="CHECK CONNECTIONS"}}
-async function connectedDeployProject(){if(!integrationReady)return;const button=document.querySelector("#connected-deploy"),out=document.querySelector("#connected-result"),names=connectedNames();button.disabled=true;out.textContent="[ DEPLOY ] Generating source, publishing GitHub tree, and creating or redeploying Render service...";try{const project=await payload();const response=await fetch("/api/deploy-connected",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({project,repoName:names.repo,serviceName:names.service,visibility:document.querySelector("#connected-private").checked?"private":"public",allowUpdate:document.querySelector("#connected-update").checked})});const data=await response.json();if(!response.ok)throw new Error(data.error||"Connected deployment failed");const lines=["[ CONNECTED DEPLOYMENT STARTED ]",`[ GITHUB ] ${data.github.repoUrl}`,`[ COMMIT ] ${data.github.commitSha}`,`[ FILES ] ${data.github.fileCount}`,`[ RENDER ] ${data.render.serviceName}`,`[ SERVICE ID ] ${data.render.serviceId||"pending"}`,`[ PUBLIC URL ] ${data.render.publicUrl||"Render is assigning the URL"}`,`[ STATUS ] ${data.render.status||"deploying"}`];out.textContent=lines.join("\n");const all=readDeployments(),id=deploymentId(),prior=all[id]||{};all[id]={...prior,githubUrl:data.github.repoUrl,publicUrl:data.render.publicUrl||prior.publicUrl||"",connected:{serviceId:data.render.serviceId,commitSha:data.github.commitSha,startedAt:data.generatedAt},updatedAt:nowIso()};localStorage.setItem(DEPLOYMENT_KEY,JSON.stringify(all));renderDeploymentRecord(all[id]);status.textContent="[ STARTED ] Connected deployment published. Render may need several minutes.";}catch(error){out.textContent=`[ FAIL ] ${error.message}`;status.textContent=`[ ERROR ] ${error.message}`}finally{button.disabled=!integrationReady}}
+function currentAcceptance(){return readDeployments()[deploymentId()]?.acceptance?.ok===true}
+function currentBuildFingerprint(project){try{if(lastBuild.project&&lastBuild.fingerprint&&JSON.stringify(lastBuild.project)===JSON.stringify(project))return lastBuild.fingerprint}catch{}const stored=activeProjectId?readProjects()[activeProjectId]:null;return String(stored?.generatedFingerprint||"")}
+function releaseMode(){return document.querySelector("#connected-release-mode").value==="create"?"create":"update"}
+function clearReleaseAuthorization(message=""){
+  releaseAuthorization=null;
+  const box=document.querySelector("#release-confirmation"),input=document.querySelector("#release-confirmation-text"),phrase=document.querySelector("#release-confirmation-phrase"),deploy=document.querySelector("#connected-deploy");
+  box.hidden=true;input.value="";phrase.textContent="";deploy.disabled=true;
+  if(message)document.querySelector("#connected-result").textContent=message;
+}
+async function protectedReleaseInput(){const project=await payload(),names=connectedNames();return {project,repoName:names.repo,serviceName:names.service,visibility:document.querySelector("#connected-private").checked?"private":"public",releaseMode:releaseMode(),generatedFingerprint:currentBuildFingerprint(project),publicAcceptance:currentAcceptance()}}
+function updateProtectedButtons(){
+  const prepare=document.querySelector("#prepare-release"),deploy=document.querySelector("#connected-deploy"),typed=document.querySelector("#release-confirmation-text").value;
+  prepare.disabled=!(integrationReady&&releaseCanDeploy);
+  deploy.disabled=!(integrationReady&&releaseCanDeploy&&releaseAuthorization&&typed===releaseAuthorization.confirmation);
+}
+async function refreshIntegrations(manual=false){const label=document.querySelector("#integration-state"),out=document.querySelector("#connected-result"),checkButton=document.querySelector("#refresh-integrations");label.textContent="CHECKING";label.classList.remove("live");clearReleaseAuthorization();checkButton.disabled=true;checkButton.textContent="CHECKING...";if(manual)out.textContent="[ CHECKING ] Testing GitHub and Render server configuration...";try{const response=await fetch("/api/integrations",{cache:"no-store"});const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||`Connection check returned HTTP ${response.status}`);integrationReady=Boolean(data.enabled&&data.github?.verified&&data.render?.verified);label.textContent=integrationReady?"CONNECTED":data.enabled?"INCOMPLETE":"DISABLED";label.classList.toggle("live",integrationReady);releaseCanDeploy=false;const checkedAt=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});out.textContent=[`[ CHECKED ] Connection check completed at ${checkedAt}`,`[ ${data.enabled?"OK":"OFF"} ] Connected deployments ${data.enabled?"enabled":"disabled"}`,`[ ${data.releaseActionsEnabled?"PASS":"LOCKED"} ] Protected release policy`,`[ ${data.github?.verified?"PASS":data.github?.configured?"FAIL":"WAIT"} ] GitHub credential${data.github?.verified&&data.github?.login?` · ${data.github.login}`:""}${data.github?.error?` · ${data.github.error}`:""}`,`[ ${data.render?.verified?"PASS":data.render?.configured?"FAIL":"WAIT"} ] Render credential + workspace${data.render?.verified&&data.render?.workspaceName?` · ${data.render.workspaceName}`:""}${data.render?.error?` · ${data.render.error}`:""}`,`[ SAFE ] Secrets exposed to browser: ${data.secretsExposed?"YES":"NO"}`].join("\n");updateProtectedButtons();}catch(error){integrationReady=false;label.textContent="UNAVAILABLE";clearReleaseAuthorization();out.textContent=`[ FAIL ] ${error.message}`}finally{checkButton.disabled=false;checkButton.textContent="CHECK CONNECTIONS"}}
+function renderReleaseReadiness(data){
+  const state=document.querySelector("#release-state"),out=document.querySelector("#release-result"),checks=document.querySelector("#release-checks");
+  clearReleaseAuthorization();
+  state.textContent=data.state||"NOT READY";state.classList.toggle("live",Boolean(data.ready&&data.canRelease));state.classList.toggle("locked",Boolean(data.ready&&!data.canRelease));
+  checks.innerHTML=(data.checks||[]).map(item=>`<div title="${String(item.detail||"").replace(/"/g,"&quot;")}"><span>${item.label}</span><b class="${item.ready?"pass":"fail"}">${item.ready?"READY":"BLOCKED"}</b></div>`).join("");
+  releaseCanDeploy=Boolean(data.canRelease);updateProtectedButtons();
+  const lines=[`[ ${data.ready?"READY":"BLOCKED"} ] Release prerequisites ${data.ready?"passed":"incomplete"}.`,`[ ${data.releaseControlEnabled?"ENABLED":"LOCKED"} ] Release action policy`,`[ ${data.connectedDeploymentsEnabled?"ON":"OFF"} ] Connected deployment service`,`[ SAFE ] Secrets exposed to browser: ${data.secretsExposed?"YES":"NO"}`,`[ TIME ] ${data.checkedAt||nowIso()}`];
+  out.textContent=lines.join("\n");out.className=`deployment-result ${data.ready?"pass":"fail"}`;
+}
+async function checkReleaseReadiness(){
+  const btn=document.querySelector("#check-release-readiness"),out=document.querySelector("#release-result"),state=document.querySelector("#release-state");
+  btn.disabled=true;state.textContent="CHECKING";state.classList.remove("live","locked");releaseCanDeploy=false;clearReleaseAuthorization();out.className="deployment-result";out.textContent="[ CHECKING ] Evaluating release prerequisites on the builder server...";
+  try{const input=await protectedReleaseInput();const response=await fetch("/api/release-readiness",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(input)});const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||"Release readiness check failed");renderReleaseReadiness(data);status.textContent=data.canRelease?"[ READY ] Release is eligible for protected authorization.":data.ready?"[ LOCKED ] Prerequisites passed; server release policy remains locked.":"[ BLOCKED ] Complete the release prerequisites shown above."}catch(error){state.textContent="UNAVAILABLE";out.className="deployment-result fail";out.textContent=`[ FAIL ] ${error.message}`;status.textContent=`[ ERROR ] ${error.message}`}finally{btn.disabled=false}}
+async function prepareProtectedRelease(){
+  const button=document.querySelector("#prepare-release"),out=document.querySelector("#connected-result");
+  if(!integrationReady||!releaseCanDeploy)return;
+  button.disabled=true;clearReleaseAuthorization();out.textContent="[ PREPARE ] Requesting one-time server authorization for this exact release target...";
+  try{const input=await protectedReleaseInput();const response=await fetch("/api/release-prepare",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(input)});const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||"Release authorization failed");releaseAuthorization=data;document.querySelector("#release-confirmation").hidden=false;document.querySelector("#release-confirmation-phrase").textContent=data.confirmation;out.textContent=["[ ARMED ] Protected release authorization prepared.",`[ ACTION ] ${String(data.releaseMode||"").toUpperCase()}`,`[ TARGET ] ${data.target.repoName} / ${data.target.serviceName}`,`[ EXPIRES ] ${data.expiresAt}`,"[ ONE-TIME ] YES",`[ ATTEMPTS ] ${data.maxConfirmationAttempts||3} confirmation attempts`,`[ SAFE ] Credentials remain server-side.`].join("\n");status.textContent="[ ARMED ] Type the exact confirmation phrase to enable publish & deploy.";updateProtectedButtons();}catch(error){clearReleaseAuthorization();out.textContent=`[ BLOCKED ] ${error.message}`;status.textContent=`[ ERROR ] ${error.message}`}finally{updateProtectedButtons()}}
+async function verifyConfirmationAttempt(){
+  if(!releaseAuthorization)return;
+  const input=document.querySelector("#release-confirmation-text"),typed=input.value;
+  if(typed===releaseAuthorization.confirmation){showReleaseAlert("Confirmation phrase matched. Publish & deploy is enabled.","pass");updateProtectedButtons();return;}
+  try{
+    const response=await fetch("/api/release-confirmation-attempt",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({releaseAuthorization:releaseAuthorization.authorizationId,confirmation:typed})});
+    const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||"Confirmation validation failed");
+    if(data.locked){showReleaseAlert("Confirmation failed 3 times. Release authorization was locked. Prepare the release again.","fail");clearReleaseAuthorization("[ LOCKED ] Three incorrect confirmation attempts. Prepare the release again.");updateProtectedButtons();return;}
+    showReleaseAlert(`Confirmation phrase incorrect. ${data.attemptsRemaining} attempt${data.attemptsRemaining===1?"":"s"} remaining.`,"fail");
+  }catch(error){showReleaseAlert(error.message,"fail");}
+  updateProtectedButtons();
+}
+async function connectedDeployProject(){
+  if(!integrationReady||!releaseCanDeploy||!releaseAuthorization)return;
+  const button=document.querySelector("#connected-deploy"),out=document.querySelector("#connected-result"),confirmation=document.querySelector("#release-confirmation-text").value;
+  button.disabled=true;out.classList.remove("release-progress");out.textContent="[ RELEASE ] Consuming one-time authorization, publishing GitHub tree, and starting Render deployment...";
+  try{
+    const input=await protectedReleaseInput();
+    const response=await fetch("/api/deploy-connected",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...input,releaseAuthorization:releaseAuthorization.authorizationId,confirmation})});
+    const data=await response.json();if(!response.ok)throw new Error(data.error||"Protected release failed");
+    renderProtectedRelease(out,data,"Deploying the website...");
+    showDeploymentToast("Your website is being deployed. Please wait until the deployment completes successfully before making further release changes.",{duration:5000});
+    const all=readDeployments(),id=deploymentId(),prior=all[id]||{};all[id]={...prior,githubUrl:data.github.repoUrl,publicUrl:data.render.publicUrl||prior.publicUrl||"",connected:{serviceId:data.render.serviceId,deployId:data.render.deployId||null,commitSha:data.github.commitSha,startedAt:data.generatedAt,releaseMode:data.releaseMode},updatedAt:nowIso()};localStorage.setItem(DEPLOYMENT_KEY,JSON.stringify(all));renderDeploymentRecord(all[id]);
+    status.textContent="[ DEPLOYING ] Deployment started. Waiting for Render to report the final state.";
+    pollRenderDeployment(data,out);
+  }catch(error){out.classList.remove("release-progress");out.textContent=`[ FAIL ] ${error.message}`;status.textContent=`[ ERROR ] ${error.message}`}finally{clearReleaseAuthorization();updateProtectedButtons()}
+}
+
+function showDeploymentToast(message,{state="pending",duration=5200}={}){
+  const toast=document.querySelector("#deployment-toast");if(!toast)return;
+  toast.className=`deployment-toast ${state==="success"?"success":state==="fail"?"fail":""}`.trim();
+  const strong=toast.querySelector("strong"),span=toast.querySelector("span");
+  strong.textContent=state==="success"?"[ DEPLOYMENT SUCCESSFUL ]":state==="fail"?"[ DEPLOYMENT FAILED ]":"[ DEPLOYMENT STARTED ]";
+  span.textContent=message;toast.hidden=false;
+  clearTimeout(showDeploymentToast.timer);showDeploymentToast.timer=setTimeout(()=>{toast.hidden=true},duration);
+}
+
+function showDeploymentSuccessDialog(publicUrl){
+  const dialog=document.querySelector("#deployment-success-dialog");if(!dialog)return;
+  const link=document.querySelector("#deployment-success-url"),openButton=document.querySelector("#deployment-success-open");
+  const url=String(publicUrl||"").trim();
+  link.textContent=url||"Public URL unavailable";
+  if(url){link.href=url;link.removeAttribute("aria-disabled");openButton.disabled=false;openButton.dataset.url=url}
+  else{link.removeAttribute("href");link.setAttribute("aria-disabled","true");openButton.disabled=true;delete openButton.dataset.url}
+  if(!dialog.open)dialog.showModal();
+}
+
+function releaseStatusClass(value){const s=String(value||"").toLowerCase();if(["live","successful","success"].includes(s))return "status-success";if(s.includes("fail")||s.includes("cancel"))return "status-fail";return "status-pending"}
+function renderProtectedRelease(out,data,statusText){
+  const rows=[
+    {start:"[ PROTECTED RELEASE STARTED ]"},
+    {key:"ACTION",value:String(data.releaseMode||"").toUpperCase(),cls:"action"},
+    {key:"GITHUB",value:data.github.repoUrl,cls:"url"},
+    {key:"COMMIT",value:data.github.commitSha,cls:"commit"},
+    {key:"FILES",value:String(data.github.fileCount)},
+    {key:"RENDER",value:data.render.serviceName},
+    {key:"SERVICE ID",value:data.render.serviceId||"pending"},
+    {key:"PUBLIC URL",value:data.render.publicUrl||"Render is assigning the URL",cls:"url"},
+    {key:"STATUS",value:statusText||data.render.status||"deploying",cls:releaseStatusClass(statusText||data.render.status||"deploying")}
+  ];
+  out.textContent="";out.classList.add("release-progress");
+  for(const row of rows){const line=document.createElement("span");line.className=`release-line${row.start?" release-start":""}`;if(row.start){line.textContent=row.start}else{const key=document.createElement("span"),value=document.createElement("span");key.className="release-key";key.textContent=`[ ${row.key} ] `;value.className=`release-value ${row.cls||""}`.trim();value.textContent=row.value;line.append(key,value)}out.append(line)}
+}
+async function pollRenderDeployment(data,out){
+  const serviceId=data.render.serviceId;if(!serviceId)return;
+  const started=Date.now(),timeoutMs=10*60*1000,intervalMs=5000;
+  while(Date.now()-started<timeoutMs){
+    await new Promise(resolve=>setTimeout(resolve,intervalMs));
+    try{
+      const response=await fetch(`/api/render-deploy-status?serviceId=${encodeURIComponent(serviceId)}`,{cache:"no-store"});
+      const state=await response.json();if(!response.ok||!state.ok)throw new Error(state.error||"Render deployment status unavailable");
+      if(state.success){renderProtectedRelease(out,data,"live");status.textContent="[ LIVE ] Deployment successful. Run Public Acceptance to verify the public terminal.";showDeploymentSuccessDialog(data.render.publicUrl||"");return}
+      if(state.failed){renderProtectedRelease(out,data,state.status||"failed");status.textContent="[ FAIL ] Render deployment failed. Review the Render deployment logs before trying again.";showDeploymentToast("The deployment did not complete successfully. Review the Render logs before trying again.",{state:"fail",duration:8000});return}
+      renderProtectedRelease(out,data,"Deploying the website...");
+    }catch(error){console.warn("Render deployment status check failed:",error.message)}
+  }
+  renderProtectedRelease(out,data,"status unknown");status.textContent="[ WAIT ] Deployment status could not be confirmed automatically. Check Render before making another release.";showDeploymentToast("Deployment status could not be confirmed automatically. Check Render before making another release.",{state:"fail",duration:8000});
+}
+
+function invalidateProtectedRelease(){if(releaseAuthorization)clearReleaseAuthorization("[ LOCKED ] Release target changed. Run CHECK RELEASE READINESS and PREPARE RELEASE again.");releaseCanDeploy=false;updateProtectedButtons()}
 document.querySelector("#refresh-integrations").addEventListener("click",()=>refreshIntegrations(true));
+document.querySelector("#check-release-readiness").addEventListener("click",checkReleaseReadiness);
+document.querySelector("#prepare-release").addEventListener("click",prepareProtectedRelease);
 document.querySelector("#connected-deploy").addEventListener("click",connectedDeployProject);
+document.querySelector("#release-confirmation-text").addEventListener("input",updateProtectedButtons);
+document.querySelector("#release-confirmation-text").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();event.stopPropagation();verifyConfirmationAttempt();}});
+for(const id of ["connected-repo-name","connected-service-name","connected-release-mode","connected-private"]){document.querySelector(`#${id}`).addEventListener("change",invalidateProtectedRelease)}
 document.querySelector("#connected-repo-name").addEventListener("focus",()=>{const n=connectedNames();if(!document.querySelector("#connected-repo-name").value)document.querySelector("#connected-repo-name").value=n.repo});
 document.querySelector("#connected-service-name").addEventListener("focus",()=>{const n=connectedNames();if(!document.querySelector("#connected-service-name").value)document.querySelector("#connected-service-name").value=n.service});
+
+document.querySelector("#deployment-success-close").addEventListener("click",()=>document.querySelector("#deployment-success-dialog").close());
+document.querySelector("#deployment-success-open").addEventListener("click",event=>{
+  const url=event.currentTarget.dataset.url;if(url)window.open(url,"_blank","noopener,noreferrer");
+});
+
 refreshIntegrations(false);

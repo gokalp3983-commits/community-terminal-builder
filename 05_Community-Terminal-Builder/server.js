@@ -3,7 +3,10 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { generate } = require("./generator");
-const { connectedDeploy, publicStatus: integrationStatus } = require("./connected-deploy");
+const { connectedDeploy, publicStatus: integrationStatus, validateIntegrations, getRenderDeploymentStatus } = require("./connected-deploy");
+const { releaseReadiness } = require("./release-readiness");
+const { createReleaseAuthorization, verifyReleaseConfirmation } = require("./release-authorization");
+const { buildFingerprint } = require("./build-fingerprint");
 
 const VERSION = "1.3.1-B";
 const PORT = Number(process.env.PORT || 3050);
@@ -64,7 +67,35 @@ const server = http.createServer((req,res) => {
     return;
   }
 
-  if(req.method==="GET" && url.pathname==="/api/integrations") return json(res,200,{ok:true,...integrationStatus()});
+  if(req.method==="GET" && url.pathname==="/api/integrations") {
+    validateIntegrations().then(result=>json(res,200,{ok:true,...result})).catch(error=>json(res,503,{ok:false,error:error.message,code:"INTEGRATION_CHECK_FAILED",...integrationStatus()}));
+    return;
+  }
+  if(req.method==="GET" && url.pathname==="/api/render-deploy-status") {
+    const serviceId=String(url.searchParams.get("serviceId")||"").trim();
+    getRenderDeploymentStatus(serviceId).then(result=>json(res,200,result)).catch(error=>json(res,503,{ok:false,error:error.message,code:"RENDER_DEPLOY_STATUS_FAILED"}));
+    return;
+  }
+  if(req.method==="POST" && url.pathname==="/api/release-readiness") {
+    let body="",tooLarge=false;
+    req.on("data",chunk=>{if(tooLarge)return;body+=chunk;if(Buffer.byteLength(body)>MAX_BODY){tooLarge=true;json(res,413,{ok:false,error:"Release readiness request is too large.",code:"PAYLOAD_TOO_LARGE"});req.destroy();}});
+    req.on("end",async()=>{if(tooLarge)return;try{const input=JSON.parse(body||"{}");const providerStatus=await validateIntegrations();json(res,200,releaseReadiness(input,{providerStatus}));}catch(error){json(res,400,{ok:false,error:error.message,code:"RELEASE_READINESS_FAILED"});}});
+    return;
+  }
+  if(req.method==="POST" && url.pathname==="/api/release-prepare") {
+    if(!rateAllowed(req)) return json(res,429,{ok:false,error:"Release preparation rate limit reached. Wait one minute and try again.",code:"RATE_LIMITED"});
+    let body="",tooLarge=false;
+    req.on("data",chunk=>{if(tooLarge)return;body+=chunk;if(Buffer.byteLength(body)>MAX_BODY){tooLarge=true;json(res,413,{ok:false,error:"Release preparation request is too large.",code:"PAYLOAD_TOO_LARGE"});req.destroy();}});
+    req.on("end",async()=>{if(tooLarge)return;try{const input=JSON.parse(body||"{}");const providerStatus=await validateIntegrations();const readiness=releaseReadiness(input,{providerStatus});const authorization=createReleaseAuthorization(input,readiness);json(res,200,{...authorization,readiness:{state:readiness.state,ready:readiness.ready,canRelease:readiness.canRelease}});}catch(error){json(res,403,{ok:false,error:error.message,code:"RELEASE_AUTHORIZATION_DENIED"});}});
+    return;
+  }
+  if(req.method==="POST" && url.pathname==="/api/release-confirmation-attempt") {
+    if(!rateAllowed(req)) return json(res,429,{ok:false,error:"Confirmation attempt rate limit reached. Wait one minute and try again.",code:"RATE_LIMITED"});
+    let body="",tooLarge=false;
+    req.on("data",chunk=>{if(tooLarge)return;body+=chunk;if(Buffer.byteLength(body)>20_000){tooLarge=true;json(res,413,{ok:false,error:"Confirmation attempt request is too large.",code:"PAYLOAD_TOO_LARGE"});req.destroy();}});
+    req.on("end",()=>{if(tooLarge)return;try{json(res,200,verifyReleaseConfirmation(JSON.parse(body||"{}")));}catch(error){json(res,400,{ok:false,error:error.message,code:"RELEASE_CONFIRMATION_FAILED"});}});
+    return;
+  }
   if(req.method==="POST" && url.pathname==="/api/deploy-connected") {
     if(!rateAllowed(req)) return json(res,429,{ok:false,error:"Connected deployment rate limit reached. Wait one minute and try again.",code:"RATE_LIMITED"});
     let body="",tooLarge=false;
@@ -105,7 +136,7 @@ const server = http.createServer((req,res) => {
     if(!rateAllowed(req)) return json(res,429,{error:"Generation rate limit reached. Wait one minute and try again.",code:"RATE_LIMITED"});
     let body="",tooLarge=false;
     req.on("data",chunk=>{if(tooLarge)return;body+=chunk;if(Buffer.byteLength(body)>MAX_BODY){tooLarge=true;json(res,413,{error:"Generation request is too large.",code:"PAYLOAD_TOO_LARGE"});req.destroy();}});
-    req.on("end",()=>{if(tooLarge)return;try{const result=generate(JSON.parse(body||"{}"));send(res,200,result.buffer,"application/zip",{"Content-Disposition":`attachment; filename="${result.filename}"`,"Cache-Control":"no-store"});}catch(error){json(res,400,{error:error.message,code:"INVALID_PROJECT_CONFIG"});}});
+    req.on("end",()=>{if(tooLarge)return;try{const result=generate(JSON.parse(body||"{}"));send(res,200,result.buffer,"application/zip",{"Content-Disposition":`attachment; filename="${result.filename}"`,"Cache-Control":"no-store","X-CTB-Build-Fingerprint":buildFingerprint(JSON.parse(body||"{}"))});}catch(error){json(res,400,{error:error.message,code:"INVALID_PROJECT_CONFIG"});}});
     return;
   }
   if(req.method!=="GET" && req.method!=="HEAD") return json(res,405,{error:"Method not allowed",code:"METHOD_NOT_ALLOWED"});
