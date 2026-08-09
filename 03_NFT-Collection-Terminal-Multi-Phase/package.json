@@ -1,8 +1,8 @@
 {
-  "name": "community-terminal-nft-collection",
+  "name": "888-society-nft-terminal",
   "version": "1.0.0",
   "private": true,
-  "description": "Configurable Community Terminal NFT collection terminal.",
+  "description": "888 Society Ethereum NFT mint countdown and OpenSea collection terminal.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

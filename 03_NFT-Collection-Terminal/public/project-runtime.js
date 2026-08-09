@@ -22,18 +22,22 @@
     document.querySelectorAll("[data-project-ticker]").forEach((e) => { e.textContent = c.project.ticker; });
     document.querySelectorAll("[data-project-prompt]").forEach((e) => { e.textContent = window.PROJECT_PROMPT; });
     document.querySelectorAll("[data-project-home]").forEach((e) => {
-      e.href = c.links.home;
-      e.title = `Return to ${c.project.name} Community Terminal`;
+      const mintAt = c.nft?.mintAt ? new Date(c.nft.mintAt).getTime() : NaN;
+      const postMint = Number.isFinite(mintAt) && Date.now() >= mintAt;
+      e.href = postMint ? "/terminal" : c.links.home;
+      e.title = postMint
+        ? `${c.project.name} NFT Terminal`
+        : `Return to ${c.project.name} mint countdown`;
     });
     document.querySelectorAll("[data-project-mascot]").forEach((e) => {
       e.src = c.branding.mascot;
       e.alt = c.branding.mascotAlt;
     });
     document.querySelectorAll("[data-project-version]").forEach((e) => {
-      e.textContent = `${c.project.name} Community Terminal ver ${c.project.version}`;
+      e.textContent = `${c.project.name} NFT Terminal`;
     });
     document.querySelectorAll("[data-project-footer]").forEach((e) => {
-      e.innerHTML = `Independent community-built tools.<br>Not affiliated with or endorsed by the official ${c.project.ticker} team.<br>Built for the ${c.project.ecosystem} ${c.project.ticker} ecosystem.`;
+      e.innerHTML = `Independently built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer">𝕏 @Gokalp8339</a><br>Not affiliated with or endorsed by the official ${c.project.ticker} team.<br>Built for the ${c.project.ecosystem} ${c.project.ticker} ecosystem.`;
     });
 
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -52,7 +56,7 @@
     const colorMap = {
       background: "--bg", panel: "--panel", green: "--green", yellow: "--yellow",
       cyan: "--cyan", blue: "--blue", orange: "--orange", red: "--red",
-      muted: "--muted", line: "--line"
+      muted: "--muted"
     };
     Object.entries(colorMap).forEach(([key, variable]) => {
       if (colors[key]) document.documentElement.style.setProperty(variable, colors[key]);

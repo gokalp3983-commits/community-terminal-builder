@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style id="critical-first-paint">
+    html{
+      width:100%;
+      max-width:100%;
+      overflow-x:hidden;
+      -webkit-text-size-adjust:100%;
+      text-size-adjust:100%;
+    }
+    body{
+      width:100%;
+      max-width:100%;
+      overflow-x:hidden;
+      margin:0;
+    }
+    *,*::before,*::after{box-sizing:border-box}
+    .nft-terminal-workspace,
+    #terminal-frame,
+    .terminal,
+    .terminal-area,
+    .nft-sales-window{
+      min-width:0;
+      max-width:100%;
+    }
+    .community-divider{
+      width:100%;
+      max-width:100%;
+      overflow:hidden;
+      white-space:nowrap;
+    }
+    img,svg,canvas,video{max-width:100%}
+    @media(max-width:1220px){
+      .nft-terminal-workspace{grid-template-columns:1fr!important}
+    }
+  </style>
+  <meta name="theme-color" content="#020704">
+  <meta name="description" content="{{PROJECT_DESCRIPTION}}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{PROJECT_NAME}} NFT Terminal">
+  <meta property="og:title" content="{{PROJECT_NAME}} NFT Collection Terminal">
+  <meta property="og:description" content="{{PROJECT_DESCRIPTION}}">
+  <meta property="og:url" content="{{PAGE_URL}}">
+  <meta property="og:image" content="{{SOCIAL_IMAGE_URL}}">
+  <meta property="og:image:alt" content="{{PROJECT_NAME}} NFT Collection Terminal mascot">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="{{PROJECT_NAME}} NFT Collection Terminal">
+  <meta name="twitter:description" content="{{PROJECT_DESCRIPTION}}">
+  <meta name="twitter:image" content="{{SOCIAL_IMAGE_URL}}">
+  <title>{{PROJECT_NAME}} NFT Collection Terminal</title>
+  <link rel="icon" type="image/png" href="/assets/gangsterrobins-favicon.png">
+  <link rel="stylesheet" href="/style.css?v=final-pulse-complete2">
+</head>
+<body class="postmint-resolving">
+  <div class="nft-terminal-workspace">
+  <main id="terminal-frame" class="shell terminal-frame">
+    <section class="terminal" aria-label="{{PROJECT_NAME}} NFT Collection Terminal">
+      <div id="terminal-header" class="terminal-area terminal-header">
+        <header class="header community-header">
+        <a data-project-home href="#" title="Return to {{PROJECT_NAME}} NFT Terminal">
+          <img data-project-mascot class="mascot community-mascot" src="" alt="">
+        </a>
+
+        <div class="community-divider" aria-hidden="true">
+          ══════════════════════════════════════════════════════════════════
+        </div>
+
+        <div class="community-title-row">
+          <h1>{{PROJECT_NAME}} NFT COLLECTION TERMINAL</h1>
+          <span class="online-status"><span class="online-dot" aria-hidden="true">●</span> ONLINE</span>
+        </div>
+
+        <p class="community-subtitle">Independent Community Tools <span aria-hidden="true">•</span> {{PROJECT_ECOSYSTEM}} Ecosystem</p>
+
+        <div class="community-divider" aria-hidden="true">
+          ══════════════════════════════════════════════════════════════════
+        </div>
+      </header>
+      </div>
+
+      <div id="terminal-live-panel" class="terminal-area terminal-live-panel">
+        <section id="marketPanel" class="market-panel" aria-label="Live {{PROJECT_NAME}} market data">
+        <div class="market-line">
+          <span id="marketPriceStatus" class="market-tag">[ CONNECTING ]</span>
+          <span class="market-label">Floor Price</span>
+          <span class="market-colon" aria-hidden="true">:</span>
+          <strong id="marketPrice" class="market-value">—</strong>
+        </div>
+        <div class="market-line">
+          <span id="marketHoldersStatus" class="market-tag">[ CONNECTING ]</span>
+          <span class="market-label">Holders</span>
+          <span class="market-colon" aria-hidden="true">:</span>
+          <strong id="marketHolders" class="market-value">—</strong>
+        </div>
+        <div class="market-line">
+          <span id="marketVolumeStatus" class="market-tag">[ CONNECTING ]</span>
+          <span class="market-label">24h Volume</span>
+          <span class="market-colon" aria-hidden="true">:</span>
+          <strong id="marketVolume" class="market-value">—</strong>
+        </div>
+        <div class="market-line">
+          <span id="marketLastSaleStatus" class="market-tag">[ CONNECTING ]</span>
+          <span class="market-label">Last Sale</span>
+          <span class="market-colon" aria-hidden="true">:</span>
+          <strong id="marketLastSale" class="market-value">—</strong>
+        </div>
+        <div class="market-line">
+          <span id="marketHighestSaleStatus" class="market-tag">[ CONNECTING ]</span>
+          <span class="market-label">Top Sale 24h</span>
+          <span class="market-colon" aria-hidden="true">:</span>
+          <strong id="marketHighestSale" class="market-value">—</strong>
+        </div>
+        <div class="market-line market-updated-line">
+          <span id="marketUpdatedStatus" class="market-tag">[ CONNECTING ]</span>
+          <span class="market-label">Updated</span>
+          <span class="market-colon" aria-hidden="true">:</span>
+          <strong id="marketUpdated" class="market-value">—</strong>
+        </div>
+      </section>
+      </div>
+
+      <div id="terminal-application" class="terminal-area terminal-application">
+        <section class="official-mint" aria-label="Official {{PROJECT_NAME}} NFT mint">
+        <span class="official-mint-label">[ OPENSEA ]</span>
+        <a
+          href="#" data-opensea-link
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View {{PROJECT_NAME}} NFT Collection on OpenSea
+        </a>
+      </section>
+
+      <section class="blockscout-wallet-check" aria-label="Check NFT ownership on Blockscout">
+        <form id="blockscoutWalletForm" class="blockscout-check-form" novalidate>
+          <span class="official-mint-label">[ BLOCKSCOUT ]</span>
+          <span class="blockscout-check-copy">Check your own wallet status.</span>
+          <input
+            id="blockscoutWalletInput"
+            class="blockscout-wallet-input"
+            type="text"
+            inputmode="text"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Enter your wallet address"
+            aria-label="Wallet address to check on Blockscout"
+            maxlength="42"
+            aria-describedby="blockscoutWalletStatus"
+          >
+          <button class="blockscout-check-button" type="submit">[ CHECK WALLET ]</button>
+        </form>
+        <div id="blockscoutWalletStatus" class="blockscout-check-status" aria-live="polite"></div>
+      </section>
+
+      <section id="boot" class="boot" aria-live="polite"></section>
+
+      <section class="tracking-note mint-complete-note">
+        <span class="green">[ LIVE ]</span>
+        Tracking the {{PROJECT_NAME}} NFT mint and collection activity.
+        Live on-chain statistics are shown below.
+      </section>
+
+      <section id="mintDashboard" class="mint-dashboard collapsible-panel" aria-label="Live mint statistics">
+        <div class="dashboard-header collapsible-panel-header">
+          <h3>Mint Tracker</h3>
+          <div class="collapsible-panel-controls">
+            <span id="dataConnection" class="data-status live">CONNECTING</span>
+            <button
+              id="mintDashboardToggle"
+              class="panel-toggle"
+              type="button"
+              aria-expanded="true"
+              aria-controls="mintDashboardBody"
+              hidden
+            >[ COLLAPSE ]</button>
+          </div>
+        </div>
+
+        <div id="mintDashboardSummary" class="collapsed-panel-summary" hidden>
+          [ COMPLETE ] Mint summary loading...
+        </div>
+
+        <div id="mintDashboardBody" class="collapsible-panel-body">
+        <div class="progress-block">
+          <div class="progress-labels">
+            <span>Mint Progress</span>
+            <strong id="progressPercent">—</strong>
+          </div>
+          <div class="progress-track" aria-label="Mint progress">
+            <div id="progressFill" class="progress-fill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="metrics">
+          <article class="metric">
+            <div class="metric-label">Mint Status</div>
+            <div id="mintStatus" class="metric-value status-waiting">
+              WAITING
+            </div>
+          </article>
+
+          <article class="metric">
+            <div class="metric-label">Minted</div>
+            <div id="mintedCount" class="metric-value">— / 420</div>
+          </article>
+
+          <article class="metric">
+            <div class="metric-label">Remaining</div>
+            <div id="remainingCount" class="metric-value">—</div>
+          </article>
+
+          <article class="metric">
+            <div class="metric-label">Unique Holders</div>
+            <div id="uniqueMinters" class="metric-value">—</div>
+          </article>
+
+          <article class="metric">
+            <div class="metric-label">Mint Rate</div>
+            <div id="mintRate" class="metric-value">— NFT/min</div>
+          </article>
+
+          <article class="metric">
+            <div class="metric-label">Latest Mint</div>
+            <div id="latestMint" class="metric-value compact-value">—</div>
+          </article>
+        </div>
+        </div>
+      </section>
+
+
+      <section id="openSeaMarketPanel" class="collection-market collapsible-panel" aria-label="OpenSea market statistics">
+        <div class="dashboard-header collapsible-panel-header">
+          <h3>OpenSea Market Stats</h3>
+          <div class="collapsible-panel-controls">
+            <div class="collection-status-wrap">
+              <span id="collectionDataStatus" class="data-status">
+                CONNECTING
+              </span>
+              <span id="collectionUpdated" class="collection-updated">
+                Updated —
+              </span>
+            </div>
+            <button
+              id="openSeaMarketToggle"
+              class="panel-toggle"
+              type="button"
+              aria-expanded="true"
+              aria-controls="openSeaMarketBody"
+              hidden
+            >[ COLLAPSE ]</button>
+          </div>
+        </div>
+
+        <div id="openSeaMarketSummary" class="collapsed-panel-summary" hidden>
+          [ OPENSEA MARKET ] Market summary loading...
+        </div>
+
+        <div id="openSeaMarketBody" class="collapsible-panel-body">
+        <div class="metrics collection-metrics">
+          <article class="metric">
+            <div class="metric-label">Floor Price</div>
+            <div id="floorPrice" class="metric-value">—</div>
+            <div id="floorTrend" class="floor-trend floor-trend-building">
+              ● BUILDING 4H BASELINE
+            </div>
+          </article>
+
+          <article class="metric">
+            <div class="metric-label">Total Volume</div>
+            <div id="totalVolume" class="metric-value">—</div>
+          </article>
+
+          <article class="metric">
+            <div class="metric-label">Owners</div>
+            <div id="collectionOwners" class="metric-value">—</div>
+          </article>
+
+          <article class="metric">
+            <div class="metric-label">Sales</div>
+            <div id="collectionSales" class="metric-value">—</div>
+          </article>
+
+          <article class="metric">
+            <div class="metric-label">Listed</div>
+            <div id="collectionListed" class="metric-value">—</div>
+          </article>
+
+          <article class="metric">
+            <div class="metric-label">Marketplace</div>
+            <div class="metric-value compact-value">
+              <a
+                href="#" data-opensea-link
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                OpenSea →
+              </a>
+            </div>
+          </article>
+        </div>
+
+        <div id="openSeaKeyNote" class="api-note" hidden>
+          Waiting for OpenSea marketplace data.
+        </div>
+        </div>
+      </section>
+
+
+      <div id="collectionPulsePanel" class="collection-market collection-pulse-panel" aria-label="Collection Pulse since last visit">
+        <div class="dashboard-header">
+          <h3>Collection Pulse / Since Last Visit</h3>
+          <div class="collection-status-wrap">
+            <span id="collectionPulseStatus" class="data-status">BASELINE SET</span>
+            <span id="collectionPulseUpdated" class="collection-updated">Local browser baseline</span>
+          </div>
+        </div>
+
+        <div id="collectionPulseBaseline" class="collection-pulse-baseline">
+          <span class="cyan">[ BASELINE SET ]</span>
+          Baseline starts now. Return later to compare activity since this visit.
+        </div>
+
+        <div id="collectionPulseMetrics" class="metrics collection-pulse-metrics" hidden>
+          <article class="metric">
+            <div class="metric-label">Sales</div>
+            <div id="pulseSales" class="metric-value">—</div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">Buyers</div>
+            <div id="pulseBuyers" class="metric-value">—</div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">Sellers</div>
+            <div id="pulseSellers" class="metric-value">—</div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">Floor Change</div>
+            <div id="pulseFloorChange" class="metric-value">—</div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">Premium Sales</div>
+            <div id="pulsePremiumSales" class="metric-value">—</div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">Top Sale</div>
+            <div id="pulseTopSale" class="metric-value">—</div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">Time Since Last Check</div>
+            <div id="pulseElapsed" class="metric-value compact-value">—</div>
+          </article>
+        </div>
+
+        <div id="collectionPulseNote" class="api-note" hidden></div>
+      </div>
+
+
+      <section id="nftWhalesPanel" class="nft-whales-panel collapsible-panel" aria-label="NFT holder analytics">
+        <div class="dashboard-header collapsible-panel-header">
+          <h3>NFT Holder Analytics</h3>
+          <div class="collapsible-panel-controls">
+            <div class="collection-status-wrap">
+              <span id="nftWhalesStatus" class="data-status">
+                CONNECTING
+              </span>
+              <span id="nftWhalesUpdated" class="collection-updated">
+                Updated —
+              </span>
+            </div>
+            <button
+              id="nftWhalesToggle"
+              class="panel-toggle"
+              type="button"
+              aria-expanded="true"
+              aria-controls="nftWhalesBody"
+              hidden
+            >[ COLLAPSE ]</button>
+          </div>
+        </div>
+
+        <div id="nftWhalesSummary" class="collapsed-panel-summary" hidden>
+          [ HOLDERS ] Holder summary loading...
+        </div>
+
+        <div id="nftWhalesBody" class="collapsible-panel-body">
+        <div class="metrics whale-summary">
+          <article class="metric">
+            <div class="metric-label">NFT Whales (10+)</div>
+            <div id="nftWhaleCount" class="metric-value">—</div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">Largest Holder</div>
+            <div id="largestNftHolder" class="metric-value">—</div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">Top-10 Concentration</div>
+            <div id="top10Concentration" class="metric-value">—</div>
+          </article>
+        </div>
+
+        <div class="whale-grid">
+          <div class="whale-column">
+            <h4>Top 25 NFT Holders</h4>
+            <div class="whale-table-wrap">
+              <table class="whale-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Wallet</th>
+                    <th>NFTs</th>
+                    <th>NFT Share</th>
+                  </tr>
+                </thead>
+                <tbody id="nftWhaleRows">
+                  <tr><td colspan="4">Loading holder rankings...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="whale-column">
+            <h4>Ownership Distribution</h4>
+            <div id="nftDistribution" class="distribution-list"></div>
+
+            <h4 class="lookup-title">Wallet Lookup</h4>
+            <form id="nftWalletForm" class="wallet-lookup">
+              <input
+                id="nftWalletInput"
+                type="text"
+                placeholder="0x wallet address"
+                autocomplete="off"
+                spellcheck="false"
+                aria-label="NFT holder wallet address"
+              >
+              <button type="submit">CHECK</button>
+            </form>
+            <div id="nftWalletResult" class="wallet-result">
+              Enter a wallet to check its NFT rank.
+            </div>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <section class="launch-panel">
+        <h3>Collection Information</h3>
+
+        <div class="info-row">
+          <span>Collection</span>
+          <strong>{{PROJECT_NAME}} NFT</strong>
+        </div>
+
+        <div class="info-row">
+          <span>Chain</span>
+          <strong>{{PROJECT_ECOSYSTEM}}</strong>
+        </div>
+
+        <div class="info-row">
+          <span>NFT Contract</span>
+          <a
+            href="#" data-nft-explorer-link
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span data-nft-contract>NOT CONFIGURED</span>
+          </a>
+        </div>
+
+        <div class="info-row">
+          <span>OpenSea Collection</span>
+          <a
+            href="#" data-opensea-link
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            OpenSea
+          </a>
+        </div>
+      </section>
+      </div>
+
+      <div id="terminal-footer" class="terminal-area terminal-footer">
+        <div class="footer-version">
+          <span data-project-version></span>
+        </div>
+
+        <div class="powered-by">
+          <span class="orange">[ INFO ]</span>
+          Collection statistics powered by OpenSea API.
+        </div>
+
+        <footer class="footer">
+          Independently built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp8339 on X">𝕏 @Gokalp8339</a><br>
+          Not affiliated with or endorsed by the official {{PROJECT_NAME}} team.<br>
+          View listings and collection activity through the official OpenSea link.
+        </footer>
+      </div>
+    </section>
+  </main>
+
+  <aside class="nft-sales-window" aria-label="Live {{PROJECT_NAME}} NFT sales">
+    <section class="nft-sales-panel" aria-labelledby="nftSalesTitle">
+        <div class="dashboard-header">
+          <h3 id="nftSalesTitle">NFT Sales Tracker</h3>
+          <div class="collection-status-wrap">
+            <span id="nftSalesStatus" class="data-status">CONNECTING</span>
+            <span id="nftSalesUpdated" class="collection-updated">Updated —</span>
+          </div>
+        </div>
+
+        <p class="sales-intro">
+          Recent {{PROJECT_NAME}} NFT sales from OpenSea. This feed loads automatically and refreshes in the background.
+        </p>
+
+        <div class="sales-floor-summary" aria-label="Current OpenSea floor price and 4-hour trend">
+          <div class="sales-floor-primary">
+            <span class="sales-floor-label">CURRENT FLOOR: </span>
+            <span id="salesFloorPrice" class="sales-floor-price">—</span>
+          </div>
+          <div class="sales-floor-trend-row">
+            <span class="sales-floor-trend-label">4-hour trend:</span>
+            <span id="salesFloorTrend" class="sales-floor-trend floor-trend-building">
+              ● BUILDING BASELINE
+            </span>
+          </div>
+        </div>
+
+        <div id="nftSalesRows" class="nft-sales-list" aria-live="polite">
+          <div class="nft-sale-placeholder">Loading recent OpenSea sales...</div>
+        </div>
+    </section>
+
+
+  </aside>
+  </div>
+
+  <script src="/project-config.js"></script>
+  <script src="/project-runtime.js?v=1.0-livefix2"></script>
+  <script src="/script.js?v=final-pulse-complete1"></script>
+  <script src="/binary-background.js?v=1.0-livefix2"></script>
+</body>
+</html>

@@ -605,3 +605,80 @@ h2{
 .module-title{margin:14px 0 12px!important;text-align:center!important;color:var(--yellow)!important;font-size:1.15rem!important;font-weight:600!important;letter-spacing:.5px!important}
 .footer-version,.terminal-footer .footer-version{color:var(--yellow)!important}
 @media(max-width:560px){.community-title-row{gap:7px;flex-direction:column;margin:10px 0 7px!important}.community-divider{font-size:.72em}.community-subtitle{line-height:1.5}}
+
+
+/* =========================================================
+   CHAPTER 15A — SHARED NON-NFT TERMINAL POLISH
+   ========================================================= */
+:root{
+  --structure-border:var(--orange);
+  --structure-border-soft:rgba(255,138,0,.72);
+  --structure-glow:rgba(255,138,0,.10);
+}
+
+/* Structural framing uses the crisp treatment established by the help panel. */
+.terminal{
+  border:1px solid var(--structure-border)!important;
+  box-shadow:0 0 0 1px var(--structure-glow);
+}
+.module,
+.whale-console,
+.block{
+  border-color:var(--structure-border-soft)!important;
+}
+
+.contract-address-line{
+  color:var(--cyan)!important;
+}
+.contract-address-line .market-tag,
+.contract-address-line .market-label,
+.contract-address-line .market-colon,
+.contract-address-line .market-value{
+  color:var(--cyan)!important;
+}
+.contract-value-wrap{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+}
+.contract-value{
+  display:block;
+  padding:0;
+  background:transparent;
+  border:0;
+  font:inherit;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  user-select:text;
+}
+.copy-contract{
+  flex:0 0 auto;
+  border:1px solid currentColor;
+  background:transparent;
+  color:var(--cyan);
+  padding:0 5px;
+  line-height:1.3;
+  cursor:pointer;
+}
+.copy-contract:hover,
+.copy-contract:focus-visible{
+  color:#fff;
+  outline:none;
+}
+
+
+/* Chapter 15A acceptance polish — compact live rows + FINAL NFT-ONLY footer-area style */
+#terminal-live-panel .market-line{display:grid!important;grid-template-columns:14ch 17ch 1ch minmax(0,1fr)!important;column-gap:8px!important;align-items:baseline!important;min-height:1.48em!important}
+#terminal-live-panel .market-tag,#terminal-live-panel .market-label{white-space:nowrap!important}
+#terminal-live-panel .market-colon{display:block!important;text-align:center!important}
+#terminal-live-panel .market-value{display:block!important;width:auto!important;min-width:0!important;margin:0!important;text-align:left!important;white-space:normal!important;overflow-wrap:anywhere!important}
+#terminal-footer{margin-top:10px;padding:10px 8px 2px;border-top:1px solid var(--structure-border)!important;text-align:center}
+#terminal-footer .footer-version{margin:0!important;padding:0!important;border:0!important;color:var(--orange)!important;text-align:center!important;font-size:.82em!important}
+#terminal-footer .footer{padding:11px 4px 0!important;color:#d8e0dc!important;opacity:1!important;text-align:center!important;font-size:.72em!important;line-height:1.45!important}
+#terminal-footer .footer a{color:var(--cyan)!important;text-decoration:none;border-bottom:1px dotted currentColor}
+@media(max-width:560px){#terminal-live-panel .market-line{grid-template-columns:12ch 10ch 1ch minmax(0,1fr)!important;column-gap:5px!important}.contract-value-wrap{min-width:0;flex-wrap:wrap}}
+
+
+/* Chapter 17A Hotfix 2 — uploaded brand artwork keeps its natural aspect ratio. */
+.community-header .mascot,.community-header .community-mascot,.mascot.community-mascot{display:block!important;width:auto!important;height:auto!important;max-width:min(240px,52vw)!important;max-height:110px!important;object-fit:contain!important;margin:0 auto 10px!important;background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;filter:none!important;animation:none!important;transform:none!important}

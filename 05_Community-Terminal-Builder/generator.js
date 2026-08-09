@@ -2,13 +2,15 @@
 const fs = require("fs");
 const path = require("path");
 const { createZip } = require("./zip");
+const { DEFAULT_TERMINAL_THEME } = require("./theme-contract");
 const MASTER_ROOT = path.resolve(__dirname, "..");
 const MODULES = ["01_Landing-Page", "02_Whale-Activity-Tracker", "03_NFT-Collection-Terminal", "04_Meme-Intel"];
-const BUILDER_VERSION = "1.3.1-B";
+const NFT_MULTI_TEMPLATE = "03_NFT-Collection-Terminal-Multi-Phase";
+const BUILDER_VERSION = "1.3.2-b";
 const CONFIG_SCHEMA_VERSION = 1;
 const TERMINAL_ENGINE_VERSION = "1.0.0";
 
-function text(v, fallback = "") { return typeof v === "string" ? v.trim() : fallback; }
+function text(v, fallback = "") { const value = typeof v === "string" ? v.trim() : ""; return value || fallback; }
 function bool(v, fallback = false) { return typeof v === "boolean" ? v : fallback; }
 function numberOrNull(v) { const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : null; }
 function slugify(value) { return text(value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
@@ -37,11 +39,11 @@ function normalize(input) {
     token, nft, dexChain: text(input.dexScreenerChainId, "robinhood"),
     blockscout: text(input.blockscoutApiBase, "https://robinhoodchain.blockscout.com/api/v2").replace(/\/$/, ""),
     colors: {
-      background: text(input.colors?.background, "#020806"), panel: text(input.colors?.panel, "#03100b"),
-      green: text(input.colors?.primary, "#39ff14"), yellow: text(input.colors?.accent, "#ff6a00"),
-      cyan: text(input.colors?.cyan, "#65dfff"), blue: text(input.colors?.blue, "#68c8ff"),
-      orange: text(input.colors?.orange, "#ff8a00"), red: text(input.colors?.red, "#ff5a67"),
-      muted: text(input.colors?.muted, "#708a7b"), line: text(input.colors?.line, "#194b2d"),
+      background: text(input.colors?.background, DEFAULT_TERMINAL_THEME.background), panel: text(input.colors?.panel, DEFAULT_TERMINAL_THEME.panel),
+      green: text(input.colors?.primary, DEFAULT_TERMINAL_THEME.green), yellow: text(input.colors?.accent, DEFAULT_TERMINAL_THEME.yellow),
+      cyan: text(input.colors?.cyan, DEFAULT_TERMINAL_THEME.cyan), blue: text(input.colors?.blue, DEFAULT_TERMINAL_THEME.blue),
+      orange: text(input.colors?.orange, DEFAULT_TERMINAL_THEME.orange), red: text(input.colors?.red, DEFAULT_TERMINAL_THEME.red),
+      muted: text(input.colors?.muted, DEFAULT_TERMINAL_THEME.muted), line: text(input.colors?.line, DEFAULT_TERMINAL_THEME.line),
     },
     links: {
       home: text(input.links?.home) || "/", whales: text(input.links?.whales) || "/whales",
@@ -49,12 +51,59 @@ function normalize(input) {
       x: text(input.links?.x), telegram: text(input.links?.telegram), explorer: text(input.links?.explorer),
       dexScreener: text(input.links?.dexScreener), openSea: text(input.links?.openSea),
     },
-    nftSettings: { collectionName: text(input.nft?.collectionName, `${name} NFT`), openSeaSlug: text(input.nft?.openSeaSlug), supply: numberOrNull(input.nft?.supply), whaleThreshold: numberOrNull(input.nft?.whaleThreshold) || 10 },
+    nftSettings: (() => {
+      const requestedMode = text(input.nft?.mode, "single") === "multiple" ? "multiple" : "single";
+      const phases = Array.isArray(input.nft?.mintPhases) ? input.nft.mintPhases.slice(0, 6).map((phase, index) => ({
+        id: slugify(phase?.id || phase?.label || `phase-${index + 1}`) || `phase-${index + 1}`,
+        label: text(phase?.label, `PHASE ${index + 1}`).toUpperCase(),
+        name: text(phase?.name, text(phase?.label, `Phase ${index + 1}`)),
+        startsAt: text(phase?.startsAt), endsAt: text(phase?.endsAt),
+        price: text(phase?.price, "—"), limit: text(phase?.limit, "—"), timezone: text(phase?.timezone, text(input.nft?.timezone, "UTC")),
+      })) : [];
+      if (requestedMode === "multiple") {
+        if (phases.length < 2) throw new Error("Multiple-phase NFT mint requires at least 2 phases.");
+        for (const [index, phase] of phases.entries()) {
+          const start = Date.parse(phase.startsAt), end = Date.parse(phase.endsAt);
+          if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) throw new Error(`NFT phase ${index + 1} has an invalid start/end schedule.`);
+          if (index && start < Date.parse(phases[index - 1].endsAt)) throw new Error(`NFT phase ${index + 1} starts before the previous phase ends.`);
+        }
+      }
+      return { collectionName: text(input.nft?.collectionName, `${name} NFT`), openSeaSlug: text(input.nft?.openSeaSlug), mode: requestedMode, mintAt: requestedMode === "multiple" ? phases[0]?.startsAt || text(input.nft?.mintAt) : text(input.nft?.mintAt), mintEndAt: text(input.nft?.mintEndAt) || null, mintPhases: requestedMode === "multiple" ? phases : [], timezone: text(input.nft?.timezone, "UTC"), supply: numberOrNull(input.nft?.supply), whaleThreshold: numberOrNull(input.nft?.whaleThreshold) || 10 };
+    })(),
     features: { landing: true, whaleTracker: bool(input.features?.whaleTracker, true), nftTerminal: nftEnabled, memeIntel: bool(input.features?.memeIntel, true), liveMarket: bool(input.features?.liveMarket, true) },
     mascot, mascotPath: `/assets/${id}-mascot.${ext}`, mascotExt: ext,
   };
 }
 function js(value) { return JSON.stringify(value, null, 2); }
+function mintDisplayFromIso(value) {
+  const raw = text(value);
+  const m = raw.match(/^\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/);
+  if (!m) return "";
+  let zone = m[3] === "Z" ? "UTC" : `GMT${m[3].replace(":00", "").replace(/^\+0/, "+").replace(/^-0/, "-")}`;
+  return `${m[1]}:${m[2]} ${zone}`;
+}
+function phaseTimeDisplay(iso, timeZone) {
+  const date = new Date(iso || "");
+  if (!Number.isFinite(date.getTime())) return "configured time";
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", { timeZone: timeZone || "UTC", day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit", hourCycle:"h23" }).formatToParts(date);
+    const x = Object.fromEntries(parts.filter(part => part.type !== "literal").map(part => [part.type, part.value]));
+    return `${x.day} ${x.month} · ${x.hour}:${x.minute} · ${timeZone || "UTC"}`;
+  } catch { return mintDisplayFromIso(iso) || "configured time"; }
+}
+function phaseMarkup(phases) {
+  return phases.map((phase, index) => `<section id="phaseCard-${phase.id}" class="phase-countdown-card" data-phase="${phase.id}">
+              <div class="phase-card-topline"><span class="phase-kind">[ ${phase.label} ]</span><span id="phaseStatus-${phase.id}" class="phase-status">[ UPCOMING ]</span></div>
+              <h2>“${phase.name.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")}”</h2>
+              <div class="phase-details">${phase.price} <span aria-hidden="true">·</span> ${phase.limit}</div>
+              <div id="phaseCountdown-${phase.id}" class="phase-countdown-value">--D --H --M --S</div>
+              <div class="phase-time">Starts ${phaseTimeDisplay(phase.startsAt, phase.timezone)} <span aria-hidden="true">·</span> Ends ${phaseTimeDisplay(phase.endsAt, phase.timezone)}</div>
+            </section>`).join("\n\n            ");
+}
+function phaseCommandMarkup(phases) {
+  return phases.map((phase,index)=>`<div id="phaseCommand-${phase.id}" class="market-line market-countdown-line phase-command-line"><span class="market-tag countdown-tag">[ MINT ]</span><span class="market-label">Phase-${index+1}</span><span class="market-colon">:</span><strong id="phaseCommandValue-${phase.id}" class="market-value">--:--:--</strong></div>`).join("\n            ");
+}
+
 function profileSource(p) {
   const value = {
     project: { id:p.id, name:p.name, displayName:p.name, ticker:p.ticker, version:p.version, description:p.description, ecosystem:p.ecosystem, promptUser:p.promptUser, promptHost:p.promptHost },
@@ -82,22 +131,105 @@ function makeMountableServer(source, moduleName) {
   return `${prefix}\n\nmodule.exports = app;\n`;
 }
 function prefixBrowserRoutes(source, base) {
-  const escaped = base.replace(/\//g, "\\/");
   return source
-    .replace(/(["'`])\/project-config\.js\1/g, `$1${base}/project-config.js$1`)
-    .replace(/(["'`])\/style\.css\1/g, `$1${base}/style.css$1`)
-    .replace(/(["'`])\/whale\.css\1/g, `$1${base}/whale.css$1`)
-    .replace(/(["'`])\/intel\.css\1/g, `$1${base}/intel.css$1`)
-    .replace(/(["'`])\/project-runtime\.js\1/g, `$1${base}/project-runtime.js$1`)
-    .replace(/(["'`])\/whale\.js\1/g, `$1${base}/whale.js$1`)
-    .replace(/(["'`])\/intel\.js\1/g, `$1${base}/intel.js$1`)
-    .replace(/(["'`])\/script\.js\1/g, `$1${base}/script.js$1`)
+    .replace(/(["'`])\/project-config\.js(?:\?[^"'`]*)?\1/g, `$1${base}/project-config.js$1`)
+    .replace(/(["'`])\/style\.css(?:\?[^"'`]*)?\1/g, `$1${base}/style.css$1`)
+    .replace(/(["'`])\/countdown\.css(?:\?[^"'`]*)?\1/g, `$1${base}/countdown.css$1`)
+    .replace(/(["'`])\/whale\.css(?:\?[^"'`]*)?\1/g, `$1${base}/whale.css$1`)
+    .replace(/(["'`])\/intel\.css(?:\?[^"'`]*)?\1/g, `$1${base}/intel.css$1`)
+    .replace(/(["'`])\/project-runtime\.js(?:\?[^"'`]*)?\1/g, `$1${base}/project-runtime.js$1`)
+    .replace(/(["'`])\/whale\.js(?:\?[^"'`]*)?\1/g, `$1${base}/whale.js$1`)
+    .replace(/(["'`])\/intel\.js(?:\?[^"'`]*)?\1/g, `$1${base}/intel.js$1`)
+    .replace(/(["'`])\/script\.js(?:\?[^"'`]*)?\1/g, `$1${base}/script.js$1`)
+    .replace(/(["'`])\/countdown\.js(?:\?[^"'`]*)?\1/g, `$1${base}/countdown.js$1`)
+    .replace(/(["'`])\/binary-background\.js(?:\?[^"'`]*)?\1/g, `$1${base}/binary-background.js$1`)
+    .replace(/(["'`])\/assets\//g, `$1${base}/assets/`)
     .replace(/(["'`])\/api\//g, `$1${base}/api/`);
 }
+
 function transformModuleFile(moduleName, relativeName, data, p) {
   let source = data.toString("utf8");
-  if (relativeName === "server.js") return Buffer.from(makeMountableServer(source, moduleName));
-  if (relativeName === "public/index.html") {
+  if (relativeName === "server.js") {
+    if (moduleName === "03_NFT-Collection-Terminal") {
+      source = source
+        .replaceAll("888 Society NFT Terminal", `${p.name} NFT Terminal`)
+        .replaceAll("888 SOCIETY", p.name)
+        .replaceAll("888 Society", p.name)
+        .replaceAll("/assets/888-society-mark.png", p.mascotPath)
+        .replaceAll("/assets/gangsterrobins-mascot.png", p.mascotPath);
+    }
+    return Buffer.from(makeMountableServer(source, moduleName));
+  }
+  if (moduleName === "03_NFT-Collection-Terminal") {
+    const nftName = p.nftSettings.collectionName || `${p.name} NFT`;
+    const openSea = p.links.openSea || (p.nftSettings.openSeaSlug ? `https://opensea.io/collection/${p.nftSettings.openSeaSlug}/overview` : "#");
+    source = source
+      .replaceAll("GANGSTERROBINS NFT", nftName.toUpperCase())
+      .replaceAll("GANGSTERROBINS", p.name)
+      .replaceAll("GangsterRobins", p.name)
+      .replaceAll("888 SOCIETY", p.name)
+      .replaceAll("888 Society", p.name)
+      .replaceAll("https://opensea.io/collection/gangsterrobins/overview", openSea)
+      .replaceAll("https://opensea.io/collection/888-society-605141138/overview", openSea)
+      .replaceAll("/assets/gangsterrobins-mascot.png", p.mascotPath)
+      .replaceAll("/assets/gangsterrobins-favicon.png", p.mascotPath)
+      .replaceAll("/assets/888-society-mark.png", p.mascotPath)
+      .replaceAll("/assets/888-favicon.png", p.mascotPath)
+      .replaceAll("888-society", p.id);
+
+    if (p.nftSettings.mode === "multiple") {
+      source = source.replaceAll("888-phase-live-seen", `${p.id}-phase-live-seen`).replaceAll("gold 888 mascot", `${p.name} mascot`);
+      if (["public/terminal.html", "public/script.js"].includes(relativeName) && p.nftSettings.supply) source = source.replace(/\b888\b/g, String(p.nftSettings.supply));
+      if (/\.(css|js|html)$/.test(relativeName)) {
+        source = source
+          .replaceAll("#d4af37", p.colors.yellow)
+          .replaceAll("#D4AF37", p.colors.yellow)
+          .replaceAll("#6f5a1d", p.colors.line)
+          .replaceAll("#ff3b30", p.colors.red)
+          .replaceAll("#d7d7d7", p.colors.muted);
+      }
+      if (relativeName === "public/countdown.css") {
+        const columns = Math.min(3, Math.max(2, p.nftSettings.mintPhases.length));
+        source = source.replace(/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/, `grid-template-columns:repeat(${columns},minmax(0,1fr))`);
+      }
+      if (relativeName === "public/index.html") {
+        const phases = p.nftSettings.mintPhases;
+        source = source.replace(/            <div id="phaseCommand-allowlist1"[\s\S]*?<div id="phaseCommand-public"[^\n]*<\/div>/, phaseCommandMarkup(phases));
+        source = source.replace(/          <div class="phase-countdown-grid"[^>]*>[\s\S]*?          <\/div>\n          <div class="launch-actions">/, `          <div class="phase-countdown-grid" aria-label="${p.name} mint phase schedule">\n            ${phaseMarkup(phases)}\n          </div>\n          <div class="launch-actions">`);
+        const xLine = p.links.x ? `<div class="launch-links-line"><span class="orange">[ SOCIALS ]</span> <a href="${p.links.x}" target="_blank" rel="noopener noreferrer">${p.name} X Account</a></div>` : "";
+        source = source.replace(/          <div class="launch-links-line"><span class="orange">\[ SOCIALS \]<\/span>[\s\S]*?<\/div>/, `          ${xLine}`);
+      }
+    } else if (relativeName === "public/countdown.js") {
+      const mintAt = p.nftSettings.mintAt || "1970-01-01T00:00:00Z";
+      source = source.replace(/const MINT_AT = new Date\([^\n]+\);/, `const MINT_AT = new Date(${JSON.stringify(mintAt)});`);
+    }
+
+    if (relativeName === "public/index.html") {
+      const mintDisplay = mintDisplayFromIso(p.nftSettings.mintAt);
+      source = source
+        .replace(/<h1>[^<]*<\/h1>/, `<h1>${p.name} NFT COLLECTION TERMINAL</h1>`)
+        .replace(/<div id="mintReady" class="line"><span class="orange">\[ UPCOMING \]<\/span> Mint begins at [^<]*<\/div>/, `<div id="mintReady" class="line"><span class="orange">[ UPCOMING ]</span> Mint begins at ${mintDisplay || "the configured mint time"}.</div>`)
+        .replace(/after the mint begins at [^<]*<\/p>/, `after the mint begins at ${mintDisplay || "the configured mint time"}.</p>`)
+        .replaceAll("[ ENTER NFT TERMINAL ]", "[ VISIT NFT TERMINAL ]")
+        .replaceAll("ENTER NFT TERMINAL", "VISIT NFT TERMINAL");
+      source = source.replace(/<div class="footer-version">\s*[^<]+\s*<\/div>/, `<div class="footer-version">\n            ${p.name} NFT Terminal\n          </div>`);
+    }
+    if (relativeName === "public/terminal.html") {
+      source = source.replace(/<span data-project-version><\/span>/, `${p.name} NFT Terminal`);
+    }
+    if (["public/terminal.html", "public/script.js"].includes(relativeName) && p.nftSettings.supply) {
+      source = source.replaceAll("420", String(p.nftSettings.supply)).replaceAll("10014", String(p.nftSettings.supply)).replaceAll("10,014", Number(p.nftSettings.supply).toLocaleString("en-US"));
+    }
+    if (["public/project-runtime.js", "public/countdown.js"].includes(relativeName)) {
+      source = source.replace(/(["'])\/terminal\1/g, `$1/nft/terminal$1`);
+      if (relativeName === "public/project-runtime.js") source = source.replace(/:\s*c\.links\.home/g, ': "/nft"');
+    }
+    if (relativeName === "public/index.html") {
+      source = source.replaceAll('href="/terminal"', 'href="/nft/terminal"');
+      source = source.replaceAll('href="/" title=', 'href="/nft" title=');
+    }
+  }
+  if (relativeName === "public/index.html" && moduleName !== "03_NFT-Collection-Terminal") {
     const faviconHref = p.mascot ? `assets/${p.id}-mascot.${p.mascotExt}` : "favicon.png";
     source = source.replace("</head>", `  <link rel="icon" href="${faviconHref}">\n  <link rel="apple-touch-icon" href="${faviconHref}">\n</head>`);
   }
@@ -108,9 +240,11 @@ function transformModuleFile(moduleName, relativeName, data, p) {
   }
   return Buffer.from(source);
 }
+
 function walkModule(dir, prefix, moduleName, entries, p, relative = "") {
   for (const item of fs.readdirSync(dir, { withFileTypes:true })) {
     if (["node_modules", ".git"].includes(item.name)) continue;
+    if (moduleName === "03_NFT-Collection-Terminal" && relative === "public" && item.name === "assets") continue;
     const full = path.join(dir, item.name);
     const relLocal = relative ? path.posix.join(relative, item.name) : item.name;
     const relZip = path.posix.join(prefix, item.name);
@@ -392,7 +526,10 @@ This checks the Landing Page, security headers, \`/healthz\`, \`/status\`, and e
 function generate(input) {
   const p = normalize(input); const root = `${p.name.replace(/[^A-Z0-9]+/g, "_")}_Community_Terminal`;
   const entries = [];
-  for (const moduleName of MODULES) walkModule(path.join(MASTER_ROOT, moduleName), `${root}/${moduleName}`, moduleName, entries, p);
+  for (const moduleName of MODULES) {
+    const sourceName = moduleName === "03_NFT-Collection-Terminal" && p.nftSettings.mode === "multiple" ? NFT_MULTI_TEMPLATE : moduleName;
+    walkModule(path.join(MASTER_ROOT, sourceName), `${root}/${moduleName}`, moduleName, entries, p);
+  }
   walk(path.join(MASTER_ROOT, "config"), `${root}/config`, entries);
   for (let i = entries.length - 1; i >= 0; i--) {
     if (/\/config\/projects\//.test(entries[i].name) || /\/config\/project\.config\.js$/.test(entries[i].name)) entries.splice(i, 1);

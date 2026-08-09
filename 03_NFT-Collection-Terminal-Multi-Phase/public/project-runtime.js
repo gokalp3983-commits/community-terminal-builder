@@ -22,45 +22,24 @@
     document.querySelectorAll("[data-project-ticker]").forEach((e) => { e.textContent = c.project.ticker; });
     document.querySelectorAll("[data-project-prompt]").forEach((e) => { e.textContent = window.PROJECT_PROMPT; });
     document.querySelectorAll("[data-project-home]").forEach((e) => {
-      e.href = c.links.home;
-      e.title = `Return to ${c.project.name} Community Terminal`;
+      const mintAt = c.nft?.mintAt ? new Date(c.nft.mintAt).getTime() : NaN;
+      const postMint = Number.isFinite(mintAt) && Date.now() >= mintAt;
+      e.href = postMint ? "/terminal" : c.links.home;
+      e.title = postMint
+        ? `${c.project.name} NFT Terminal`
+        : `Return to ${c.project.name} mint countdown`;
     });
     document.querySelectorAll("[data-project-mascot]").forEach((e) => {
-      e.src = c.branding.mascot;
+      const mascot = String(c.branding.mascot || "");
+      const assetRoot = ["/", "assets/"].join("");
+      e.src = mascot.startsWith(assetRoot) ? `/nft${mascot}` : mascot;
       e.alt = c.branding.mascotAlt;
     });
     document.querySelectorAll("[data-project-version]").forEach((e) => {
-      e.textContent = `${c.project.name} Community Terminal`;
-    });
-    document.querySelectorAll("[data-project-footer-title]").forEach((e) => {
-      e.textContent = `${c.project.name} Community Terminal`;
-    });
-    document.querySelectorAll("[data-project-footer-info]").forEach((e) => {
-      e.textContent = `Independent community tools for ${c.project.ecosystem}.`;
+      e.textContent = `${c.project.name} NFT Terminal`;
     });
     document.querySelectorAll("[data-project-footer]").forEach((e) => {
-      e.innerHTML = `Independently built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp8339 on X">𝕏 @Gokalp8339</a><br>Not affiliated with or endorsed by the official ${c.project.ticker} team.<br>Built for the ${c.project.ecosystem} community.`;
-    });
-
-    document.querySelectorAll("[data-token-contract]").forEach((e) => {
-      e.textContent = c.contracts.token || "NOT CONFIGURED";
-    });
-    document.querySelectorAll("[data-copy-token-contract]").forEach((button) => {
-      button.addEventListener("click", async () => {
-        const address = c.contracts.token || "";
-        if (!address) return;
-        try {
-          await navigator.clipboard.writeText(address);
-          const original = button.textContent;
-          button.textContent = "✓";
-          button.setAttribute("aria-label", "Contract address copied");
-          setTimeout(() => { button.textContent = original; button.setAttribute("aria-label", "Copy token contract address"); }, 1200);
-        } catch (_) {
-          const range = document.createRange();
-          const target = document.querySelector("[data-token-contract]");
-          if (target) { range.selectNodeContents(target); const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range); }
-        }
-      });
+      e.innerHTML = `<span class="footer-line footer-built">Independently built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer">𝕏 @Gokalp8339</a></span><span class="footer-line footer-disclaimer"><span class="footer-mobile-line">Not affiliated with or endorsed by</span><span class="footer-mobile-line">the official ${c.project.ticker} team.</span></span><span class="footer-line footer-ecosystem"><span class="footer-mobile-line">Built for the ${c.project.ecosystem}</span><span class="footer-mobile-line">${c.project.ticker} ecosystem.</span></span>`;
     });
 
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -79,11 +58,23 @@
     const colorMap = {
       background: "--bg", panel: "--panel", green: "--green", yellow: "--yellow",
       cyan: "--cyan", blue: "--blue", orange: "--orange", red: "--red",
-      muted: "--muted", line: "--line"
+      muted: "--muted"
     };
     Object.entries(colorMap).forEach(([key, variable]) => {
       if (colors[key]) document.documentElement.style.setProperty(variable, colors[key]);
     });
-    document.documentElement.style.setProperty("--nft-terminal-label", `"${c.nft?.collectionName || `${c.project.name} NFT`} COLLECTION TERMINAL"`);
+    document.documentElement.style.setProperty("--nft-terminal-label", `"${c.project.name} NFT Collection"`);
+
+    document.querySelectorAll("[data-opensea-link]").forEach((e) => {
+      e.href = c.links.openSea || "#";
+      e.hidden = !c.links.openSea;
+    });
+    document.querySelectorAll("[data-nft-explorer-link]").forEach((e) => {
+      e.href = c.links?.explorer || (c.contracts.nft ? `https://etherscan.io/address/${c.contracts.nft}` : "#");
+      e.hidden = !c.contracts.nft;
+    });
+    document.querySelectorAll("[data-nft-contract]").forEach((e) => {
+      e.textContent = c.contracts.nft || "NOT CONFIGURED";
+    });
   });
 })();

@@ -2,13 +2,13 @@
   --bg:#020806;
   --panel:#03100b;
   --green:#39ff14;
-  --yellow:#ff6a00;
-  --cyan:#65dfff;
-  --blue:#68c8ff;
-  --orange:#ff8a00;
-  --red:#ff5a67;
-  --muted:#708a7b;
-  --line:#194b2d;
+  --yellow:#d4af37;
+  --cyan:#ffffff;
+  --blue:#ffffff;
+  --orange:#d4af37;
+  --red:#ff3b30;
+  --muted:#d7d7d7;
+  --line:#6f5a1d;
 }
 
 *{
@@ -23,7 +23,7 @@ body{
 body{
   margin:0;
   background:var(--bg);
-  color:#e8fff0;
+  color:#ffffff;
   font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
   font-size:15px;
   line-height:1.48
@@ -257,8 +257,8 @@ h2{
 }
 .market-panel{
   margin-top:18px;
-  border-top:1px solid rgba(255,176,32,.62);
-  border-bottom:1px solid rgba(255,176,32,.34);
+  border-top:1px solid rgba(212,175,55,.62);
+  border-bottom:1px solid rgba(212,175,55,.34);
   padding:11px 0 10px;
   color:var(--orange);
   text-align:left;
@@ -289,12 +289,12 @@ h2{
 }
 
 .market-updated-line{
-  color:rgba(255,176,32,.72);
+  color:rgba(212,175,55,.72);
   font-size:.82em;
 }
 
 .market-updated-line strong{
-  color:rgba(255,176,32,.82);
+  color:rgba(212,175,55,.82);
 }
 
 .boot{
@@ -588,7 +588,7 @@ h2{
 
 /* Clearly brighter footer disclaimer */
 .terminal-footer .footer{
-  color:#d8e0dc !important;
+  color:#ffffff !important;
   opacity:1 !important;
 }
 
@@ -605,12 +605,12 @@ h2{
   --bg:#010403;
   --panel:#020805;
   --green:#39ff14;
-  --yellow:#ff6a00;
-  --cyan:#42f5e9;
-  --orange:#ff8a00;
-  --red:#ff5f5f;
-  --text:#d9ffe0;
-  --muted:#7f9c85;
+  --yellow:#d4af37;
+  --cyan:#ffffff;
+  --orange:#d4af37;
+  --red:#ff3b30;
+  --text:#ffffff;
+  --muted:#d7d7d7;
   --line:rgba(57,255,20,.24);
 }
 
@@ -643,7 +643,7 @@ body{
   display:block;
   width:72px;
   height:72px;
-  object-fit:cover;
+  object-fit:contain;
   margin:0 auto 9px;
 }
 
@@ -674,8 +674,8 @@ h2{
 
 .nft-module .market-panel{
   margin-top:18px;
-  border-top:1px solid rgba(255,176,32,.62);
-  border-bottom:1px solid rgba(255,176,32,.34);
+  border-top:1px solid rgba(212,175,55,.62);
+  border-bottom:1px solid rgba(212,175,55,.34);
   padding:11px 0 10px;
   color:var(--orange);
 }
@@ -701,7 +701,7 @@ h2{
 }
 
 .market-updated-line{
-  color:rgba(255,176,32,.72);
+  color:rgba(212,175,55,.72);
   font-size:.82em;
 }
 
@@ -720,7 +720,7 @@ h2{
 }
 
 a{
-  color:var(--cyan);
+  color:var(--ice-blue, #6FD3FF);
   font-weight:700;
   text-decoration:none;
   overflow-wrap:anywhere;
@@ -802,7 +802,7 @@ a:hover,a:focus-visible{
 .info-row span{color:var(--muted)}
 
 .tracking-note{
-  border:1px solid rgba(255,176,32,.34);
+  border:1px solid rgba(212,175,55,.34);
   padding:12px;
   margin-bottom:14px;
   color:var(--muted);
@@ -1170,7 +1170,7 @@ a:hover,a:focus-visible{
   justify-content:center;
   width:24px;
   height:24px;
-  border:1px solid rgba(66,245,233,.35);
+  border:1px solid rgba(255,255,255,.35);
   background:transparent;
   color:var(--cyan);
   padding:0;
@@ -1183,7 +1183,7 @@ a:hover,a:focus-visible{
 .copy-wallet-button:focus-visible{
   border-color:var(--cyan);
   color:var(--yellow);
-  background:rgba(66,245,233,.08);
+  background:rgba(255,255,255,.08);
 }
 
 .copy-wallet-button.copied{
@@ -1434,7 +1434,7 @@ a:hover,a:focus-visible{
 }
 
 #terminal-footer .footer{
-  color:#d8e0dc !important;
+  color:#ffffff !important;
   opacity:1 !important;
 }
 
@@ -1507,7 +1507,7 @@ a:hover,a:focus-visible{
 }
 
 .nft-sale-detail strong{
-  color:#e8fff0;
+  color:#ffffff;
   font-weight:500;
 }
 
@@ -1537,12 +1537,12 @@ a:hover,a:focus-visible{
    Cyan is reserved for premium-event emphasis; dimensions and alignment are unchanged. */
 .nft-sale-row--large{
   position:relative;
-  border-color:rgba(66,245,233,.92);
+  border-color:rgba(255,255,255,.92);
   background:
-    linear-gradient(90deg,rgba(66,245,233,.12),rgba(57,255,20,.025) 55%,rgba(66,245,233,.07));
+    linear-gradient(90deg,rgba(255,255,255,.12),rgba(57,255,20,.025) 55%,rgba(255,255,255,.07));
   box-shadow:
-    0 0 0 1px rgba(66,245,233,.22) inset,
-    0 0 14px rgba(66,245,233,.18);
+    0 0 0 1px rgba(255,255,255,.22) inset,
+    0 0 14px rgba(255,255,255,.18);
   animation:nft-large-sale-pulse 2.2s ease-in-out infinite;
 }
 
@@ -1558,7 +1558,7 @@ a:hover,a:focus-visible{
 
 .nft-sale-row--large .nft-sale-price{
   color:var(--cyan);
-  text-shadow:0 0 9px rgba(66,245,233,.55);
+  text-shadow:0 0 9px rgba(255,255,255,.55);
 }
 
 .nft-sale-large-badge{
@@ -1567,24 +1567,24 @@ a:hover,a:focus-visible{
   font-size:.72em;
   font-weight:700;
   letter-spacing:.065em;
-  text-shadow:0 0 8px rgba(66,245,233,.45);
+  text-shadow:0 0 8px rgba(255,255,255,.45);
 }
 
 /* Extra emphasis for exceptional NFT sales at 2.00x floor or higher.
    This layer changes only decoration; card dimensions/grid alignment stay unchanged. */
 .nft-sale-row--double{
-  border-color:rgba(66,245,233,1);
+  border-color:rgba(255,255,255,1);
   background:
-    linear-gradient(90deg,rgba(66,245,233,.17),rgba(57,255,20,.02) 48%,rgba(66,245,233,.10));
+    linear-gradient(90deg,rgba(255,255,255,.17),rgba(57,255,20,.02) 48%,rgba(255,255,255,.10));
   box-shadow:
-    0 0 0 1px rgba(66,245,233,.42) inset,
-    0 0 20px rgba(66,245,233,.30);
+    0 0 0 1px rgba(255,255,255,.42) inset,
+    0 0 20px rgba(255,255,255,.30);
 }
 
 .nft-sale-row--double .nft-sale-id,
 .nft-sale-row--double .nft-sale-price{
   color:var(--cyan);
-  text-shadow:0 0 10px rgba(66,245,233,.58);
+  text-shadow:0 0 10px rgba(255,255,255,.58);
 }
 
 .nft-sale-large-badge--double{
@@ -1592,18 +1592,18 @@ a:hover,a:focus-visible{
   max-width:100%;
   box-sizing:border-box;
   padding:4px 7px;
-  border:1px solid rgba(66,245,233,.78);
-  background:rgba(66,245,233,.075);
+  border:1px solid rgba(255,255,255,.78);
+  background:rgba(255,255,255,.075);
   color:var(--cyan);
-  text-shadow:0 0 10px rgba(66,245,233,.66);
+  text-shadow:0 0 10px rgba(255,255,255,.66);
 }
 
 @keyframes nft-large-sale-pulse{
   0%,100%{
-    box-shadow:0 0 0 1px rgba(66,245,233,.22) inset,0 0 8px rgba(66,245,233,.12);
+    box-shadow:0 0 0 1px rgba(255,255,255,.22) inset,0 0 8px rgba(255,255,255,.12);
   }
   50%{
-    box-shadow:0 0 0 1px rgba(66,245,233,.42) inset,0 0 20px rgba(66,245,233,.34);
+    box-shadow:0 0 0 1px rgba(255,255,255,.42) inset,0 0 20px rgba(255,255,255,.34);
   }
 }
 
@@ -1725,9 +1725,9 @@ a:hover,a:focus-visible{
   display:block;
   margin:0 0 14px;
   padding:11px 12px;
-  border:1px solid rgba(255,153,0,.42);
-  background:rgba(255,125,0,.055);
-  box-shadow:inset 0 0 12px rgba(255,125,0,.035);
+  border:1px solid rgba(212,175,55,.42);
+  background:rgba(212,175,55,.055);
+  box-shadow:inset 0 0 12px rgba(212,175,55,.035);
 }
 .sales-floor-primary{
   display:flex;
@@ -1737,11 +1737,11 @@ a:hover,a:focus-visible{
 }
 .sales-floor-label,
 .sales-floor-price{
-  color:#ff9d21;
+  color:#d4af37;
   font-size:1.08em;
   line-height:1;
   font-weight:800;
-  text-shadow:0 0 9px rgba(255,157,33,.28);
+  text-shadow:0 0 9px rgba(212,175,55,.28);
   white-space:nowrap;
 }
 .sales-floor-label{
@@ -1776,7 +1776,7 @@ a:hover,a:focus-visible{
   color:var(--cyan);
   font-weight:700;
   letter-spacing:.035em;
-  text-shadow:0 0 8px rgba(66,245,233,.18);
+  text-shadow:0 0 8px rgba(255,255,255,.18);
   white-space:nowrap;
 }
 @media(max-width:560px){
@@ -1808,8 +1808,8 @@ a:hover,a:focus-visible{
   border-color:rgba(57,255,20,.35);
 }
 .floor-trend-down{
-  color:#ff6262;
-  border-color:rgba(255,98,98,.4);
+  color:#d4af37;
+  border-color:rgba(212,175,55,.4);
 }
 .floor-trend-surge,.floor-trend-drop{
   position:relative;
@@ -1817,15 +1817,15 @@ a:hover,a:focus-visible{
   font-weight:700;
 }
 .floor-trend-surge{
-  color:#fff39a;
-  border-color:#ffd84a;
+  color:#f0de8b;
+  border-color:#e0bf52;
   box-shadow:0 0 10px rgba(255,216,74,.45),inset 0 0 8px rgba(57,255,20,.12);
   animation:floorTrendPulse 1.55s ease-in-out infinite;
 }
 .floor-trend-drop{
-  color:#ffaaaa;
-  border-color:#ff4b4b;
-  box-shadow:0 0 10px rgba(255,75,75,.42),inset 0 0 8px rgba(255,75,75,.12);
+  color:#f0de8b;
+  border-color:#d4af37;
+  box-shadow:0 0 10px rgba(212,175,55,.42),inset 0 0 8px rgba(212,175,55,.12);
   animation:floorTrendPulse 1.55s ease-in-out infinite;
 }
 .floor-trend-surge::after,.floor-trend-drop::after{
@@ -1855,7 +1855,7 @@ a:hover,a:focus-visible{
 /* Canonical COMMUNITY TERMINAL header/footer — matched to Whale Activity Tracker */
 .community-header{text-align:center!important}
 .community-header>a{display:inline-block;line-height:0}
-.community-mascot{display:block;width:64px!important;height:64px!important;object-fit:cover;margin:0 auto 9px!important}
+.community-mascot{display:block;width:64px!important;height:64px!important;object-fit:contain;margin:0 auto 9px!important}
 .community-divider{width:100%;overflow:hidden;color:var(--orange)!important;opacity:.9;white-space:nowrap;line-height:1;letter-spacing:.02em;user-select:none}
 .community-title-row{display:flex;align-items:center;justify-content:center;gap:22px;margin:12px 0 7px!important;flex-wrap:wrap}
 .community-title-row h1{margin:0!important;color:var(--yellow)!important;font-size:clamp(1.05rem,2vw,1.42rem)!important;line-height:1.2;letter-spacing:.02em}
@@ -1865,7 +1865,7 @@ a:hover,a:focus-visible{
 .footer-version,.terminal-footer .footer-version{color:var(--yellow)!important}
 @media(max-width:560px){.community-title-row{gap:7px;flex-direction:column;margin:10px 0 7px!important}.community-divider{font-size:.72em}.community-subtitle{line-height:1.5}}
 
-/* GangsterRobins launch polish */
+/* 888 Society launch polish */
 .module-title{color:var(--green)!important;font-size:1.3rem!important;font-weight:700!important}.x-credit{color:var(--green);text-decoration:none}.x-credit:hover{text-decoration:underline;text-shadow:0 0 8px rgba(57,255,20,.35)}
 
 
@@ -1886,7 +1886,7 @@ a:hover,a:focus-visible{
   white-space:nowrap;
 }
 .market-floor-trend.up{color:var(--green)}
-.market-floor-trend.down{color:#ff6262}
+.market-floor-trend.down{color:#d4af37}
 .market-floor-trend.flat{color:var(--muted)}
 
 
@@ -1967,7 +1967,7 @@ body.postmint-resolving .collapsible-panel .panel-toggle{
   margin:0;
   padding:0 12px;
   overflow:hidden;
-  color:#00ff66;
+  color:#39ff14;
   opacity:.12;
   font:500 clamp(8px,.72vw,11px)/1.55 "Courier New",Courier,monospace;
   letter-spacing:.08em;
@@ -2026,7 +2026,7 @@ body.postmint-resolving .collapsible-panel .panel-toggle{
   font-size:.94em!important;
   font-weight:700!important;
   letter-spacing:.035em;
-  text-shadow:0 0 7px rgba(255,138,0,.18);
+  text-shadow:0 0 7px rgba(212,175,55,.18);
 }
 
 /* Compact on-chain wallet checker: stays inline on desktop, wraps cleanly on narrow screens. */
@@ -2098,7 +2098,9 @@ body.postmint-resolving .collapsible-panel .panel-toggle{
 }
 
 .blockscout-check-status.is-error{
-  color:var(--red);
+  color:#ff3b30!important;
+  font-weight:700;
+  text-shadow:0 0 7px rgba(255,59,48,.28);
 }
 
 .blockscout-check-status.is-valid{
@@ -2125,7 +2127,7 @@ body.postmint-resolving .collapsible-panel .panel-toggle{
   color:var(--cyan);
   font-size:1.65em;
   line-height:.8;
-  text-shadow:0 0 12px rgba(66,245,233,.85);
+  text-shadow:0 0 12px rgba(255,255,255,.85);
   flex:0 0 auto;
 }
 
@@ -2160,7 +2162,7 @@ body.postmint-resolving .collapsible-panel .panel-toggle{
 .sales-floor-label,
 .sales-floor-price{
   color:var(--cyan);
-  text-shadow:0 0 9px rgba(66,245,233,.24);
+  text-shadow:0 0 9px rgba(255,255,255,.24);
 }
 
 /* Keep the 4-hour direction on its own compact line so percentage width never competes with CURRENT FLOOR. */
@@ -2213,61 +2215,617 @@ body{
 }
 
 
-/* =========================================================
-   COLLECTION PULSE / SINCE LAST VISIT
-   Normal terminal module; intentionally not a shortcut or collapsible panel.
-   ========================================================= */
-.collection-pulse-panel{
-  margin-top:16px;
+/* 888 Society final brand palette: Gold + Bright White + Green */
+:root{
+  --bg:#020604;
+  --panel:#050806;
+  --green:#39ff14;
+  --yellow:#d4af37;
+  --cyan:#ffffff;
+  --blue:#ffffff;
+  --orange:#d4af37;
+  --red:#ff3b30;
+  --muted:#d7d7d7;
+  --line:#6f5a1d;
 }
-.collection-pulse-baseline{
-  border-top:1px solid rgba(255,138,0,.25);
-  padding:14px 0 2px;
-  color:#fff;
-  line-height:1.55;
-  white-space:nowrap;
-  font-size:clamp(.78rem,1.05vw,.94rem);
+
+body{color:#ffffff}
+
+/* Bright-white neutral copy while keeping gold for brand accents and green for LIVE/OK/READY states. */
+.subtitle,
+.community-subtitle,
+.launch-links-line,
+.launch-modal-card p,
+.blockscout-check-copy,
+.market-label,
+.metric-label,
+.phase-countdown-card h2,
+.footer{
+  color:#ffffff!important;
 }
-.collection-pulse-baseline .cyan{
-  color:var(--cyan);
+
+/* Premium gold 888 mascot glow. */
+.mascot,
+.community-mascot{
+  object-fit:contain!important;
+  filter:
+    drop-shadow(0 0 4px rgba(212,175,55,.90))
+    drop-shadow(0 0 10px rgba(212,175,55,.58))
+    drop-shadow(0 0 22px rgba(212,175,55,.28));
+  animation:gold888Glow 2.8s ease-in-out infinite;
+  transform:translateZ(0);
+}
+
+.community-header>a:hover .community-mascot,
+.community-header>a:focus-visible .community-mascot{
+  filter:
+    drop-shadow(0 0 5px rgba(255,236,160,1))
+    drop-shadow(0 0 13px rgba(212,175,55,.82))
+    drop-shadow(0 0 28px rgba(212,175,55,.42));
+}
+
+@keyframes gold888Glow{
+  0%,100%{
+    filter:
+      drop-shadow(0 0 4px rgba(212,175,55,.76))
+      drop-shadow(0 0 10px rgba(212,175,55,.46))
+      drop-shadow(0 0 20px rgba(212,175,55,.22));
+  }
+  50%{
+    filter:
+      drop-shadow(0 0 5px rgba(255,236,160,.95))
+      drop-shadow(0 0 14px rgba(212,175,55,.70))
+      drop-shadow(0 0 28px rgba(212,175,55,.34));
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .mascot,.community-mascot{animation:none!important}
+}
+
+
+/* 888 Society transparent bright-gold logo */
+.mascot,
+.community-mascot{
+  width:min(220px,58vw)!important;
+  height:auto!important;
+  max-height:86px!important;
+  object-fit:contain!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  filter:
+    drop-shadow(0 0 3px rgba(255,216,74,.95))
+    drop-shadow(0 0 9px rgba(255,216,74,.72))
+    drop-shadow(0 0 19px rgba(255,216,74,.40))!important;
+}
+
+@keyframes gold888Glow{
+  0%,100%{
+    filter:
+      drop-shadow(0 0 3px rgba(255,216,74,.82))
+      drop-shadow(0 0 8px rgba(255,216,74,.56))
+      drop-shadow(0 0 16px rgba(255,216,74,.28));
+  }
+  50%{
+    filter:
+      drop-shadow(0 0 4px rgba(255,239,164,1))
+      drop-shadow(0 0 12px rgba(255,216,74,.82))
+      drop-shadow(0 0 24px rgba(255,216,74,.48));
+  }
+}
+
+.community-header>a:hover .community-mascot,
+.community-header>a:focus-visible .community-mascot{
+  filter:
+    drop-shadow(0 0 5px rgba(255,243,181,1))
+    drop-shadow(0 0 14px rgba(255,216,74,.90))
+    drop-shadow(0 0 28px rgba(255,216,74,.55))!important;
+}
+
+@media(max-width:560px){
+  .mascot,
+  .community-mascot{
+    width:min(190px,62vw)!important;
+    max-height:72px!important;
+  }
+}
+
+
+/* ==========================================================================
+   888 Society — Ice Blue refinement / centered two-window layout
+   ========================================================================== */
+:root{
+  --ice-blue:#6FD3FF;
+  --royal-navy:var(--ice-blue); /* compatibility alias for earlier selectors */
+  --line:#6FD3FF;
+}
+
+/* 5% side breathing room on desktop: BOTH terminal windows share one centered 90vw workspace. */
+.nft-terminal-workspace{
+  width:90vw!important;
+  max-width:none!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  grid-template-columns:minmax(0,1fr) clamp(280px,24vw,390px)!important;
+  gap:14px!important;
+}
+.nft-terminal-workspace > *{min-width:0!important;}
+
+/* Ice blue is the structural color: outer shell, side sales window, panels/dividers. */
+#terminal-frame > .terminal,
+.terminal,
+.nft-sales-window{
+  border-color:var(--royal-navy)!important;
+}
+.nft-sales-window{
+  box-shadow:0 0 18px rgba(111,211,255,.20)!important;
+}
+.nft-sales-window::before{
+  border-bottom-color:rgba(111,211,255,.92)!important;
+}
+
+/* Header: clean two-line title centered between the divider rows. */
+.community-header{
+  text-align:center!important;
+}
+.community-subtitle{display:none!important}
+.community-title-row{
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  margin:10px 0!important;
+}
+.community-title-stack{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  text-align:center;
+}
+.community-title-stack h1{
+  margin:0!important;
+  color:var(--yellow)!important;
+  font-size:clamp(1.06rem,1.65vw,1.34rem)!important;
+  line-height:1.18!important;
+  letter-spacing:.035em!important;
+  text-transform:none!important;
+}
+.community-terminal-line{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.community-terminal-title{
+  color:var(--yellow);
+  font-size:clamp(.92rem,1.45vw,1.18rem);
   font-weight:700;
+  line-height:1.2;
+  letter-spacing:.035em;
 }
-.collection-pulse-metrics{
-  grid-template-columns:repeat(4,minmax(0,1fr));
+.community-divider{
+  color:var(--yellow)!important;
 }
-.collection-pulse-panel .metric-value{
-  overflow-wrap:anywhere;
+
+/* Slightly smaller 888 mark, with a richer soft pulse around the digits only. */
+.mascot,
+.community-mascot{
+  width:min(180px,46vw)!important;
+  height:auto!important;
+  max-height:68px!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  animation:gold888Shine 2.25s ease-in-out infinite!important;
 }
-.collection-pulse-panel .pulse-up{color:var(--green)}
-.collection-pulse-panel .pulse-down{color:var(--red)}
-.collection-pulse-panel .pulse-flat{color:var(--cyan)}
-.collection-pulse-panel .api-note{
-  margin-top:10px;
-  color:var(--muted);
+@keyframes gold888Shine{
+  0%,100%{
+    filter:
+      brightness(1.02)
+      drop-shadow(0 0 3px rgba(255,216,74,.82))
+      drop-shadow(0 0 8px rgba(212,175,55,.52))
+      drop-shadow(0 0 16px rgba(212,175,55,.24));
+  }
+  50%{
+    filter:
+      brightness(1.24)
+      drop-shadow(0 0 5px rgba(255,244,183,1))
+      drop-shadow(0 0 13px rgba(255,216,74,.86))
+      drop-shadow(0 0 27px rgba(212,175,55,.48));
+  }
 }
-@media(max-width:900px){
-  .collection-pulse-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(prefers-reduced-motion:reduce){
+  .mascot,.community-mascot{animation:none!important}
+}
+
+/* Dim gold 8 texture in the visible ~5% outer gutters. */
+.binary-background__pattern{
+  color:#d4af37!important;
+  opacity:.10!important;
+  text-shadow:0 0 5px rgba(212,175,55,.16);
+  font-weight:600;
+}
+
+/* User credit link: ice blue, matching non-button links. */
+.x-credit,
+.footer .x-credit{
+  color:var(--royal-navy)!important;
+  font-weight:700;
+  text-decoration:none;
+}
+.x-credit:hover,
+.x-credit:focus-visible{
+  color:#9BE4FF!important;
+  text-decoration:underline;
+  text-shadow:0 0 7px rgba(111,211,255,.45)!important;
+}
+
+/* External wallet checker: helper row first, controls below, no horizontal squeeze. */
+.blockscout-wallet-check{
+  border-bottom-color:rgba(111,211,255,.9)!important;
+}
+.blockscout-check-form{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:7px!important;
+  white-space:normal!important;
+}
+.blockscout-check-heading{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  min-width:0;
+  flex-wrap:wrap;
+}
+.blockscout-check-controls{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+}
+.blockscout-wallet-input{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  border-color:var(--royal-navy)!important;
+  box-shadow:0 0 0 1px rgba(111,211,255,.10) inset!important;
+}
+.blockscout-wallet-input:focus{
+  border-color:var(--yellow)!important;
+  box-shadow:0 0 9px rgba(212,175,55,.18)!important;
+}
+.blockscout-check-button{
+  border-color:var(--royal-navy)!important;
+  background:rgba(111,211,255,.16)!important;
+}
+.blockscout-check-button:hover,
+.blockscout-check-button:focus-visible{
+  border-color:var(--yellow)!important;
+  color:var(--yellow)!important;
+  background:rgba(111,211,255,.28)!important;
+  box-shadow:0 0 8px rgba(212,175,55,.14)!important;
+}
+
+/* Ice blue works best as structure, not as a replacement for LIVE/OK green. */
+.launch-panel,
+.metric,
+.collapsible-panel,
+.countdown-box,
+.sales-floor-summary{
+  border-color:var(--royal-navy)!important;
+}
+
+@media(max-width:1220px){
+  .nft-terminal-workspace{
+    width:calc(100% - 24px)!important;
+  }
 }
 @media(max-width:560px){
-  .collection-pulse-metrics{grid-template-columns:1fr}
-  .collection-pulse-panel .dashboard-header{
-    align-items:flex-start;
+  .nft-terminal-workspace{
+    width:calc(100% - 2px)!important;
   }
-  .collection-pulse-baseline{
+  .community-terminal-line{gap:7px}
+  .mascot,.community-mascot{
+    width:min(158px,48vw)!important;
+    max-height:60px!important;
+  }
+  .blockscout-check-controls{
+    grid-template-columns:1fr!important;
+  }
+  .blockscout-check-button{width:100%}
+}
+
+
+/* 888 Society acceptance pass — 10% gutters / gold data cards / balanced sales window */
+:root{
+  --ice-blue:#6FD3FF;
+  --yellow:#D4AF37;
+  --green:#39FF14;
+}
+
+/* Desktop: 10% left + 80% content + 10% right. */
+.nft-terminal-workspace{
+  width:80vw!important;
+  max-width:none!important;
+  margin:12px auto!important;
+  grid-template-columns:minmax(0,2.6fr) minmax(300px,1fr)!important;
+  gap:16px!important;
+  align-items:start!important;
+}
+
+/* The actual frames are Ice Blue; no remaining green outer shell. */
+#terminal-frame,
+#terminal-frame.shell.terminal-frame,
+#terminal-frame > .terminal,
+.nft-sales-window{
+  border-color:var(--ice-blue)!important;
+}
+
+/* Sales / buy-sell window top identity: Ice Blue and the correct collection name. */
+.nft-sales-window::before{
+  color:var(--ice-blue)!important;
+  border-bottom-color:rgba(111,211,255,.78)!important;
+  text-shadow:0 0 7px rgba(111,211,255,.24)!important;
+}
+
+/* Data cards: Gold frame + white label + green live/pending value. */
+.metric{
+  border-color:var(--yellow)!important;
+  box-shadow:inset 0 0 0 1px rgba(212,175,55,.025)!important;
+}
+.metric-label{
+  color:#fff!important;
+}
+.metric-value,
+.pending-data-value{
+  color:var(--green)!important;
+}
+.metric-value.status-waiting{
+  color:var(--yellow)!important;
+}
+.metric-value.status-live{
+  color:var(--green)!important;
+}
+
+/* Keep panel shells / structural dividers Ice Blue so Gold is reserved for data cards. */
+.collapsible-panel,
+.nft-sales-panel,
+.blockscout-wallet-check{
+  border-color:var(--ice-blue)!important;
+}
+
+@media(max-width:1220px){
+  .nft-terminal-workspace{
+    width:calc(100% - 24px)!important;
+    grid-template-columns:1fr!important;
+  }
+}
+@media(max-width:560px){
+  .nft-terminal-workspace{width:calc(100% - 2px)!important}
+}
+
+
+/* ==========================================================================
+   888 Society final polish — preserve existing layout/logic
+   ========================================================================== */
+
+/* Footer: structural rule is Ice Blue, redundant title simplified in HTML,
+   and small-print remains readable at aggressive browser zoom levels. */
+#terminal-footer .footer-version,
+.terminal-footer .footer-version{
+  border-top-color:var(--ice-blue)!important;
+  color:var(--yellow)!important;
+}
+#terminal-footer .powered-by,
+.terminal-footer .powered-by{
+  border-color:var(--ice-blue)!important;
+}
+#terminal-footer .footer,
+.terminal-footer .footer{
+  font-size:.80em!important;
+  line-height:1.55!important;
+}
+
+/* Sales tracker palette only — DO NOT alter its existing dimensions/grid/DOM.
+   Normal activity = Gold. Premium >=1.25x = Ice Blue.
+   >=2x keeps the existing star logic, now in Ice Blue. */
+.nft-sale-row{
+  border-color:rgba(212,175,55,.78)!important;
+  background:rgba(212,175,55,.025)!important;
+  box-shadow:inset 0 0 0 1px rgba(212,175,55,.035)!important;
+}
+.nft-sale-row .nft-sale-id,
+.nft-sale-row .nft-sale-price{
+  color:var(--yellow)!important;
+  text-shadow:0 0 7px rgba(212,175,55,.22)!important;
+}
+.nft-sale-row--large,
+.nft-sale-row--double{
+  border-color:var(--ice-blue)!important;
+  background:
+    linear-gradient(90deg,rgba(111,211,255,.10),rgba(2,8,6,.72) 55%,rgba(111,211,255,.06))!important;
+  box-shadow:
+    0 0 0 1px rgba(111,211,255,.18) inset,
+    0 0 14px rgba(111,211,255,.18)!important;
+}
+.nft-sale-row--large::before{
+  background:linear-gradient(105deg,transparent 35%,rgba(111,211,255,.12) 50%,transparent 65%)!important;
+}
+.nft-sale-row--large .nft-sale-id,
+.nft-sale-row--large .nft-sale-price,
+.nft-sale-row--double .nft-sale-id,
+.nft-sale-row--double .nft-sale-price,
+.nft-sale-large-badge,
+.nft-sale-large-badge--double,
+.nft-sale-double-star{
+  color:var(--ice-blue)!important;
+  text-shadow:0 0 9px rgba(111,211,255,.42)!important;
+}
+.nft-sale-large-badge--double{
+  border-color:rgba(111,211,255,.88)!important;
+  background:rgba(111,211,255,.075)!important;
+}
+.nft-sale-link{
+  color:#fff!important;
+  text-decoration:none!important;
+  text-shadow:0 0 5px rgba(255,255,255,.18)!important;
+}
+.nft-sale-link:hover,
+.nft-sale-link:focus-visible{
+  color:#fff!important;
+  text-decoration:underline!important;
+  text-shadow:0 0 8px rgba(255,255,255,.32)!important;
+}
+
+
+/* Footer semantic wrapping: deliberate phrase breaks on narrow screens */
+.footer-line{
+  display:block;
+}
+.footer-mobile-line{
+  display:inline;
+}
+.footer-mobile-line + .footer-mobile-line::before{
+  content:" ";
+}
+@media(max-width:560px){
+  #terminal-footer .footer,
+  .terminal-footer .footer{
+    padding-left:10px!important;
+    padding-right:10px!important;
+    overflow-wrap:normal!important;
+    word-break:normal!important;
+    hyphens:none!important;
+  }
+  .footer-line{
+    display:block;
+    margin-top:2px;
+  }
+  .footer-mobile-line{
+    display:block;
+  }
+  .footer-mobile-line + .footer-mobile-line::before{
+    content:none;
+  }
+  .footer-built{
     white-space:normal;
-    font-size:.88rem;
   }
 }
 
-/* Mint completion is the terminal lifecycle state after the final mint phase. */
-.post-mint-complete-box .countdown-label,
-.post-mint-complete-box .countdown-value{
-  color:var(--green);
+
+/* Mobile-only separation for the NFT buy/sell tracker.
+   Desktop stays unchanged; internal sale/premium row colors stay unchanged. */
+@media(max-width:760px){
+  .nft-sales-window,
+  #nftSalesPanel,
+  .nft-sales-panel{
+    border-color:#ff8a00!important;
+    box-shadow:
+      0 0 0 1px rgba(255,138,0,.10) inset,
+      0 0 10px rgba(255,138,0,.10)!important;
+  }
 }
 
 
-/* CTB Chapter 16 theme contract — generated NFT module outer frame stays bright green. */
-#terminal-frame.shell.terminal-frame{border:1px solid var(--green)!important}
+/* Collection Pulse — compact "since last visit" module */
+.collection-pulse-panel{
+  margin:14px 0;
+  padding:14px;
+  border:1px solid var(--ice-blue,#6fd3ff);
+  background:rgba(0,0,0,.72);
+  box-shadow:0 0 12px rgba(111,211,255,.08);
+}
+.collection-pulse-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+  padding-bottom:10px;
+  border-bottom:1px solid rgba(111,211,255,.32);
+}
+.collection-pulse-kicker{
+  color:var(--ice-blue,#6fd3ff);
+  font-weight:800;
+  letter-spacing:.04em;
+}
+.collection-pulse-header h3{
+  margin:4px 0 0;
+  color:#fff;
+}
+.collection-pulse-age{
+  color:#d4af37;
+  font-weight:700;
+  white-space:nowrap;
+  font-size:.86em;
+}
+.collection-pulse-baseline{
+  padding:14px 2px 2px;
+  color:#fff;
+  line-height:1.55;
+}
+.collection-pulse-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+  padding-top:12px;
+}
+.collection-pulse-metric{
+  min-width:0;
+  padding:10px;
+  border:1px solid rgba(212,175,55,.72);
+  background:rgba(212,175,55,.035);
+}
+.collection-pulse-label{
+  display:block;
+  color:#fff;
+  opacity:.82;
+  font-size:.78em;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.collection-pulse-metric strong{
+  display:block;
+  margin-top:5px;
+  color:#39ff14;
+  font-size:1.08em;
+  overflow-wrap:anywhere;
+}
+.collection-pulse-note{
+  margin-top:10px;
+  color:rgba(255,255,255,.72);
+  font-size:.82em;
+  line-height:1.45;
+}
+
+@media(max-width:760px){
+.collection-pulse-panel{
+    margin:12px 0;
+    padding:12px;
+  }
+  .collection-pulse-header{
+    display:block;
+  }
+  .collection-pulse-age{
+    display:block;
+    margin-top:6px;
+    white-space:normal;
+  }
+  .collection-pulse-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+  }
+  .collection-pulse-metric{
+    padding:9px 8px;
+  }
+}
+
+
+/* CTB Chapter 16 multi-phase canonical visual contract — preserve the ice-blue outer frame. */
+#terminal-frame.shell.terminal-frame{border:1px solid var(--ice-blue,#6FD3FF)!important}
 
 /* Chapter 16 / FINAL NFT base first-paint mobile viewport hardening. */
 html,body{width:100%;max-width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -2275,6 +2833,37 @@ html,body{width:100%;max-width:100%;overflow-x:hidden;-webkit-text-size-adjust:1
 .community-divider{width:100%;max-width:100%;overflow:hidden;white-space:nowrap}
 img,svg,canvas,video{max-width:100%}
 @media(max-width:1220px){.nft-terminal-workspace{grid-template-columns:1fr!important}}
+
+
+/* Chapter 16 logo parity: preserve transparent/non-square artwork without a composited black tile. */
+.community-header>a{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
+.mascot,.community-mascot{background:transparent!important;border:0!important;box-shadow:none!important;transform:none!important;mix-blend-mode:normal!important}
+
+/* CTB Chapter 16 generic brand parity: do not apply the 888-specific glow to arbitrary uploaded logos. */
+.community-header>a{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
+.mascot,.community-mascot{background:transparent!important;border:0!important;box-shadow:none!important;filter:none!important;animation:none!important;transform:none!important;mix-blend-mode:normal!important}
+
+/* CTB Chapter 16 final acceptance: keep long pending/live floor values inside the side sales summary. */
+.nft-sales-window .sales-floor-summary,
+.nft-sales-window .sales-floor-primary,
+.nft-sales-window .sales-floor-price{
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+}
+.nft-sales-window .sales-floor-primary{
+  flex-wrap:wrap;
+  row-gap:5px;
+}
+.nft-sales-window .sales-floor-label{
+  flex:0 0 auto;
+}
+.nft-sales-window .sales-floor-price{
+  flex:1 1 auto;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
 
 
 /* Chapter 17B acceptance fix — stable header logo slot for uploaded brand artwork.

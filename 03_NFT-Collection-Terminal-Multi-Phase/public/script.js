@@ -1,6 +1,6 @@
 const CFG = window.PROJECT_CONFIG;
 const MARKET_REFRESH_MS = 30_000;
-const MINT_AT = new Date("2026-08-07T19:00:00+03:00");
+const MINT_AT = new Date(CFG?.nft?.mintAt || "2026-08-15T23:08:00+03:00");
 const PENDING_MINT_DATA = "PENDING MINT DATA";
 const isPreMint = () => Date.now() < MINT_AT.getTime();
 
@@ -91,30 +91,6 @@ const elements = {
     document.getElementById("openSeaKeyNote"),
   collectionUpdated:
     document.getElementById("collectionUpdated"),
-  collectionPulseStatus:
-    document.getElementById("collectionPulseStatus"),
-  collectionPulseUpdated:
-    document.getElementById("collectionPulseUpdated"),
-  collectionPulseBaseline:
-    document.getElementById("collectionPulseBaseline"),
-  collectionPulseMetrics:
-    document.getElementById("collectionPulseMetrics"),
-  collectionPulseNote:
-    document.getElementById("collectionPulseNote"),
-  pulseSales:
-    document.getElementById("pulseSales"),
-  pulseBuyers:
-    document.getElementById("pulseBuyers"),
-  pulseSellers:
-    document.getElementById("pulseSellers"),
-  pulseFloorChange:
-    document.getElementById("pulseFloorChange"),
-  pulsePremiumSales:
-    document.getElementById("pulsePremiumSales"),
-  pulseTopSale:
-    document.getElementById("pulseTopSale"),
-  pulseElapsed:
-    document.getElementById("pulseElapsed"),
   nftSalesStatus:
     document.getElementById("nftSalesStatus"),
   nftSalesUpdated:
@@ -155,10 +131,142 @@ const elements = {
     document.getElementById("blockscoutWalletInput"),
   blockscoutWalletStatus:
     document.getElementById("blockscoutWalletStatus"),
+  collectionPulsePanel:
+    document.getElementById("collectionPulsePanel"),
+  collectionPulseAge:
+    document.getElementById("collectionPulseAge"),
+  collectionPulseFirstVisit:
+    document.getElementById("collectionPulseFirstVisit"),
+  collectionPulseBody:
+    document.getElementById("collectionPulseBody"),
+  pulseSales:
+    document.getElementById("pulseSales"),
+  pulseBuyers:
+    document.getElementById("pulseBuyers"),
+  pulseSellers:
+    document.getElementById("pulseSellers"),
+  pulseFloor:
+    document.getElementById("pulseFloor"),
+  pulsePremium:
+    document.getElementById("pulsePremium"),
+  pulseTopSale:
+    document.getElementById("pulseTopSale"),
+  collectionPulseNote:
+    document.getElementById("collectionPulseNote"),
 };
 
 const sleep = (ms) =>
   new Promise((resolve) => setTimeout(resolve, ms));
+
+const COLLECTION_PULSE_STORAGE_KEY = `nft-terminal-pulse:${CFG?.project?.id || "collection"}`;
+const collectionPulseVisitStartedAt = Date.now();
+let collectionPulsePrevious = null;
+let collectionPulseCurrentFloorEth = null;
+let collectionPulseSalesData = null;
+
+try {
+  const storedPulse = JSON.parse(localStorage.getItem(COLLECTION_PULSE_STORAGE_KEY) || "null");
+  if(storedPulse && Number.isFinite(Number(storedPulse.visitedAt))){
+    collectionPulsePrevious = {
+      visitedAt: Number(storedPulse.visitedAt),
+      floorEth: Number.isFinite(Number(storedPulse.floorEth))
+        ? Number(storedPulse.floorEth)
+        : null,
+    };
+  }
+} catch (_) {}
+
+function collectionPulseAgeText(timestamp){
+  const elapsed = Math.max(0, Date.now() - Number(timestamp || 0));
+  const minutes = Math.floor(elapsed / 60000);
+  if(minutes < 1) return "LESS THAN 1M";
+  if(minutes < 60) return `${minutes}M AGO`;
+  const hours = Math.floor(minutes / 60);
+  if(hours < 24) return `${hours}H ${minutes % 60}M AGO`;
+  const days = Math.floor(hours / 24);
+  return `${days}D ${hours % 24}H AGO`;
+}
+
+function formatPulseFloorChange(current, previous){
+  const now = Number(current);
+  const before = Number(previous);
+  if(!Number.isFinite(now) || !Number.isFinite(before) || before <= 0) return "—";
+  const change = ((now - before) / before) * 100;
+  const sign = change > 0 ? "+" : "";
+  return `${sign}${change.toFixed(1)}%`;
+}
+
+function saveCollectionPulseVisit(){
+  try {
+    localStorage.setItem(COLLECTION_PULSE_STORAGE_KEY, JSON.stringify({
+      visitedAt: collectionPulseVisitStartedAt,
+      floorEth: Number.isFinite(collectionPulseCurrentFloorEth)
+        ? collectionPulseCurrentFloorEth
+        : null,
+    }));
+  } catch (_) {}
+}
+
+function renderCollectionPulse(){
+  if(!elements.collectionPulsePanel) return;
+
+  if(!collectionPulsePrevious){
+    elements.collectionPulseFirstVisit.hidden = false;
+    elements.collectionPulseBody.hidden = true;
+    elements.collectionPulseAge.textContent = "BASELINE";
+    saveCollectionPulseVisit();
+    return;
+  }
+
+  elements.collectionPulseFirstVisit.hidden = true;
+  elements.collectionPulseBody.hidden = false;
+  elements.collectionPulseAge.textContent =
+    `LAST CHECK · ${collectionPulseAgeText(collectionPulsePrevious.visitedAt)}`;
+
+  const sales = Array.isArray(collectionPulseSalesData?.sales)
+    ? collectionPulseSalesData.sales
+    : [];
+  const sinceSales = sales.filter((sale) => {
+    const occurred = Date.parse(sale?.occurredAt || "");
+    return Number.isFinite(occurred) && occurred > collectionPulsePrevious.visitedAt;
+  });
+
+  const buyers = new Set(
+    sinceSales.map((sale) => String(sale?.buyer || "").toLowerCase()).filter(Boolean)
+  );
+  const sellers = new Set(
+    sinceSales.map((sale) => String(sale?.seller || "").toLowerCase()).filter(Boolean)
+  );
+  const premiumSales = sinceSales.filter((sale) => sale?.isLargeSale === true);
+  const pricedSales = sinceSales.filter((sale) => Number.isFinite(Number(sale?.price)));
+  const topSale = pricedSales.reduce((top, sale) =>
+    !top || Number(sale.price) > Number(top.price) ? sale : top
+  , null);
+
+  const capped = sales.length >= 12 && sinceSales.length === sales.length;
+  elements.pulseSales.textContent = capped ? `${sinceSales.length}+` : String(sinceSales.length);
+  elements.pulseBuyers.textContent = String(buyers.size);
+  elements.pulseSellers.textContent = String(sellers.size);
+  elements.pulsePremium.textContent = String(premiumSales.length);
+  elements.pulseTopSale.textContent = topSale?.priceDisplay || "NO SALES";
+  elements.pulseFloor.textContent = formatPulseFloorChange(
+    collectionPulseCurrentFloorEth,
+    collectionPulsePrevious.floorEth
+  );
+
+  if(capped){
+    elements.collectionPulseNote.textContent =
+      "At least 12 sales were captured since your last visit; the recent-sales feed is capped.";
+  }else if(!collectionPulseSalesData?.connected){
+    elements.collectionPulseNote.textContent =
+      "Sales comparison is waiting for OpenSea data.";
+  }else{
+    elements.collectionPulseNote.textContent =
+      "Compared with your previous visit on this browser.";
+  }
+
+  saveCollectionPulseVisit();
+}
 
 function writeBoot(html) {
   const line = document.createElement("div");
@@ -226,7 +334,7 @@ async function boot() {
       ? '[ <span class="green">READY</span> ] Collection tracking active after mint completion.'
       : liveMint
         ? '[ <span class="green">READY</span> ] Live NFT mint and collection data active.'
-        : '[ <span class="orange">UPCOMING</span> ] Mint begins at 19:00 GMT+3.',
+        : `[ <span class="orange">UPCOMING</span> ] Mint begins at ${new Date(CFG?.nft?.mintAt || "2026-08-15T23:08:00+03:00").toLocaleString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Europe/Istanbul" })} GMT+3.`,
   ]);
 }
 
@@ -550,7 +658,7 @@ function setDisconnectedMintStats(){
   elements.progressPercent.textContent = "—";
   elements.progressFill.style.width = "0%";
 
-  elements.mintedCount.textContent = "— / 420";
+  elements.mintedCount.textContent = "— / 10014";
   elements.remainingCount.textContent = "—";
   elements.uniqueMinters.textContent = "—";
   elements.mintRate.textContent = "— NFT/min";
@@ -578,7 +686,7 @@ function renderMintStats(stats){
     `${safeProgress}%`;
 
   elements.mintedCount.textContent =
-    `${stats.minted ?? "—"} / ${stats.totalSupply ?? 420}`;
+    `${stats.minted ?? "—"} / ${stats.totalSupply ?? 10014}`;
 
   elements.remainingCount.textContent =
     stats.remaining ?? "—";
@@ -636,8 +744,8 @@ async function refreshMintStats(){
     elements.dataConnection.classList.remove("live");
     elements.progressPercent.textContent = "0.00%";
     elements.progressFill.style.width = "0%";
-    elements.mintedCount.textContent = "0 / 420";
-    elements.remainingCount.textContent = "420";
+    elements.mintedCount.textContent = "0 / 10014";
+    elements.remainingCount.textContent = "10014";
     elements.uniqueMinters.textContent = PENDING_MINT_DATA;
     elements.mintRate.textContent = PENDING_MINT_DATA;
     elements.latestMint.textContent = PENDING_MINT_DATA;
@@ -649,7 +757,7 @@ async function refreshMintStats(){
     applyPostMintCompactMode({
       status: "UPCOMING",
       minted: 0,
-      totalSupply: Number(CFG?.nft?.supply) || 420,
+      totalSupply: Number(CFG?.nft?.supply) || 10014,
       progressPercent: 0,
     });
     return;
@@ -706,6 +814,7 @@ function setCollectionUnavailable(requiresApiKey = false){
       ? "Waiting for OpenSea marketplace data."
       : "OpenSea marketplace data is temporarily unavailable.";
   updatePostMintMarketSummary();
+  renderCollectionPulse();
 }
 
 function renderFloorTrendElement(element, trend){
@@ -804,8 +913,9 @@ function renderCollectionStats(stats){
   elements.openSeaKeyNote.hidden = true;
 
   const floorDisplay = stats.floorPriceDisplay || "UNAVAILABLE";
-  const rawFloor = Number(stats.floorPriceEth);
-  collectionPulseCurrentFloor = Number.isFinite(rawFloor) && rawFloor > 0 ? rawFloor : null;
+  collectionPulseCurrentFloorEth = Number.isFinite(Number(stats.floorPriceEth))
+    ? Number(stats.floorPriceEth)
+    : collectionPulseCurrentFloorEth;
   elements.floorPrice.textContent = floorDisplay;
   if(elements.salesFloorPrice) elements.salesFloorPrice.textContent = floorDisplay;
   if(stats.floorTrend) {
@@ -838,7 +948,6 @@ function renderCollectionStats(stats){
       second: "2-digit",
     })}`;
   updatePostMintMarketSummary();
-  renderCollectionPulse();
 }
 
 function setCollectionPending(){
@@ -887,169 +996,6 @@ async function refreshCollectionStats(){
 }
 
 
-const COLLECTION_PULSE_STORAGE_KEY = `${CFG.project?.id || "nft"}:collection-pulse:last-visit:v1`;
-let collectionPulsePrevious = null;
-let collectionPulseVisitStartedAt = Date.now();
-let collectionPulseCurrentFloor = null;
-let collectionPulseSalesPayload = null;
-let collectionPulseSavedThisVisit = false;
-
-function readCollectionPulseBaseline(){
-  try{
-    const raw = localStorage.getItem(COLLECTION_PULSE_STORAGE_KEY);
-    if(!raw) return null;
-    const parsed = JSON.parse(raw);
-    const timestamp = Number(parsed?.timestamp);
-    if(!Number.isFinite(timestamp) || timestamp <= 0) return null;
-    return {
-      timestamp,
-      floorPriceEth: Number.isFinite(Number(parsed?.floorPriceEth))
-        ? Number(parsed.floorPriceEth)
-        : null,
-    };
-  }catch(_){
-    return null;
-  }
-}
-
-function saveCollectionPulseBaseline(){
-  if(collectionPulseSavedThisVisit) return;
-  try{
-    localStorage.setItem(COLLECTION_PULSE_STORAGE_KEY, JSON.stringify({
-      timestamp: collectionPulseVisitStartedAt,
-      floorPriceEth: Number.isFinite(collectionPulseCurrentFloor)
-        ? collectionPulseCurrentFloor
-        : null,
-    }));
-    collectionPulseSavedThisVisit = true;
-  }catch(_){
-    // The module remains readable even when browser storage is unavailable.
-  }
-}
-
-function pulseElapsedText(milliseconds){
-  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
-  if(totalSeconds < 60) return `${totalSeconds}s`;
-  const minutes = Math.floor(totalSeconds / 60);
-  if(minutes < 60) return `${minutes}m`;
-  const hours = Math.floor(minutes / 60);
-  if(hours < 24) return `${hours}h ${minutes % 60}m`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ${hours % 24}h`;
-}
-
-function pulseAddressSet(sales, key){
-  const values = new Set();
-  for(const sale of sales){
-    const value = String(sale?.[key] || "").toLowerCase();
-    if(/^0x[a-f0-9]{40}$/.test(value)) values.add(value);
-  }
-  return values;
-}
-
-function pulseFloorChangeText(previousFloor, currentFloor){
-  const previous = Number(previousFloor);
-  const current = Number(currentFloor);
-  if(!Number.isFinite(previous) || previous <= 0 || !Number.isFinite(current) || current <= 0){
-    return { text: "UNAVAILABLE", state: "" };
-  }
-  const change = ((current - previous) / previous) * 100;
-  const nearZero = Math.abs(change) < 0.05;
-  const normalized = nearZero ? 0 : change;
-  const arrow = normalized > 0 ? "▲" : normalized < 0 ? "▼" : "→";
-  const sign = normalized > 0 ? "+" : "";
-  return {
-    text: `${arrow} ${sign}${normalized.toFixed(1)}%`,
-    state: normalized > 0 ? "up" : normalized < 0 ? "down" : "flat",
-  };
-}
-
-function setPulseMetricState(element, state){
-  if(!element) return;
-  element.classList.remove("pulse-up", "pulse-down", "pulse-flat");
-  if(state) element.classList.add(`pulse-${state}`);
-}
-
-function renderCollectionPulse(){
-  if(!elements.collectionPulseStatus) return;
-
-  if(!collectionPulsePrevious){
-    elements.collectionPulseStatus.textContent = "BASELINE SET";
-    elements.collectionPulseStatus.classList.add("live");
-    elements.collectionPulseUpdated.textContent = "Local browser baseline";
-    elements.collectionPulseBaseline.hidden = false;
-    elements.collectionPulseMetrics.hidden = true;
-    elements.collectionPulseNote.hidden = true;
-    if(collectionPulseSalesPayload || Number.isFinite(collectionPulseCurrentFloor)){
-      saveCollectionPulseBaseline();
-    }
-    return;
-  }
-
-  elements.collectionPulseStatus.textContent = "SINCE LAST VISIT";
-  elements.collectionPulseStatus.classList.add("live");
-  elements.collectionPulseUpdated.textContent = `Previous check ${pulseElapsedText(Date.now() - collectionPulsePrevious.timestamp)} ago`;
-  elements.collectionPulseBaseline.hidden = true;
-  elements.collectionPulseMetrics.hidden = false;
-
-  const allSales = Array.isArray(collectionPulseSalesPayload?.pulseSales)
-    ? collectionPulseSalesPayload.pulseSales
-    : Array.isArray(collectionPulseSalesPayload?.sales)
-      ? collectionPulseSalesPayload.sales
-      : [];
-  const since = allSales.filter((sale) => {
-    const occurred = Date.parse(sale?.occurredAt || "");
-    return Number.isFinite(occurred) && occurred > collectionPulsePrevious.timestamp;
-  });
-
-  const feedLimit = Number(collectionPulseSalesPayload?.pulseFeedLimit) || allSales.length;
-  const feedCapped = collectionPulseSalesPayload?.pulseFeedCapped === true;
-  const oldestFetched = allSales.reduce((oldest, sale) => {
-    const occurred = Date.parse(sale?.occurredAt || "");
-    return Number.isFinite(occurred) ? Math.min(oldest, occurred) : oldest;
-  }, Number.POSITIVE_INFINITY);
-  const comparisonMayBeCapped = feedCapped && Number.isFinite(oldestFetched) && collectionPulsePrevious.timestamp < oldestFetched;
-
-  const buyers = pulseAddressSet(since, "buyer").size;
-  const sellers = pulseAddressSet(since, "seller").size;
-  const premium = since.filter((sale) => sale?.isLargeSale === true).length;
-  const topSale = since.reduce((best, sale) => {
-    const amount = Number(sale?.price);
-    if(!Number.isFinite(amount)) return best;
-    if(!best || amount > Number(best.price)) return sale;
-    return best;
-  }, null);
-
-  if(elements.pulseSales) elements.pulseSales.textContent = comparisonMayBeCapped ? `${since.length}+` : String(since.length);
-  if(elements.pulseBuyers) elements.pulseBuyers.textContent = comparisonMayBeCapped ? `${buyers}+` : String(buyers);
-  if(elements.pulseSellers) elements.pulseSellers.textContent = comparisonMayBeCapped ? `${sellers}+` : String(sellers);
-  if(elements.pulsePremiumSales) elements.pulsePremiumSales.textContent = comparisonMayBeCapped ? `${premium}+` : String(premium);
-  if(elements.pulseTopSale) elements.pulseTopSale.textContent = topSale?.priceDisplay || "NO SALES";
-  if(elements.pulseElapsed) elements.pulseElapsed.textContent = pulseElapsedText(Date.now() - collectionPulsePrevious.timestamp);
-
-  const floorChange = pulseFloorChangeText(collectionPulsePrevious.floorPriceEth, collectionPulseCurrentFloor);
-  if(elements.pulseFloorChange){
-    elements.pulseFloorChange.textContent = floorChange.text;
-    setPulseMetricState(elements.pulseFloorChange, floorChange.state);
-  }
-
-  if(comparisonMayBeCapped){
-    elements.collectionPulseNote.hidden = false;
-    elements.collectionPulseNote.textContent = `OpenSea recent-sales feed reached its ${feedLimit}-event cap. Sales, buyer, seller and premium-sale counts are minimums; Top Sale is based on the available feed.`;
-  }else{
-    elements.collectionPulseNote.hidden = true;
-    elements.collectionPulseNote.textContent = "";
-  }
-
-  if(collectionPulseSalesPayload && (Number.isFinite(collectionPulseCurrentFloor) || allSales.length >= 0)){
-    saveCollectionPulseBaseline();
-  }
-}
-
-collectionPulsePrevious = readCollectionPulseBaseline();
-renderCollectionPulse();
-
-
 const NFT_SALES_REFRESH_MS = 15_000;
 let hasNftSalesData = false;
 
@@ -1093,9 +1039,8 @@ function createSaleText(label, value, className = ""){
 }
 
 function renderNftSales(data){
+  collectionPulseSalesData = data || null;
   const sales = Array.isArray(data?.sales) ? data.sales : [];
-  collectionPulseSalesPayload = data || null;
-  renderCollectionPulse();
   elements.nftSalesRows.replaceChildren();
 
   if(!data?.connected){
@@ -1190,7 +1135,7 @@ function renderNftSales(data){
       link.href = sale.openSeaUrl || CFG.links.openSea || "#";
       link.target = "_blank";
       link.rel = "noopener noreferrer";
-      link.textContent = "View sale on OpenSea →";
+      link.textContent = "Check Sale";
       article.appendChild(link);
 
       elements.nftSalesRows.appendChild(article);
@@ -1203,6 +1148,7 @@ function renderNftSales(data){
 
   setNftSalesStatus(data.stale ? "STALE" : "LIVE", data.stale ? "stale" : "live");
   hasNftSalesData = true;
+  renderCollectionPulse();
 }
 
 async function refreshNftSales(){
@@ -1518,12 +1464,11 @@ if(elements.blockscoutWalletForm){
       return;
     }
 
-    const explorerBase = CFG?.market?.blockscoutExplorerBase
-      || new URL(CFG.market.blockscoutApiBase).origin;
-    const blockscoutUrl = `${explorerBase}/token/${nftContract}?tab=inventory&holder_address_hash=${address}`;
+    const explorerBase = CFG?.market?.walletExplorerBase || "https://etherscan.io";
+    const etherscanUrl = `${explorerBase}/token/${nftContract}?a=${address}#transactions`;
 
-    setBlockscoutWalletStatus("[ OK ] Wallet format valid. Opening Blockscout in a new tab...", "valid");
-    window.open(blockscoutUrl, "_blank", "noopener,noreferrer");
+    setBlockscoutWalletStatus("[ OK ] Wallet format valid. Opening Etherscan in a new tab...", "valid");
+    window.open(etherscanUrl, "_blank", "noopener,noreferrer");
   });
 
   elements.blockscoutWalletInput.addEventListener("input", () => {
@@ -1612,3 +1557,6 @@ setInterval(
 );
 
 boot();
+
+// Initialize the local Collection Pulse baseline immediately.
+renderCollectionPulse();

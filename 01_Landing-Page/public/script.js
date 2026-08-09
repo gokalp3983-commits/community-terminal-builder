@@ -20,6 +20,8 @@ const marketCap = document.getElementById("marketCap");
 const marketHolders = document.getElementById("marketHolders");
 const marketVolume = document.getElementById("marketVolume");
 const marketUpdated = document.getElementById("marketUpdated");
+const tokenContractValue = document.querySelector("[data-token-contract]");
+const copyTokenContract = document.querySelector("[data-copy-token-contract]");
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const promptText = () => `${CONFIG.project.promptUser}@${CONFIG.project.promptHost}:~$`;
@@ -59,6 +61,8 @@ function applyTheme(colors) {
   }
 }
 
+function setupTokenContract(){const address=CONFIG?.contracts?.token||"";if(tokenContractValue)tokenContractValue.textContent=address||"NOT SET";if(copyTokenContract){copyTokenContract.addEventListener("click",async()=>{if(!address)return;try{await navigator.clipboard.writeText(address);copyTokenContract.textContent="✓";setTimeout(()=>copyTokenContract.textContent="⧉",900)}catch{tokenContractValue?.focus?.()}})}}
+
 function renderModules() {
   const container = document.getElementById("modulesList");
   container.innerHTML = "";
@@ -94,18 +98,13 @@ function applyConfig() {
   document.getElementById("mascot").alt = branding.mascotAlt;
   document.getElementById("terminalTitle").textContent = title.toUpperCase();
   document.getElementById("terminalSubtitle").innerHTML = `Independent Community Tools <span aria-hidden="true">•</span> ${escapeHtml(project.ecosystem)} Ecosystem`;
-  document.getElementById("networkName").textContent = project.ecosystem || CONFIG.market?.dexScreenerChainId || "EVM";
-  const contract = CONFIG.contracts?.token || "";
-  const contractLink = document.getElementById("contractLink");
-  contractLink.textContent = contract ? `${contract.slice(0, 8)}…${contract.slice(-6)}` : "NOT SET";
-  const explorer = CONFIG.links?.explorer || "";
-  contractLink.href = explorer ? `${explorer.replace(/\/$/, "")}/address/${contract}` : `https://dexscreener.com/${CONFIG.market?.dexScreenerChainId || ""}/${contract}`;
-  contractLink.title = contract;
   document.getElementById("marketPanel").setAttribute("aria-label", `Live ${project.name} market data`);
   document.getElementById("promptLabel").textContent = promptText();
-  document.getElementById("footerVersion").textContent = `${title} ver ${project.version}`;
-  document.getElementById("footerCopy").innerHTML = `Independent community-built tools.<br>Not affiliated with or endorsed by the official ${escapeHtml(project.ticker)} team.<br>Built for the ${escapeHtml(project.ecosystem)} ${escapeHtml(project.ticker)} ecosystem.`;
+  document.getElementById("footerVersion").textContent = `${project.name} Community Terminal`;
+  document.getElementById("footerInfo").innerHTML = `<span class="orange">[ INFO ]</span> Independent community tools for ${escapeHtml(project.ecosystem)}.`;
+  document.getElementById("footerCopy").innerHTML = `Independently built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp8339 on X">𝕏 @Gokalp8339</a><br>Not affiliated with or endorsed by the official ${escapeHtml(project.ticker)} team.<br>Built for the ${escapeHtml(project.ecosystem)} community.`;
   applyTheme(branding.colors || {});
+  setupTokenContract();
   renderModules();
 }
 

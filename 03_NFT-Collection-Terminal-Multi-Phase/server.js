@@ -38,7 +38,7 @@ function renderProjectPage(fileName, pagePath, req, res) {
   const origin = requestOrigin(req);
   const requestPath = String(req.originalUrl || req.url || pagePath || "/").split("?")[0] || pagePath || "/";
   const pageUrl = new URL(requestPath, `${origin}/`).toString();
-  const mascotPath = config.branding?.mascot || "/assets/gangsterrobins-mascot.png";
+  const mascotPath = config.branding?.mascot || "/assets/888-society-mark.png";
   const mountedMascotPath = requestPath.startsWith("/nft") && mascotPath.startsWith("/assets/") ? `/nft${mascotPath}` : mascotPath;
   const socialImageUrl = new URL(mountedMascotPath, `${origin}/`).toString();
   const projectName = config.project?.displayName || config.project?.name || "NFT";
@@ -71,7 +71,7 @@ function renderProjectPage(fileName, pagePath, req, res) {
 }
 
 app.get("/project-config.js", (_req, res) => {
-  res.type("application/javascript").send(`window.PROJECT_CONFIG=${JSON.stringify({project:config.project,contracts:config.contracts,branding:config.branding,links:config.links,nft:config.nft,features:config.features,modules:config.modules,market:{refreshMs:config.market.refreshMs,blockscoutApiBase:config.market.blockscoutApiBase,blockscoutExplorerBase:new URL(config.market.blockscoutApiBase).origin}})};`);
+  res.type("application/javascript").send(`window.PROJECT_CONFIG=${JSON.stringify({project:config.project,contracts:config.contracts,branding:config.branding,links:config.links,nft:config.nft,features:config.features,modules:config.modules,market:{refreshMs:config.market.refreshMs,blockscoutApiBase:config.market.blockscoutApiBase,blockscoutExplorerBase:new URL(config.market.blockscoutApiBase).origin,walletExplorerBase:config.market.walletExplorerBase||new URL(config.market.blockscoutApiBase).origin}})};`);
 });
 
 app.get(["/terminal", "/terminal/"], (req, res) => {
@@ -103,8 +103,8 @@ async function fetchJson(url) {
 app.get("/health", (_req, res) => {
   res.json({
     status: "ok",
-    app: "NFT Mint Tracker Simulation",
-    version: "2.4.2",
+    app: "888 Society NFT Terminal",
+    version: config.project.version,
   });
 });
 
@@ -363,7 +363,7 @@ async function loadLiveMintStats() {
 
   return {
     connected: true,
-    source: "Robinhood Chain Blockscout",
+    source: "Ethereum Blockscout",
     status,
     totalSupply: NFT_MAX_SUPPLY,
     minted,
@@ -1229,28 +1229,11 @@ async function loadOpenSeaSales() {
     }, null);
 
   const sales = normalizedSales.slice(0, 12);
-  // Collection Pulse reuses the same OpenSea fetch without changing the existing
-  // 12-card NFT Sales Tracker payload/DOM. Keep only the fields needed for a
-  // local "since last visit" comparison.
-  const pulseSales = normalizedSales.map((sale) => ({
-    id: sale.id,
-    price: sale.price,
-    priceDisplay: sale.priceDisplay,
-    paymentSymbol: sale.paymentSymbol,
-    isLargeSale: sale.isLargeSale === true,
-    buyer: sale.buyer,
-    seller: sale.seller,
-    occurredAt: sale.occurredAt,
-  }));
-  const pulseFeedCapped = events.length >= OPENSEA_SALES_LIMIT;
 
   return {
     connected: true,
     requiresApiKey: false,
     sales,
-    pulseSales,
-    pulseFeedCapped,
-    pulseFeedLimit: OPENSEA_SALES_LIMIT,
     lastSalePriceDisplay: lastSale?.priceDisplay || null,
     highest24hSalePriceDisplay: highest24hSale?.priceDisplay || null,
     updatedAt: new Date().toISOString(),

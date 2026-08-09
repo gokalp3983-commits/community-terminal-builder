@@ -30,7 +30,7 @@ try {
     check(cfg.project.name===item.name,`${item.name}: active generated profile`);
     check(cfg.features.nftTerminal===Boolean(item.nftContract&&item.features.nftTerminal),`${item.name}: NFT feature state`);
     const release=JSON.parse(fs.readFileSync(path.join(dir,"terminal-release.json"),"utf8"));
-    check(release.builder.version==="1.3.1-B"&&release.releaseStatus==="deployment-ready",`${item.name}: release provenance metadata`);
+    check(release.builder.version==="1.3.2-b"&&release.releaseStatus==="deployment-ready",`${item.name}: release provenance metadata`);
     check(Array.isArray(release.enabledModules)&&release.enabledModules.includes("landing"),`${item.name}: release module manifest`);
     for(const file of ["package.json","server.js","render.yaml",".env.example","README.md","validate-generated.js","verify-deployment.js","terminal-release.json","deployment-guide.txt","01_Landing-Page/public/favicon.png"]) check(fs.existsSync(path.join(dir,file)),`${item.name}: ${file}`);
     const server=fs.readFileSync(path.join(dir,"server.js"),"utf8");
@@ -45,7 +45,7 @@ try {
     const landing=fs.readFileSync(path.join(dir,"01_Landing-Page/public/script.js"),"utf8");
     const landingHtml=fs.readFileSync(path.join(dir,"01_Landing-Page/public/index.html"),"utf8");
     check(landingHtml.includes('rel="icon"'),`${item.name}: generated favicon link`);
-    check(landingHtml.includes('networkName')&&landingHtml.includes('contractLink'),`${item.name}: chain and contract identity`);
+    check(landingHtml.includes('data-token-contract')&&landingHtml.includes('data-copy-token-contract'),`${item.name}: full contract identity row and copy control`);
     check(landing.includes('PAIR NOT FOUND') || landing.includes('reason'),`${item.name}: explicit market error states`);
     check(landing.includes('market.quoteSymbol'),`${item.name}: landing displays dynamic quote symbol`);
     const render=fs.readFileSync(path.join(dir,"render.yaml"),"utf8");

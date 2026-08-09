@@ -43,6 +43,7 @@ h1{position:relative;z-index:1;margin:6px auto 1px;color:var(--orange);font-fami
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.span-2{grid-column:span 2}.wide{margin-top:13px}
 label{display:grid;gap:7px;min-width:0;color:var(--field-label);font-size:.76rem;letter-spacing:.025em}label>span:first-child{display:flex;align-items:center;gap:6px}label>span:first-child::before{content:">";color:var(--green)}
 input,textarea{width:100%;border:1px solid var(--line-bright);outline:none;background:#020806;color:var(--text);padding:11px 12px;border-radius:0;caret-color:var(--green);transition:border-color .15s,box-shadow .15s}
+select{border:1px solid var(--line-bright);outline:none;background:#020806;color:var(--text);border-radius:0;font:inherit}select option{background:#020806;color:#f4fff7}
 input::placeholder,textarea::placeholder{color:var(--placeholder);opacity:1}input:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 1px rgba(57,255,20,.08),0 0 16px rgba(57,255,20,.06)}
 input:invalid:not(:placeholder-shown){border-color:var(--danger)}textarea{min-height:78px;resize:vertical}
 .color-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.color-field{display:grid;grid-template-columns:48px 1fr;border:1px solid var(--line-bright);background:#020806}.color-field input{height:44px;padding:4px;border:0;border-right:1px solid var(--line-bright);cursor:pointer}.color-field code{display:grid;place-items:center;color:var(--cyan);font-size:.73rem}
@@ -318,3 +319,69 @@ input:not([type="checkbox"]):not([type="color"])::placeholder,textarea::placehol
 .deployment-success-actions button:first-child{border-color:var(--green);background:rgba(57,255,20,.08)}
 .deployment-success-actions button:disabled{opacity:.4;cursor:not-allowed}
 @media(max-width:560px){.deployment-success-actions{display:grid;grid-template-columns:1fr}.deployment-success-actions button{width:100%}}
+
+
+/* Chapter 15A — NFT mint schedule safety */
+.nft-mint-schedule{border:1px solid var(--line-bright);background:rgba(0,0,0,.2);padding:11px}.nft-mint-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:9px}.nft-mint-heading>span{color:var(--field-label);font-size:.68rem}.nft-mint-heading small{color:var(--muted);font-size:.64rem}.nft-mint-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(180px,1.4fr) auto;gap:8px;align-items:end}.nft-mint-grid label{min-width:0}.nft-mint-grid input{width:100%}.timezone-button{min-height:38px;padding:8px 10px;background:#04110b;color:var(--cyan);border-color:var(--cyan);box-shadow:none;font-size:.62rem;white-space:nowrap}.timezone-button:hover{background:#07180f}.nft-mint-schedule .contract-check{margin-bottom:0}.nft-mint-confirm{width:min(680px,calc(100% - 24px));padding:0;border:1px solid var(--orange);background:#020806;color:var(--text);box-shadow:0 0 80px rgba(255,106,0,.18)}.nft-mint-confirm::backdrop{background:rgba(0,0,0,.86);backdrop-filter:blur(3px)}.nft-mint-confirm-panel{padding:0}.nft-mint-confirm-head{display:flex;justify-content:space-between;align-items:center;padding:13px 15px;border-bottom:1px solid var(--orange);background:#0a0803;color:var(--orange);font-weight:800;letter-spacing:.09em}.nft-mint-confirm-head button{padding:2px 9px;border-color:var(--danger);background:transparent;color:var(--danger);box-shadow:none;font-size:1.2rem}.nft-mint-confirm-body{padding:18px}.nft-mint-confirm-body>strong{display:block;color:#fff;font-size:1rem;letter-spacing:.08em}.nft-mint-confirm-body>p{color:var(--muted);font-size:.72rem;line-height:1.55}.nft-time-review{display:grid;grid-template-columns:150px minmax(0,1fr);gap:8px 12px;margin:15px 0;padding:12px;border:1px solid var(--line-bright);background:#010503;font-size:.72rem}.nft-time-review span{color:var(--muted)}.nft-time-review b{color:var(--cyan);overflow-wrap:anywhere}.nft-time-review b.pass{color:var(--green)}.nft-time-review b.warn{color:var(--orange)}.nft-time-review b.fail{color:var(--danger)}.nft-mint-confirm-note{margin-bottom:0}.nft-mint-confirm-actions{display:flex;justify-content:flex-end;gap:8px;padding:14px 18px;border-top:1px solid var(--line)}.nft-mint-confirm-actions button{padding:10px 12px;background:#04110b;box-shadow:none}.nft-mint-confirm-actions #nft-mint-edit{color:var(--cyan);border-color:var(--cyan)}.nft-mint-confirm-actions #nft-mint-proceed{color:var(--green);border-color:var(--green)}
+@media(max-width:780px){.nft-mint-grid{grid-template-columns:1fr 1fr}.nft-timezone-field{grid-column:1/-1}.timezone-button{grid-column:1/-1}.nft-mint-heading{display:grid;gap:4px}.nft-time-review{grid-template-columns:1fr}.nft-mint-confirm-actions{display:grid;grid-template-columns:1fr}}
+
+/* Chapter 16 — dual NFT mint structure editor */
+.nft-mint-mode-row{display:grid;grid-template-columns:minmax(220px,360px);gap:8px;margin-bottom:10px}.nft-mint-mode-row select{width:100%}.nft-phase-help{margin:2px 0 9px;color:var(--muted);font-size:.66rem;line-height:1.5}.nft-phase-list{display:grid;gap:10px}.nft-phase-card{border:1px solid var(--line-bright);background:#010503;padding:10px;min-width:0}.nft-phase-card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}.nft-phase-card-head strong{color:var(--orange);font-size:.7rem;letter-spacing:.08em}.nft-phase-remove{padding:5px 8px;border-color:var(--danger);color:var(--danger);background:transparent;box-shadow:none;font-size:.6rem}.nft-phase-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.nft-phase-grid .phase-wide{grid-column:1/-1}.nft-phase-grid .phase-timezone{grid-column:1/-1}.phase-add-button{margin-top:9px;padding:8px 10px;background:#04110b;color:var(--cyan);border-color:var(--cyan);box-shadow:none;font-size:.62rem}.phase-add-button:disabled{opacity:.45;cursor:not-allowed}.nft-phase-card input{width:100%;min-width:0}.nft-phase-card input[type="date"],.nft-phase-card input[type="time"]{max-width:100%}
+@media(max-width:780px){.nft-mint-mode-row{grid-template-columns:1fr}.nft-phase-grid{grid-template-columns:1fr}.nft-phase-grid .phase-wide,.nft-phase-grid .phase-timezone{grid-column:auto}}
+
+/* Chapter 16 NFT acceptance: readable native select options and uploaded-brand preview. */
+#nft-mint-mode{width:100%;min-height:40px;padding:9px 34px 9px 11px;border:1px solid var(--line-bright);background:#020806;color:#f4fff7;-webkit-text-fill-color:#f4fff7;color-scheme:dark;cursor:pointer}#nft-mint-mode:hover,#nft-mint-mode:focus{border-color:var(--green);box-shadow:0 0 0 1px rgba(57,255,20,.08),0 0 16px rgba(57,255,20,.06)}#nft-mint-mode:invalid{color:var(--placeholder)!important;-webkit-text-fill-color:var(--placeholder)!important}#nft-mint-mode option{background:#020806!important;color:#f4fff7!important;-webkit-text-fill-color:#f4fff7!important}#nft-mint-mode option[value=""]{color:#789083!important}
+.builder-brand-preview{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 12px;border-bottom:1px solid var(--line);background:#010503}
+.builder-brand-preview[hidden]{display:none}
+.builder-brand-preview span{color:var(--orange);font-size:.64rem;letter-spacing:.09em}
+.builder-brand-preview img{display:block;width:auto;height:auto;max-width:96px;max-height:72px;object-fit:contain;background:transparent;border:0;box-shadow:none;filter:none}
+
+
+/* Chapter 17 — User-Friendly Simplification foundation. */
+.builder-mode-bar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:14px 24px 0;padding:12px 14px;border:1px solid var(--line);background:#020806}
+.builder-mode-copy{display:grid;grid-template-columns:auto auto;column-gap:10px;row-gap:3px;align-items:center}.builder-mode-copy>span{color:var(--orange);font-size:.62rem;letter-spacing:.1em}.builder-mode-copy>strong{color:#fff;font-size:.75rem;letter-spacing:.08em}.builder-mode-copy>small{grid-column:1/-1;color:var(--muted);font-size:.66rem;line-height:1.45}
+.builder-mode-switch{display:grid;grid-template-columns:1fr 1fr;min-width:246px}.builder-mode-switch button{min-width:0;padding:9px 12px;border:1px solid var(--line-bright);background:#010503;color:var(--muted);box-shadow:none;font-size:.62rem}.builder-mode-switch button+button{border-left:0}.builder-mode-switch button.active{color:var(--green);border-color:var(--green);background:#04110b}.builder-mode-switch button+button.active{border-left:1px solid var(--green)}
+body.guided-mode .advanced-only,body.guided-mode .advanced-field,body.guided-mode [data-advanced-control]{display:none!important}
+.nft-config[hidden]{display:none!important}
+.guided-helper{margin:0 0 12px;padding:9px 11px;border-left:2px solid var(--green);background:rgba(57,255,20,.035);color:var(--muted);font-size:.68rem;line-height:1.5}.guided-helper strong{color:#fff}
+@media(max-width:760px){.builder-mode-bar{margin:12px 10px 0;align-items:stretch;flex-direction:column}.builder-mode-switch{min-width:0;width:100%}}
+
+
+/* Chapter 17B — Guided Workflow Simplification & Readability preview. */
+.guided-overview{display:none}
+.guided-step-note,.guided-color-toggle{display:none}
+body.guided-mode .guided-overview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:12px 24px 2px}
+body.guided-mode .guided-overview a{display:flex;align-items:center;gap:9px;min-width:0;padding:10px 11px;border:1px solid var(--line);background:#020806;color:#f4fff7;text-decoration:none}
+body.guided-mode .guided-overview a:hover{border-color:var(--green);background:#04110b}
+body.guided-mode .guided-overview b{display:grid;place-items:center;flex:0 0 25px;width:25px;height:25px;border:1px solid var(--green);color:var(--green);font-size:.72rem}
+body.guided-mode .guided-overview span{display:grid;gap:2px;min-width:0;color:#f4fff7;font-size:.70rem;font-weight:800;letter-spacing:.045em}
+body.guided-mode .guided-overview small{color:#91aa9b;font-size:.62rem;font-weight:400;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.guided-mode .workspace{grid-template-columns:minmax(0,1fr)}
+body.guided-mode .console-panel{display:none}
+body.guided-mode .form-stack{max-width:920px;width:100%;margin:0 auto}
+body.guided-mode .panel{padding:19px 18px;margin-bottom:13px;scroll-margin-top:16px}
+body.guided-mode .guided-step-note{display:block;margin:7px 0 15px;color:#9bb3a4;font-size:.79rem;line-height:1.55}
+body.guided-mode label{font-size:.82rem;gap:8px}
+body.guided-mode .field-help,body.guided-mode .checks small,body.guided-mode .nft-phase-help,body.guided-mode .nft-mint-heading small{color:#91aa9b;font-size:.74rem;line-height:1.5}
+body.guided-mode .section-heading small{color:#91aa9b;font-size:.70rem}
+body.guided-mode .contract-check{font-size:.76rem}
+body.guided-mode .checks strong{font-size:.80rem}
+body.guided-mode .checks label{padding:14px}
+body.guided-mode .action-copy{font-size:.78rem;color:#9bb3a4}
+body.guided-mode .guided-color-toggle{display:inline-flex;align-items:center;gap:8px;margin:0 0 12px;padding:8px 10px;border:1px solid var(--cyan);background:#020806;color:var(--cyan);box-shadow:none;font-size:.65rem}
+body.guided-mode .guided-color-toggle span{font-size:.9rem;line-height:1}
+body.guided-mode .color-grid:not(.guided-expanded){display:none}
+body.guided-mode .project-toolbar{grid-template-columns:minmax(220px,1fr) auto}
+body.guided-mode .project-controls select{min-width:210px}
+body.guided-mode .builder-mode-bar{padding:11px 14px}
+body.guided-mode .builder-mode-copy>small{font-size:.72rem;color:#91aa9b}
+body.guided-mode .action-bar{max-width:920px;margin-left:auto;margin-right:auto}
+body.guided-mode #download-again{display:none!important}
+
+/* Chapter 17A Hotfix 2 — relationship errors must stay visibly red even while focused. */
+.nft-phase-card input.phase-invalid,
+.nft-phase-card input.phase-invalid:focus{border-color:var(--danger)!important;box-shadow:0 0 0 1px rgba(255,90,103,.18),0 0 14px rgba(255,90,103,.10)!important;outline:none!important}
+.nft-phase-card.phase-invalid{border-color:rgba(255,90,103,.55)}
+
+@media(max-width:900px){body.guided-mode .guided-overview{grid-template-columns:repeat(2,minmax(0,1fr))}body.guided-mode .guided-overview a:last-child{grid-column:1/-1}}
+@media(max-width:680px){body.guided-mode .guided-overview{margin:10px 10px 0;grid-template-columns:1fr}body.guided-mode .guided-overview a:last-child{grid-column:auto}body.guided-mode .project-toolbar{grid-template-columns:1fr}body.guided-mode .guided-step-note{font-size:.76rem}}

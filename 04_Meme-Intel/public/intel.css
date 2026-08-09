@@ -208,11 +208,11 @@ body.command-panel-open .command-panel-slot{
 .command-panel{
   width:100%;
   height:100%;
-  border:1px solid var(--green);
+  border:1px solid var(--orange);
   background:#020b07;
   padding:14px;
   overflow:auto;
-  box-shadow:0 0 0 1px rgba(57,255,20,.08);
+  box-shadow:0 0 0 1px rgba(255,138,0,.10);
 }
 
 .command-panel[hidden]{
@@ -438,3 +438,16 @@ body.command-panel-open{
 .prompt-echo { color: #62f58b; font-weight: 700; }
 .command-echo { margin: .35rem 0; }
 @media (max-width: 680px) { .intel-row { grid-template-columns: 1fr; gap: .05rem; margin-bottom: .25rem; } }
+
+
+/* Chapter 15A acceptance corrections — canonical frame / CA copy / footer */
+.terminal{border:1px solid var(--green)!important;box-shadow:0 0 0 1px rgba(57,255,20,.10)!important}
+.copy-contract{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;padding:0 2px!important;color:var(--cyan)!important}
+.copy-contract:hover,.copy-contract:focus-visible{border:0!important;outline:0!important;box-shadow:none!important;color:#fff!important}
+#terminal-footer{margin-top:10px!important;padding:0 8px 8px!important;border-top:1px solid rgba(25,75,45,.7)!important;text-align:center!important}
+#terminal-footer .footer-version{margin:0!important;padding:10px 0 0!important;border:0!important;color:var(--orange)!important;text-align:center!important;font-size:.94em!important;font-weight:700!important;letter-spacing:.035em!important;text-shadow:0 0 7px rgba(255,138,0,.18)!important}
+#terminal-footer .powered-by{margin-top:12px!important;text-align:center!important;color:var(--muted)!important;font-size:.78em!important;line-height:1.45!important}
+#terminal-footer .powered-by .orange{color:var(--orange)!important}
+#terminal-footer .footer{padding:7px 4px 0!important;color:#d8e0dc!important;opacity:1!important;text-align:center!important;font-size:.72em!important;line-height:1.45!important}
+#terminal-footer .footer a{color:var(--green)!important;text-decoration:none!important;border:0!important}
+#terminal-footer .footer a:hover{text-decoration:underline!important;text-shadow:0 0 8px rgba(57,255,20,.35)!important}

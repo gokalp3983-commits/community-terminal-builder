@@ -45,15 +45,35 @@
             <select id="saved-projects" aria-label="Saved projects"><option value="">LOAD SAVED PROJECT...</option></select>
             <button id="new-project" type="button">NEW</button>
             <button id="save-project" type="button">SAVE</button>
-            <button id="duplicate-project" type="button">DUPLICATE</button>
-            <button id="export-project" type="button">EXPORT</button>
-            <button id="import-project" type="button">IMPORT</button>
-            <button id="delete-project" class="danger-button" type="button">DELETE</button>
+            <button data-advanced-control id="duplicate-project" type="button">DUPLICATE</button>
+            <button data-advanced-control id="export-project" type="button">EXPORT</button>
+            <button data-advanced-control id="import-project" type="button">IMPORT</button>
+            <button data-advanced-control id="delete-project" class="danger-button" type="button">DELETE</button>
             <input id="import-project-file" class="upload-native" type="file" accept="application/json,.json">
           </div>
         </section>
 
-        <section class="deployment-dashboard" aria-label="Deployment dashboard">
+        <section class="builder-mode-bar" aria-label="Builder experience mode">
+          <div class="builder-mode-copy">
+            <span>BUILDER EXPERIENCE</span>
+            <strong id="builder-mode-title">GUIDED MODE</strong>
+            <small id="builder-mode-description">Shows the settings most people need. Your advanced Builder controls stay available and unchanged.</small>
+          </div>
+          <div class="builder-mode-switch" role="group" aria-label="Choose builder experience">
+            <button id="guided-mode" class="active" type="button" aria-pressed="true">GUIDED</button>
+            <button id="advanced-mode" type="button" aria-pressed="false">BUILDER MODE</button>
+          </div>
+        </section>
+
+        <nav class="guided-overview" aria-label="Guided setup steps">
+          <a href="#guided-project"><b>1</b><span>PROJECT<small>Name &amp; description</small></span></a>
+          <a href="#guided-token"><b>2</b><span>TOKEN / NFT<small>Contract &amp; mint</small></span></a>
+          <a href="#guided-brand"><b>3</b><span>BRANDING<small>Logo &amp; optional colors</small></span></a>
+          <a href="#guided-links"><b>4</b><span>LINKS<small>Community routes</small></span></a>
+          <a href="#guided-modules"><b>5</b><span>MODULES<small>Choose terminal tools</small></span></a>
+        </nav>
+
+        <section class="deployment-dashboard advanced-only" aria-label="Deployment dashboard">
           <div class="deployment-dashboard-head">
             <div><span>MANUAL HANDOFF</span><strong>DEPLOYMENT DASHBOARD</strong></div>
             <b id="deployment-state">NOT DEPLOYED</b>
@@ -71,7 +91,7 @@
           <pre id="deployment-result">[ WAIT ] Add the GitHub and Render URLs after deployment.</pre>
         </section>
 
-        <section class="connected-dashboard" aria-label="Connected deployment prototype">
+        <section class="connected-dashboard advanced-only" aria-label="Connected deployment prototype">
           <div class="deployment-dashboard-head">
             <div><span>SERVER-SIDE PUBLISHING</span><strong>CONNECTED DEPLOYMENT</strong></div>
             <b id="integration-state">CHECKING</b>
@@ -99,7 +119,7 @@
           <pre id="connected-result">[ WAIT ] Configure server-side GitHub and Render credentials to enable connected deployment.</pre>
         </section>
 
-        <section class="release-control" aria-label="Secure release control">
+        <section class="release-control advanced-only" aria-label="Secure release control">
           <div class="deployment-dashboard-head">
             <div><span>RELEASE READINESS</span><strong>SECURE RELEASE CONTROL</strong></div>
             <b id="release-state">NOT CHECKED</b>
@@ -122,31 +142,31 @@
         <div class="workspace">
 
           <div class="form-stack">
-            <section class="panel" data-section="identity">
-              <div class="section-heading"><span>01</span><h2>IDENTITY</h2><small>WHO IS THIS TERMINAL FOR?</small></div>
+            <section class="panel" data-section="identity" id="guided-project">
+              <div class="section-heading"><span>01</span><h2>PROJECT</h2><small>NAME, IDENTITY &amp; DESCRIPTION</small></div><p class="guided-step-note">Start with the basics. The Builder handles the terminal identity automatically.</p>
               <div class="grid">
                 <label><span>Project name *</span><input name="projectName" required placeholder="CATCOIN"></label>
                 <label><span>Ticker *</span><input name="ticker" required placeholder="CAT"></label>
-                <label><span>Version</span><input name="version" value="1.0.0"></label>
-                <label><span>Terminal user</span><input name="promptUser" placeholder="catcoin"></label>
-                <label><span>Terminal host</span><input name="promptHost" value="terminal"></label>
-                <label><span>Ecosystem</span><input name="ecosystem" value="Robinhood Chain"></label>
+                <label class="advanced-field"><span>Version</span><input name="version" value="1.0.0"></label>
+                <label class="advanced-field"><span>Terminal user</span><input name="promptUser" placeholder="catcoin"></label>
+                <label class="advanced-field"><span>Terminal host</span><input name="promptHost" value="terminal"></label>
+                <label class="advanced-field"><span>Ecosystem</span><input name="ecosystem" value="Robinhood Chain"></label>
               </div>
               <label class="wide"><span>Description</span><textarea name="description" placeholder="Terminal-style intelligence tools for the community."></textarea></label>
             </section>
 
-            <section class="panel" data-section="contracts">
-              <div class="section-heading"><span>02</span><h2>CONTRACTS &amp; DATA</h2><small>ON-CHAIN SOURCE CONFIGURATION</small></div>
+            <section class="panel" data-section="contracts" id="guided-token">
+              <div class="section-heading"><span>02</span><h2>TOKEN &amp; NFT</h2><small>CONTRACTS AND NFT LAUNCH DETAILS</small></div><p class="guided-step-note">Paste the token contract. NFT settings appear only when you enable the NFT Terminal.</p>
               <div class="grid">
                 <label class="span-2 contract-field"><span>Token CA * <b class="evm-badge">EVM ONLY</b></span><input name="tokenContract" required placeholder="0x..." autocomplete="off" spellcheck="false"><small class="field-help">Supported: Ethereum and EVM-compatible chains. Paste the token contract, not the liquidity-pool address.</small><output id="contract-check" class="contract-check" aria-live="polite">[ WAIT ] Enter a 42-character 0x contract address.</output></label>
-                <label class="span-2"><span>Optional NFT CA</span><input name="nftContract" placeholder="0x..."></label>
-                <label><span>DexScreener chain ID</span><input name="dexScreenerChainId" value="robinhood"></label>
-                <label><span>Blockscout API base</span><input name="blockscoutApiBase" value="https://robinhoodchain.blockscout.com/api/v2"></label>
+                <label class="span-2 nft-config"><span>Optional NFT CA</span><input name="nftContract" placeholder="0x..."></label>
+                <label class="advanced-field"><span>DexScreener chain ID</span><input name="dexScreenerChainId" value="robinhood"></label>
+                <label class="advanced-field"><span>Blockscout API base</span><input name="blockscoutApiBase" value="https://robinhoodchain.blockscout.com/api/v2"></label>
               </div>
             </section>
 
-            <section class="panel" data-section="branding">
-              <div class="section-heading"><span>03</span><h2>BRANDING</h2><small>VISUAL SYSTEM &amp; MASCOT</small></div>
+            <section class="panel" data-section="branding" id="guided-brand">
+              <div class="section-heading"><span>03</span><h2>BRANDING</h2><small>VISUAL SYSTEM &amp; MASCOT</small></div><p class="guided-step-note">Upload your logo. The default terminal colors are ready to use unless you want to customize them.</p><button class="guided-color-toggle" id="guided-color-toggle" type="button" aria-expanded="false">CUSTOMIZE COLORS <span>+</span></button>
               <div class="color-grid">
                 <label><span>Primary</span><div class="color-field"><input name="primary" type="color" value="#39ff14"><code>#39ff14</code></div></label>
                 <label><span>Accent</span><div class="color-field"><input name="accent" type="color" value="#ff6a00"><code>#ff6a00</code></div></label>
@@ -164,22 +184,45 @@
               </div>
             </section>
 
-            <section class="panel" data-section="links">
-              <div class="section-heading"><span>04</span><h2>LINKS</h2><small>COMMUNITY &amp; MARKET ROUTES</small></div>
+            <section class="panel" data-section="links" id="guided-links">
+              <div class="section-heading"><span>04</span><h2>LINKS</h2><small>COMMUNITY &amp; MARKET ROUTES</small></div><p class="guided-step-note">Add the community links you actually use. Leave anything else blank.</p>
               <div class="grid">
-                <label><span>Home URL</span><input name="home" placeholder="http://localhost:3000"></label>
+                <label class="advanced-field"><span>Home URL</span><input name="home" placeholder="http://localhost:3000"></label>
                 <label><span>Website</span><input name="website" placeholder="https://..."></label>
                 <label><span>X / Twitter</span><input name="x" placeholder="https://x.com/..."></label>
                 <label><span>Telegram</span><input name="telegram" placeholder="https://t.me/..."></label>
-                <label><span>Explorer</span><input name="explorer" placeholder="https://..."></label>
-                <label><span>DexScreener</span><input name="dexScreener" placeholder="https://dexscreener.com/..."></label>
-                <label><span>OpenSea</span><input name="openSea" placeholder="Optional"></label>
-                <label><span>OpenSea slug</span><input name="openSeaSlug" placeholder="Optional"></label>
+                <label class="advanced-field"><span>Explorer</span><input name="explorer" placeholder="https://..."></label>
+                <label class="advanced-field"><span>DexScreener</span><input name="dexScreener" placeholder="https://dexscreener.com/..."></label>
+                <label class="nft-config"><span>OpenSea</span><input name="openSea" placeholder="Optional"></label>
+                <label class="advanced-field nft-config"><span>OpenSea slug</span><input name="openSeaSlug" placeholder="Optional"></label>
+                <label class="nft-config"><span>NFT collection name</span><input name="nftCollectionName" placeholder="Optional — defaults to project name + NFT"></label>
+                <label class="nft-config"><span>NFT total supply</span><input name="nftSupply" type="number" min="1" step="1" placeholder="Required for canonical NFT mint tracker"></label>
+                <div class="span-2 nft-mint-schedule nft-config" id="nft-mint-schedule">
+                  <div class="nft-mint-heading"><span>NFT mint structure</span><small>Choose the canonical single-phase or multiple-phase NFT launch base.</small></div>
+                  <div class="nft-mint-mode-row">
+                    <label><span>Mint structure</span><select name="nftMintMode" id="nft-mint-mode" required><option value="" selected disabled>Please select mint structure</option><option value="single">Single Phase</option><option value="multiple">Multiple Phases</option></select></label>
+                  </div>
+                  <div id="nft-single-phase-fields">
+                    <div class="nft-mint-grid">
+                      <label><span>Mint date</span><input name="nftMintDate" type="date"></label>
+                      <label><span>Mint time</span><input name="nftMintTime" type="time" step="60"></label>
+                      <label class="nft-timezone-field"><span>Timezone</span><input name="nftMintTimezone" list="nft-timezone-options" placeholder="Europe/Bucharest" autocomplete="off"><datalist id="nft-timezone-options"></datalist></label>
+                      <button class="timezone-button" id="use-local-timezone" type="button">USE MY TIMEZONE</button>
+                    </div>
+                  </div>
+                  <div id="nft-multiple-phase-fields" hidden>
+                    <div class="nft-phase-help">Add 2–6 mint phases. Each phase can use its own timezone, price and wallet limit.</div>
+                    <div id="nft-phase-list"></div>
+                    <button class="phase-add-button" id="add-nft-phase" type="button">+ ADD MINT PHASE</button>
+                  </div>
+                  <input name="nftMintAt" type="hidden">
+                  <output id="nft-mint-check" class="contract-check" aria-live="polite">[ WAIT ] Enable NFT Terminal and complete the mint schedule.</output>
+                </div>
               </div>
             </section>
 
-            <section class="panel" data-section="features">
-              <div class="section-heading"><span>05</span><h2>FEATURE FLAGS</h2><small>SELECT MODULES TO PACKAGE</small></div>
+            <section class="panel" data-section="features" id="guided-modules">
+              <div class="section-heading"><span>05</span><h2>MODULES</h2><small>CHOOSE WHAT YOUR TERMINAL INCLUDES</small></div><p class="guided-step-note">Choose the tools your community needs. You can change these later.</p>
               <div class="checks">
                 <label><input name="whaleTracker" type="checkbox" checked><span><strong>WHALE TRACKER</strong><small>Holder and transfer intelligence</small></span></label>
                 <label><input name="memeIntel" type="checkbox" checked><span><strong>MEME INTEL</strong><small>Risk, concentration and market commands</small></span></label>
@@ -191,6 +234,7 @@
 
           <aside class="console-panel">
             <div class="console-heading"><span>BUILD CONSOLE <em>/ STATUS OUTPUT</em></span><b id="readiness">WAITING</b></div>
+            <div id="builder-brand-preview" class="builder-brand-preview" hidden><span>[ BRAND PREVIEW ]</span><img id="builder-mascot-preview" alt="Project logo preview"></div>
             <pre id="preview" aria-live="polite">[ WAIT ] Complete the required fields.</pre>
             <div class="console-status-line"><span>[ LIVE ]</span><small>Diagnostic output updates as project configuration changes.</small></div>
           </aside>
@@ -211,6 +255,27 @@
       <div class="footer-credit">Built by Gokalp <span class="footer-dot">·</span> <a href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp on X"><svg class="x-logo" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"/></svg><span>@Gokalp8339</span></a></div>
     </footer>
   </main>
+
+    <dialog id="nft-mint-confirm" class="nft-mint-confirm" aria-labelledby="nft-mint-confirm-title">
+      <div class="nft-mint-confirm-panel">
+        <div class="nft-mint-confirm-head"><span>[ NFT MINT TIME ]</span><button id="nft-mint-confirm-close" type="button" aria-label="Close">×</button></div>
+        <div class="nft-mint-confirm-body">
+          <strong id="nft-mint-confirm-title">CONFIRM NFT MINT TIME</strong>
+          <p>This is the NFT mint time that will control the countdown and launch state. Proceed only if the date, time, and timezone are correct.</p>
+          <div class="nft-time-review">
+            <span>NFT mint time</span><b id="nft-mint-confirm-value">—</b>
+            <span>Your computer time</span><b id="nft-local-time-value">—</b>
+            <span>Mint countdown</span><b id="nft-mint-countdown-value">—</b>
+            <span>Time check</span><b id="nft-mint-confirm-state">—</b>
+          </div>
+          <p class="nft-mint-confirm-note">The Builder does not silently change the schedule. Go back to edit it if anything looks wrong.</p>
+        </div>
+        <div class="nft-mint-confirm-actions">
+          <button id="nft-mint-edit" type="button">CHANGE</button>
+          <button id="nft-mint-proceed" type="button">CONFIRM</button>
+        </div>
+      </div>
+    </dialog>
 
     <dialog id="build-complete" class="build-complete">
       <div class="build-modal">

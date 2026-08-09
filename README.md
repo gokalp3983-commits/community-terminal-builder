@@ -1,5 +1,24 @@
 # Community Terminal Builder
 
+## Milestone Status — Builder Mode Final (2026-08-08)
+
+**Visible Builder version:** `v1.3.2-b`  
+**Current milestone:** **CHAPTER 15A — PASSED / BUILDER MODE FINAL**  
+**Next milestone:** **CHAPTER 15B — Simplified End-User Builder**
+
+Chapter milestones reached:
+
+| Chapter / milestone | Status | Result |
+|---|---|---|
+| Chapters 1–12 — Reusable builder, generated terminal packaging, hosted builder, deployment assistant | **MILESTONE PASSED** | Core configurable terminal system established |
+| Chapter 13A — Deployment Dashboard & Guided Handoff | **MILESTONE PASSED** | Public acceptance workflow and deployment records verified |
+| Chapter 13B — Connected Deployment Prototype | **MILESTONE PASSED** | GitHub + Render connected deployment path proven as an opt-in prototype |
+| Chapter 14 — Secure Deployment Control & Release Workflow | **MILESTONE PASSED / CLOSED** | Protected UPDATE EXISTING RELEASE proven end-to-end with GitHub commit, Render deploy, polling and Public Acceptance |
+| Chapter 15A — Local Production-Ready Builder | **MILESTONE PASSED / BUILDER MODE FINAL** | Local token + NFT Builder, preview, standalone ZIP generation, generated-package tests and hands-on page acceptance passed |
+| Chapter 15B — Simplified End-User Builder | **NEXT** | Reduce the normal user flow to Project → Token/NFT Details → Modules → Branding → Preview → Generate/Publish while preserving Builder Mode underneath |
+
+**Baseline rule:** this ZIP is the frozen **Community Terminal Builder — Builder Mode Final** developer/operator baseline. Chapter 15B must branch from it rather than replacing or losing the proven developer controls.
+
 ## Chapter 14B — Protected Publish Action
 
 - Adds a two-step protected release flow: `PREPARE RELEASE` followed by an exact confirmation phrase and `CONFIRM PUBLISH & DEPLOY`.
@@ -901,3 +920,216 @@ The final closure refinement separates transient progress feedback from completi
 - The real Chapter 14 acceptance run finished with the deployed JACKET terminal passing Public Acceptance across the landing page, security headers, `/healthz`, `/status`, `/whales`, and `/intel`.
 
 No additional Chapter 14 acceptance run is required for this final presentation-only refinement. The same deployment completion behavior can be exercised naturally during Chapter 15 work. **Chapter 15 begins from this closed Chapter 14 baseline.**
+
+## Chapter 15 — Started (2026-08-08)
+
+Chapter 15 begins from the formally closed Chapter 14 developer-ready baseline. The immediate operating goal is to make the Community Terminal Builder dependable for **local use first**: build a new token/community terminal locally, preview it, download the generated ZIP, then manually publish that generated package to a new GitHub repository and Render service when needed. Automated first-time provisioning remains a later Chapter 15 phase rather than a prerequisite for real use.
+
+### Chapter 15A — Local Builder Readiness + Default Theme Contract
+
+The FINAL NFT-ONLY BASE CODE supplied on 2026-08-08 is adopted as the canonical NFT functional reference and as the visual/UI reference for all generated terminals. NFT-only functionality remains modular and must not be copied into unrelated terminal types without an explicit feature requirement.
+
+The Builder now formalizes the shared default terminal visual contract:
+
+- black terminal background;
+- orange structure, borders, headings, and primary framing;
+- green only for LIVE / OK / READY and other positive system states;
+- bright white for primary readable text and important values;
+- cyan for highlights, links, prompts, and selected/key metrics;
+- red for negative movement, errors, and warnings;
+- terminal monospace typography, compact information density, responsive/mobile behavior, and restrained color hierarchy remain baseline requirements.
+
+A dedicated `theme-contract.js` now owns the default generated color tokens used by the generator rather than scattering those defaults inline. `test-theme-contract.js` is part of the normal regression suite and guards the shared module CSS against accidental drift from the canonical terminal palette and typography.
+
+The visible Builder version remains **v1.3.2-b**. Chapter 15A does not change the accepted Chapter 14 protected update-existing workflow and does not require re-running the full Chapter 14 live acceptance unless a later Chapter 15 change touches that path.
+
+## Chapter 15A — Local Production-Ready Builder (UI/NFT integration checkpoint)
+
+Status: **ACTIVE — post-first-local-acceptance fixes applied**.
+
+Local acceptance completed on 2026-08-08:
+- Builder local startup: PASS.
+- Generated token/community ZIP validation: PASS (12 generated-package checks).
+- Generated project installed and ran independently from the Builder: PASS.
+- Landing, Whale, and Intel command flows: PASS.
+- Chapter 14 protected release behavior was not changed and therefore was not re-run live.
+
+Chapter 15A UI amendments from the local acceptance pass:
+- Non-NFT generated terminal pages now show a full, untruncated cyan `[ CA ] Contract : <address>` row immediately above `[ LIVE ] Updated`.
+- The token contract address remains selectable and includes a dedicated copy control.
+- The Community Terminal header is not used for the new CA row; the previous landing header network/contract strip was removed.
+- Non-NFT structural borders now use a brighter/crisper treatment derived from the help-panel framing, with orange as the default structural color.
+- Landing, Whale, Intel, and future token-centric non-NFT pages should follow this shared CA/border convention.
+
+NFT isolation / canonical source rule:
+- The uploaded **FINAL NFT-ONLY BASE CODE (08 Aug 2026)** is the canonical NFT terminal implementation.
+- The Builder NFT module has been refreshed from that base, preserving the two-page NFT architecture under the mounted community route: `/nft` for mint countdown/launch and `/nft/terminal` for the collection terminal.
+- Shared token CA-row amendments are **not** injected into NFT pages.
+- NFT generation preserves NFT-specific Floor Price, Holders, 24h NFT Volume, mint tracker, holder rankings, sales/buyer/seller activity, premium-sale treatment, responsive behavior, binary side background, modal behavior, and pre-mint/live states from the canonical NFT base.
+- Builder NFT inputs now include collection name, total supply, mint time (ISO 8601), OpenSea link/slug, and NFT contract so the canonical NFT base can be parameterized without mixing fungible-token metrics into it.
+
+Next acceptance profile:
+- Generate a **meme-token Community Terminal with NFT enabled**.
+- Verify the shared non-NFT CA/copy/border amendments on Landing, Whale, and Intel.
+- Verify `/nft` and `/nft/terminal` follow the FINAL NFT-ONLY implementation and remain isolated from shared token CA-row changes.
+
+
+### Chapter 15A — NFT mint-time confirmation safety (2026-08-08)
+
+Before the meme-token + NFT acceptance run, NFT schedule entry was changed from a raw ISO-8601 text field to a safer operator flow. This change affects the **Builder input/confirmation experience only**; it does not redesign or inject shared token UI into the canonical NFT terminal pages.
+
+- NFT-enabled projects now collect **Mint date**, **Mint time**, and **Timezone** separately.
+- The Builder offers **USE MY TIMEZONE**, populated from the user's browser/computer timezone. IANA timezone names (for example `Europe/Bucharest`) are used so daylight-saving rules are handled rather than relying on a hard-coded GMT offset.
+- The Builder converts the chosen schedule internally to an ISO-8601 timestamp with an explicit offset before passing it to the FINAL NFT-ONLY countdown code.
+- The schedule is compared with the user's current computer/browser time and reports a future, near-term (less than one hour), or already-past state.
+- When NFT Terminal is enabled, **GENERATE TERMINAL ZIP is gated by an explicit NFT mint-time confirmation modal**. The modal shows the interpreted NFT mint time, the user's current computer time, timezone context, and a time-state check.
+- The modal states that this value controls the NFT countdown/launch state and provides **GO BACK & EDIT** and **CONFIRM & PROCEED** actions. The Builder does not silently change the entered schedule.
+- NFT mint date/time/timezone are required for an NFT-enabled generation. Non-NFT projects are unaffected.
+- Saved/imported projects remain compatible with the existing canonical `nft.mintAt` ISO value; new saves also retain the selected timezone for clearer restoration.
+- The uploaded **FINAL NFT-ONLY BASE CODE** remains the canonical NFT page implementation. This safety flow only parameterizes its mint time and does not apply the shared non-NFT CA-row convention to NFT pages.
+
+Acceptance target remains a **meme-token Community Terminal with NFT enabled**, verifying both the shared non-NFT UI amendments and the isolated FINAL NFT-ONLY `/nft` + `/nft/terminal` implementation.
+
+
+### Chapter 15A — Meme + NFT local acceptance fixes (08 Aug 2026)
+- Local Builder and standalone generated-package validation passed before the HOODRAT meme + NFT acceptance run.
+- Fixed NFT-enabled ZIP generation confirmation path so user-facing date formatting no longer blocks generation.
+- NFT mint schedule UX now keeps **Use My Timezone** as a helper that fills the timezone field, while leaving a completed mint-schedule block triggers a separate **Confirm / Change** review modal.
+- The mint review shows browser/computer timezone, a human-readable mint schedule, and relative time until mint. Raw ISO-8601 remains internal for countdown logic only. Editing the schedule invalidates prior confirmation.
+- Non-NFT Landing / Whale / Intel pages show the full cyan token contract address with copy control immediately above Updated; NFT pages remain untouched and continue to use the FINAL NFT-ONLY base implementation.
+- Tightened live metric label/value spacing to match the compact information density of the FINAL NFT-ONLY reference.
+- Strengthened orange structural framing consistently and aligned non-NFT footer-area styling to the FINAL NFT-ONLY footer visual treatment without copying NFT-specific footer content or behavior.
+- FINAL NFT-ONLY BASE remains the canonical source for NFT terminal generation.
+
+
+### Chapter 15A — local meme + NFT acceptance polish (8 Aug 2026)
+
+The local HOODRAT token + HOODRAT NFT acceptance proved that the Community Terminal Builder can generate a standalone combined token/NFT terminal package. The generated ZIP installed, validated, and ran locally with Landing, Whale, Intel, NFT launch, and NFT terminal routes. This pass also recorded and corrected the remaining visual/fidelity issues found during hands-on acceptance:
+
+- The outermost page frame is now a fixed bright-green signature border on every generated page, independent of project input.
+- Non-NFT internal structure remains orange; NFT internal panels preserve the FINAL NFT-ONLY BASE muted-green border/divider treatment.
+- Non-NFT token CA copy controls are borderless/minimal while preserving full-address copy behavior.
+- Non-NFT footer structure/style now follows the FINAL NFT-ONLY footer area's compact typography, spacing, divider, title, information line, and attribution treatment without importing NFT-specific logic.
+- NFT launch heading is normalized to `<PROJECT NAME> NFT COLLECTION TERMINAL`.
+- NFT launch action wording is `VISIT NFT TERMINAL`.
+- NFT footer heading is normalized to `<PROJECT NAME> NFT Terminal`.
+- The `[ UPCOMING ] Mint begins at ...` display now comes from the exact confirmed Builder mint timestamp; countdown calculation itself was already correct and remains unchanged.
+- The canonical FINAL NFT-ONLY BASE remains the NFT implementation source of truth.
+
+The visible Builder version remains `v1.3.2-b`.
+
+## Chapter 15A — Builder Mode Final (2026-08-08)
+
+**Milestone: PASSED / FROZEN BASELINE**
+
+The local Builder acceptance cycle is complete and this package is designated **Community Terminal Builder — Builder Mode Final**. It is the developer/operator baseline for future work.
+
+Final Chapter 15A acceptance record:
+
+- Builder regression suite passed during the local acceptance cycle.
+- Fresh generated token/community ZIP installed, validated, and ran independently.
+- Landing, Whale, Intel, NFT launch, and NFT terminal routes were inspected during the HOODRAT token + NFT acceptance pass.
+- Global bright-green outer frame, compact non-NFT metric layout, full token CA row, borderless CA copy control, shared non-NFT footer treatment, NFT naming, NFT launch wording, confirmed mint-time display, and canonical muted-green NFT internal borders were accepted.
+- Builder Landing Preview now restores visible `:` separators between metric labels and values and includes the same compact Community Terminal footer treatment used by generated pages.
+- The visible Builder version remains `v1.3.2-b`; the milestone name changes, not the public version string.
+- Chapter 14 protected release controls remain available underneath and are not discarded by the upcoming simplified user experience.
+
+### Next chapter — Chapter 15B
+
+Chapter 15B will focus on a simplified end-user Builder experience. Infrastructure, payment, `$SHELL`, and multi-tenant platform decisions remain future-roadmap work and are intentionally separated into **`SHELL Token_Readme.md`**.
+
+## Chapter 16 — FINAL NFT base carry-over (2026-08-08)
+
+Chapter 16 starts from the frozen **Builder Mode Final / Chapter 15A** baseline and carries the last two fixes from the canonical `FINAL_NFT-ONY_BASE_CODE_08AUG2026-1415GMT3` implementation into CTB's isolated NFT module.
+
+- **Server-rendered social/link preview metadata:** both NFT entry routes now render project metadata in the initial HTML response. Open Graph title, description, URL, image and site name, plus X/Twitter card/title/description/image, are emitted with real project values. The social image is absolute. Shared-link crawlers no longer depend on client-side placeholder replacement. In generated Community Terminals the renderer respects the mounted `/nft` and `/nft/terminal` request path.
+- **Mobile first-paint / instant fit:** `index.html` and `terminal.html` contain a tiny critical first-paint style block that constrains page/shell/workspace widths, protects overflow, applies `min-width:0` to the NFT layout containers, constrains long terminal dividers, protects media width, and forces the single-column NFT workspace at the responsive breakpoint before the external stylesheet arrives. Matching durable rules remain in `style.css`. The viewport remains `width=device-width,initial-scale=1`; browser zoom/accessibility is not disabled.
+- Chapter 15A CTB-specific visual adaptations are intentionally retained, including the **bright-green outer page frame** and the canonical muted-green NFT internal border hierarchy. NFT-specific OpenSea/Blockscout behavior remains isolated to the NFT module.
+- The visible Builder version remains `v1.3.2-b`. `SHELL Token_Readme.md` remains the separate future roadmap.
+
+
+
+## Chapter 16 — Dual NFT mint architecture + canonical 09 Aug parity (2026-08-09)
+
+Chapter 16 expands the isolated NFT generator from one fixed mint timestamp into two canonical NFT launch paths while keeping the frozen Chapter 15A Builder contracts intact.
+
+- CTB now carries **two internal NFT templates**: the refreshed canonical **single-phase** base and a separate canonical **multiple-phase** base. Generated output still uses the same public `03_NFT-Collection-Terminal` module path; the Builder selects the internal template from the configured mint structure.
+- The Builder NFT section now exposes **Mint Structure → Single Phase / Multiple Phases**. Single Phase keeps the existing date, time and timezone workflow. Multiple Phases exposes a repeatable **2–6 phase editor** with phase label, public phase name, start/end date and time, per-phase timezone, mint price and wallet limit.
+- Multiple-phase schedules are normalized into `nft.mode = "multiple"` plus `nft.mintPhases[]`. Generation rejects missing/invalid phase ranges and phase overlaps. Single-phase saved/imported configurations remain backward-compatible with the prior `nft.mintAt` + `nft.timezone` shape.
+- The generated multiple-phase landing page creates exactly the configured number of phase command rows/cards rather than assuming a fixed three-phase collection. Phase labels, names, price/limit values and schedule times are injected from Builder configuration.
+- Both NFT paths preserve the Chapter 16 Part-A contracts: **server-rendered OG/X metadata**, mounted `/nft` + `/nft/terminal` URL awareness, accessible first-paint viewport protection, and the Chapter 15A **bright-green outer frame**.
+- The embedded single-phase base is refreshed to the 09 Aug canonical source, including **Collection Pulse / Since Last Visit** and final mint-completion lifecycle handling. The multiple-phase path also retains Collection Pulse while adding phase-specific launch lifecycle behavior.
+- CTB-specific theme isolation remains enforced. Project-specific 888 Society names/URLs are not allowed to leak into generic generated multi-phase projects, and the multi-phase template is recolored through the CTB project/theme configuration instead of making the 888 palette a global Builder default.
+- JavaScript-driven NFT navigation is namespace-safe as well as static HTML links: generated runtime redirects use `/nft/terminal` inside a unified Community Terminal.
+- Added `test-chapter16-dual-nft.js` to protect the Mint Structure UI, both template paths, phase-count parity, Collection Pulse carry-over, route namespacing, SSR behavior, outer-frame contract, and branding isolation.
+
+The visible Builder version remains `v1.3.2-b`. Chapter 16 remains open for further capability work. The currently planned next major chapter after Chapter 16 is **Chapter 17 — User-Friendly Simplification**; the older Chapter 15B simplification note is retained as historical planning context but is superseded by the Chapter 17 roadmap.
+
+### Chapter 16 — Dual NFT acceptance fixes (09 Aug 2026)
+- Fixed Builder Mint Structure dropdown option readability on the dark UI.
+- Multiple-phase phase editor now initializes an empty End Date from the entered Start Date while keeping End Date editable for multi-day mints.
+- Fixed generated NFT mascot resolution under the mounted `/nft` namespace so `/nft` and `/nft/terminal` use the uploaded/generated mascot reliably.
+- Restored the canonical multiple-phase NFT terminal ice-blue outer frame instead of the earlier blanket CTB green-frame override; NFT sales window styling remains unchanged.
+- Hardened NFT terminal mascot presentation so transparent/non-square artwork is not forced into a black square/composited tile; glow remains on the visible artwork.
+- Full CTB release/regression suite and dual-NFT generation regression pass after these fixes.
+
+### Chapter 16 — NFT acceptance refinement + Builder brand preview (09 Aug 2026)
+
+The hands-on two-phase HOODRAT acceptance pass identified the remaining UI/branding edge cases and these are now protected as Chapter 16 contracts:
+
+- **Dynamic phase End Date autofill:** every phase card, including cards created later with `+ Add Phase`, initializes an empty End Date from the entered Start Date. End Date remains editable for multi-day phases.
+- **Sequential phase validation:** each phase must begin at or after the previous phase ends. Equal-time handoff is valid; overlap blocks generation in both Builder validation and generator normalization.
+- **NFT countdown logo path:** fixed the multi-phase template transformation order that could rewrite `888-society-mark.png` into a non-existent project-specific `*-mark.png` before the mascot replacement ran. Generated `/nft` now points to the actual mounted mascot asset and also loads `project-runtime.js` for runtime branding parity.
+- **Generic uploaded-logo treatment:** CTB-generated multi-phase NFT pages no longer inherit the 888-specific glow animation/filter. Arbitrary uploaded logos preserve their natural canvas/transparency without revealing a square halo; the NFT terminal and countdown use the same neutral logo treatment.
+- **Builder brand preview:** the Build Console now shows the uploaded/saved project logo so branding can be visually confirmed before ZIP generation. The pop-up Landing Preview also supports persisted mascot data, not only a newly selected file.
+- **Mounted social image URL:** SSR social metadata uses the `/nft/assets/...` mounted mascot path when rendered inside a unified Community Terminal.
+- Mint Structure native dropdown options retain explicit dark background / bright text styling for browser consistency.
+- Whale Activity Tracker and Meme Intel were intentionally left untouched during this refinement after manual acceptance passed.
+
+The full CTB regression suite passes after this refinement. The visible Builder version remains `v1.3.2-b` and Chapter 16 remains open until final manual visual acceptance.
+
+### Chapter 16 — Mint Structure selector polish (09 Aug 2026)
+
+- Fresh Builder sessions now show an explicit **Please select mint structure** placeholder instead of silently defaulting the NFT mint mode.
+- The Mint Structure control is styled as part of the CTB dark terminal UI, including dark native option surfaces, bright readable choices, muted placeholder text, green focus treatment and dark color-scheme hints for browser consistency.
+- NFT generation requires an explicit Single Phase or Multiple Phases choice when the NFT terminal is enabled. Existing saved/imported NFT configurations still restore their recorded single/multiple mode.
+- The full CTB regression suite passes after this UI polish.
+
+
+### Chapter 16 final NFT acceptance polish
+- Hardened the multi-phase NFT Sales Tracker floor summary so long pending/live values stay inside the cyan summary frame at narrow desktop/sidebar widths.
+- Preserved the accepted dual-NFT logo, phase scheduling, preview, mounted-route, and canonical multi-phase ice-blue border behavior.
+
+
+## Chapter 17 — User-Friendly Simplification (started 2026-08-09)
+
+Chapter 17 starts from the frozen `Community_Terminal_Builder_CHAPTER16_FINAL_ACCEPTANCE_09AUG2026` baseline. The Chapter 16 generator, canonical single/multiple NFT architecture, SSR metadata, first-paint protection, release controls, config schema, and visible Builder version `v1.3.2-b` remain unchanged unless a later Chapter 17 acceptance decision explicitly requires otherwise.
+
+### Chapter 17A — Guided Mode foundation
+
+- Added **Guided Mode** as the default Builder presentation for non-developer use.
+- Preserved the complete existing operator interface as **Builder Mode**, switchable without reloading or changing project data.
+- Guided Mode hides protected deployment/release dashboards, low-level chain/API fields, expert identity fields, and advanced project workspace actions while leaving their values and behavior intact.
+- NFT-specific collection/schedule inputs now stay out of the normal flow until **NFT Terminal** is enabled.
+- Technical labels were softened in the visible flow: `IDENTITY` → `PROJECT`, `CONTRACTS & DATA` → `TOKEN & NFT`, and `FEATURE FLAGS` → `MODULES`.
+- No generator schema, generated terminal code, Chapter 16 NFT behavior, or deployment security boundary is changed by this checkpoint.
+
+
+### Chapter 17A visual hotfixes + Chapter 17B Guided Workflow preview (09 Aug 2026)
+
+- Fixed fresh Guided project prompt defaults so hidden advanced terminal identity fields cannot generate an empty `project.promptUser` / `project.promptHost`.
+- Fixed uploaded logo presentation across generated Landing, Whale, Meme Intel, single-phase NFT, and multiple-phase NFT templates. Non-square/transparent logos now keep their natural aspect ratio and can use a larger header footprint instead of being forced into a 42–64 px square.
+- Added visual relationship validation for multiple NFT mint phases. When a phase ends before it starts, the offending End Date/End Time inputs stay red even while focused; when a later phase overlaps the prior phase, that phase's Start Date/Start Time inputs are marked red. Existing blocking logic is unchanged.
+- Guided Mode now presents a five-step overview: **Project → Token/NFT → Branding → Links → Modules**.
+- Guided Mode hides the developer-style Build Console, centers the form as the main task, adds plain-language guidance to each step, and increases secondary/helper text size and contrast.
+- Default branding colors are no longer visually dominant in Guided Mode; they sit behind an optional **Customize Colors** control. Builder Mode still exposes the full color controls directly.
+- Optional NFT contract/settings remain hidden until the NFT Terminal module is enabled.
+- Builder Mode, generator schema, protected deployment/release controls, Chapter 16 NFT architecture, and visible version `v1.3.2-b` remain unchanged.
+
+
+### Chapter 17B acceptance fixes — pre-break build (09 Aug 2026)
+
+- Landing and NFT headers now use a deliberate responsive **logo display slot** (`220×86` desktop, `190×72` mobile with `object-fit: contain`) so small-canvas transparent artwork is visibly enlarged without stretching. Whale Activity Tracker styling remains untouched because manual acceptance already passed there.
+- Multiple-phase schedule validation now re-runs on every date/time input/change, so **cross-phase ordering errors appear immediately** instead of waiting for the user to leave the whole mint-schedule block or press Generate. The invariant remains: each next phase must start at or after the previous phase ends.
+- Guided Mode keeps the successful immediate ZIP download and hides the redundant **DOWNLOAD ZIP** action from the build-complete dialog. Builder Mode retains the re-download action for operator convenience.
+- No generator schema, deployment security behavior, visible Builder version, or accepted Chapter 16 terminal logic changed in this pass.

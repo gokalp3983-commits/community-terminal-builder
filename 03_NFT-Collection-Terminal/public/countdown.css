@@ -1,0 +1,87 @@
+.launch-workspace{min-height:100vh;width:min(1100px,calc(100% - 24px));margin:12px auto;display:block;grid-template-columns:none}.launch-workspace #terminal-frame.shell.terminal-frame{width:100%!important;margin:0 auto!important}.launch-live-panel{margin-top:0}.launch-status-area{margin-top:14px}.launch-boot{min-height:auto;margin:12px 0 0}.launch-links-line{padding:8px 0;color:#fff}.launch-links-line a{color:var(--cyan);text-decoration:none}.launch-links-line a:hover{text-decoration:underline;text-shadow:0 0 8px rgba(101,223,255,.35)}.x-credit{color:var(--green);text-decoration:none}.x-credit:hover{text-decoration:underline;text-shadow:0 0 8px rgba(57,255,20,.35)}
+.countdown-area{margin-top:16px}.countdown-box{border:1px solid var(--line);background:var(--panel);padding:22px;text-align:center}.countdown-label{color:var(--green);font-weight:700;letter-spacing:.08em}.countdown-value{margin:10px 0 7px;color:var(--green);font-size:clamp(2.2rem,7vw,4.6rem);font-weight:700;letter-spacing:.08em;text-shadow:0 0 14px rgba(57,255,20,.25)}.countdown-prompt{color:var(--muted)}.cursor{color:var(--green);animation:blink 1s step-end infinite}@keyframes blink{50%{opacity:0}}
+.launch-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:14px}.terminal-action{border:1px solid var(--orange);background:#03100b;color:var(--orange);padding:9px 13px;text-decoration:none;font:inherit;cursor:pointer}.terminal-action:hover{border-color:var(--orange);color:#ffab3d;box-shadow:0 0 10px rgba(255,138,0,.22)}.button-reset{appearance:none}.pending-tag{color:var(--orange)!important}.live-tag{color:var(--green)!important}.launch-modal{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.82);display:grid;place-items:center;padding:20px}.launch-modal[hidden]{display:none}.launch-modal-card{width:min(650px,100%);border:1px solid var(--green);background:#020806;padding:26px;box-shadow:0 0 34px rgba(57,255,20,.16)}.launch-modal-card h2{color:var(--green);margin:10px 0}.launch-modal-card p{color:#fff;line-height:1.6}.modal-tag{color:var(--orange)}
+@media(max-width:560px){.countdown-value{font-size:2.4rem}.launch-actions{flex-direction:column}.terminal-action{text-align:center;width:100%}}
+
+
+
+/* Compact secondary countdown line; uses the existing mint timer. */
+.market-countdown-line .countdown-tag{
+  color:var(--orange);
+}
+.market-countdown-line #inlineCountdownValue{
+  color:var(--green);
+}
+
+
+/* Match countdown-page status spacing to the NFT Terminal live panel. */
+.market-line{
+  display:grid;
+  grid-template-columns:12ch 11ch 1ch minmax(0,1fr);
+  column-gap:8px;
+  align-items:baseline;
+  min-height:1.48em;
+}
+.market-line .market-tag,
+.market-line .market-label{
+  white-space:nowrap;
+}
+.market-line .market-colon{
+  display:block;
+  text-align:center;
+}
+.market-line .market-value{
+  display:block;
+  width:auto;
+  min-width:0;
+  margin:0;
+  text-align:left;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.market-countdown-line{
+  display:grid;
+  grid-template-columns:12ch 11ch 1ch minmax(0,1fr);
+  column-gap:8px;
+  align-items:baseline;
+}
+.market-countdown-line .market-colon{
+  text-align:center;
+}
+.market-countdown-line .market-value{
+  width:auto;
+  min-width:0;
+  margin:0;
+  text-align:left;
+}
+
+/* NFT-only launch/status alignment polish */
+.launch-links-line{
+  display:grid;
+  grid-template-columns:16ch minmax(0,1fr);
+  column-gap:1ch;
+  align-items:baseline;
+}
+.launch-links-line > .orange{
+  white-space:nowrap;
+}
+.launch-boot .line{
+  display:grid;
+  grid-template-columns:10ch minmax(0,1fr);
+  column-gap:1ch;
+  align-items:baseline;
+}
+.launch-boot .line > span:first-child{
+  white-space:nowrap;
+}
+
+@media(max-width:560px){
+  .launch-links-line{
+    grid-template-columns:14ch minmax(0,1fr);
+    column-gap:.6ch;
+  }
+  .launch-boot .line{
+    grid-template-columns:9ch minmax(0,1fr);
+    column-gap:.6ch;
+  }
+}

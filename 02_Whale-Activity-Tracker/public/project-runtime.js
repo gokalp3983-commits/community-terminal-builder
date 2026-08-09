@@ -30,10 +30,34 @@
       e.alt = c.branding.mascotAlt;
     });
     document.querySelectorAll("[data-project-version]").forEach((e) => {
-      e.textContent = `${c.project.name} Community Terminal ver ${c.project.version}`;
+      e.textContent = `${c.project.name} Community Terminal`;
+    });
+    document.querySelectorAll("[data-project-footer-title]").forEach((e) => {
+      e.textContent = `${c.project.name} Community Terminal`;
     });
     document.querySelectorAll("[data-project-footer]").forEach((e) => {
       e.innerHTML = `Independent community-built tools.<br>Not affiliated with or endorsed by the official ${c.project.ticker} team.<br>Built for the ${c.project.ecosystem} ${c.project.ticker} ecosystem.`;
+    });
+
+    document.querySelectorAll("[data-token-contract]").forEach((e) => {
+      e.textContent = c.contracts.token || "NOT CONFIGURED";
+    });
+    document.querySelectorAll("[data-copy-token-contract]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const address = c.contracts.token || "";
+        if (!address) return;
+        try {
+          await navigator.clipboard.writeText(address);
+          const original = button.textContent;
+          button.textContent = "✓";
+          button.setAttribute("aria-label", "Contract address copied");
+          setTimeout(() => { button.textContent = original; button.setAttribute("aria-label", "Copy token contract address"); }, 1200);
+        } catch (_) {
+          const range = document.createRange();
+          const target = document.querySelector("[data-token-contract]");
+          if (target) { range.selectNodeContents(target); const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range); }
+        }
+      });
     });
 
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
