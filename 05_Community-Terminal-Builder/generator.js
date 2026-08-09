@@ -104,6 +104,39 @@ function phaseCommandMarkup(phases) {
   return phases.map((phase,index)=>`<div id="phaseCommand-${phase.id}" class="market-line market-countdown-line phase-command-line"><span class="market-tag countdown-tag">[ MINT ]</span><span class="market-label">Phase-${index+1}</span><span class="market-colon">:</span><strong id="phaseCommandValue-${phase.id}" class="market-value">--:--:--</strong></div>`).join("\n            ");
 }
 
+function html(value) {
+  return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+}
+function projectMarketLinkRows(p, { includeOpenSea = false } = {}) {
+  const rows = [
+    ["Website", p.links.website, `Visit ${p.name} Official Website`],
+    ["X", p.links.x, `Visit ${p.name} Official X Account`],
+    ["Telegram", p.links.telegram, `Join ${p.name} Official Telegram`],
+    ...(includeOpenSea ? [["OpenSea", p.links.openSea || (p.nftSettings.openSeaSlug ? `https://opensea.io/collection/${p.nftSettings.openSeaSlug}/overview` : ""), `View ${p.name} NFT Collection on OpenSea`]] : []),
+  ];
+  return rows.filter(([,url]) => url).map(([label,url,copy]) => `<div class="market-line project-link-row"><span class="market-tag project-link-tag">[ LINK ]</span><span class="market-label">${html(label)}</span><span class="market-colon" aria-hidden="true">:</span><a class="market-value project-link-value" href="${html(url)}" target="_blank" rel="noopener noreferrer">${html(copy)}</a></div>`).join("\n          ");
+}
+function countdownProjectLinkRows(p) {
+  // Reuse the countdown page's existing command-link area instead of adding a second social block.
+  const openSea = p.links.openSea || (p.nftSettings.openSeaSlug ? `https://opensea.io/collection/${p.nftSettings.openSeaSlug}/overview` : "");
+  const rows = [
+    ["LINK", "Website", p.links.website, `Visit ${p.name} Official Website`],
+    ["OPENSEA", "OpenSea", openSea, `View ${p.name} NFT Collection on OpenSea`],
+    ["SOCIALS", "X", p.links.x, `Visit ${p.name} Official X Account`],
+    ["SOCIALS", "Telegram", p.links.telegram, `Join ${p.name} Official Telegram`],
+  ];
+  return rows.filter(([, , url]) => url).map(([tag,label,url,copy]) => `          <div class="launch-links-line project-launch-link"><span class="orange">[ ${tag} ]</span> <span class="project-launch-label">${html(label)} :</span> <a href="${html(url)}" target="_blank" rel="noopener noreferrer">${html(copy)}</a></div>`).join("\n");
+}
+function nftInfoLinkRows(p) {
+  // OpenSea already has a canonical collection-info row in the NFT terminal. Do not duplicate it.
+  const rows = [
+    ["Website", p.links.website, `Visit ${p.name} Official Website`],
+    ["X", p.links.x, `Visit ${p.name} Official X Account`],
+    ["Telegram", p.links.telegram, `Join ${p.name} Official Telegram`],
+  ];
+  return rows.filter(([,url]) => url).map(([label,url,copy]) => `        <div class="info-row project-info-link-row"><span>${html(label)}</span><a href="${html(url)}" target="_blank" rel="noopener noreferrer">${html(copy)}</a></div>`).join("\n");
+}
+
 function profileSource(p) {
   const value = {
     project: { id:p.id, name:p.name, displayName:p.name, ticker:p.ticker, version:p.version, description:p.description, ecosystem:p.ecosystem, promptUser:p.promptUser, promptHost:p.promptHost },
@@ -205,6 +238,11 @@ function transformModuleFile(moduleName, relativeName, data, p) {
     }
 
     if (relativeName === "public/index.html") {
+      const socialRows = countdownProjectLinkRows(p);
+      // Replace the existing OpenSea/Socials command area as one unit so configured rows are never duplicated.
+      source = source.replace(/\n\s*<div class="launch-links-line"><span class="orange">\[ OPENSEA \]<\/span>[\s\S]*?<\/div>(?:\n\s*<div class="launch-links-line"><span class="orange">\[ SOCIALS \]<\/span>[\s\S]*?<\/div>)?/, socialRows ? `\n${socialRows}` : "");
+      source = source.replace(/<a class="terminal-action" href="(?:#|https:\/\/opensea\.io\/collection\/[^"]+)"([^>]*)>\[ VISIT OPENSEA \]<\/a>/g, `<a class="terminal-action" href="${openSea}" data-opensea-action$1>[ VISIT OPENSEA ]</a>`);
+      source = source.replace(/<a class="terminal-action" href="(?:#|https:\/\/opensea\.io\/collection\/[^"]+)"([^>]*)>VISIT OPENSEA<\/a>/g, `<a class="terminal-action" href="${openSea}" data-opensea-action$1>VISIT OPENSEA</a>`);
       const mintDisplay = mintDisplayFromIso(p.nftSettings.mintAt);
       source = source
         .replace(/<h1>[^<]*<\/h1>/, `<h1>${p.name} NFT COLLECTION TERMINAL</h1>`)
@@ -215,6 +253,10 @@ function transformModuleFile(moduleName, relativeName, data, p) {
       source = source.replace(/<div class="footer-version">\s*[^<]+\s*<\/div>/, `<div class="footer-version">\n            ${p.name} NFT Terminal\n          </div>`);
     }
     if (relativeName === "public/terminal.html") {
+      const infoLinks = nftInfoLinkRows(p);
+      source = source.replace(/(<div class="info-row">\s*<span>NFT Contract<\/span>[\s\S]*?<\/div>)/, infoLinks ? `$1\n${infoLinks}` : "$1");
+      source = source.replace(/<a\s+href="#" data-opensea-link/g, '<a href="#" data-opensea-link');
+      source = source.replace(/<a\s+href="#" data-opensea-link([\s\S]*?)>\s*View ([^<]+) NFT Collection on OpenSea\s*<\/a>/, '<a href="#" data-opensea-action$1>View $2 NFT Collection on OpenSea</a>');
       source = source.replace(/<span data-project-version><\/span>/, `${p.name} NFT Terminal`);
     }
     if (["public/terminal.html", "public/script.js"].includes(relativeName) && p.nftSettings.supply) {
@@ -228,6 +270,10 @@ function transformModuleFile(moduleName, relativeName, data, p) {
       source = source.replaceAll('href="/terminal"', 'href="/nft/terminal"');
       source = source.replaceAll('href="/" title=', 'href="/nft" title=');
     }
+  }
+  if (relativeName === "public/index.html" && ["01_Landing-Page", "02_Whale-Activity-Tracker", "04_Meme-Intel"].includes(moduleName)) {
+    const links = projectMarketLinkRows(p, { includeOpenSea: true });
+    if (links) source = source.replace(/(<div class="market-line contract-address-line"[^>]*>[\s\S]*?<\/div>)/, `$1\n          ${links}`);
   }
   if (relativeName === "public/index.html" && moduleName !== "03_NFT-Collection-Terminal") {
     const faviconHref = p.mascot ? `assets/${p.id}-mascot.${p.mascotExt}` : "favicon.png";

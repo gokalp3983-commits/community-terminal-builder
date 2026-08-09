@@ -679,3 +679,11 @@ h2{
 
 /* Chapter 17A Hotfix 2 — uploaded brand artwork keeps its natural aspect ratio. */
 .community-header .mascot,.community-header .community-mascot,.mascot.community-mascot{display:block!important;width:auto!important;height:auto!important;max-width:min(240px,52vw)!important;max-height:110px!important;object-fit:contain!important;margin:0 auto 10px!important;background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;filter:none!important;animation:none!important;transform:none!important}
+
+
+/* Chapter 17 final polish: readable terminal rows + configured project links. */
+#terminal-live-panel .market-line{grid-template-columns:19ch 17ch 1ch minmax(0,1fr)!important}
+.project-link-row .market-tag,.project-link-row .market-label,.project-link-row .market-colon{color:var(--cyan,#6fd3ff)!important}
+.project-link-row .project-link-value{color:var(--cyan,#6fd3ff)!important;text-decoration:none;overflow-wrap:anywhere}
+.project-link-row .project-link-value:hover{text-decoration:underline}
+@media(max-width:560px){#terminal-live-panel .market-line{grid-template-columns:18ch 10ch 1ch minmax(0,1fr)!important}}

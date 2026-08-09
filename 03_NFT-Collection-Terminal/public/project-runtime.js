@@ -63,9 +63,35 @@
     });
     document.documentElement.style.setProperty("--nft-terminal-label", `"${c.nft?.collectionName || `${c.project.name} NFT`} COLLECTION TERMINAL"`);
 
+    const openSeaUrl = c.links.openSea || (c.nft?.openSeaSlug ? `https://opensea.io/collection/${c.nft.openSeaSlug}/overview` : "");
     document.querySelectorAll("[data-opensea-link]").forEach((e) => {
-      e.href = c.links.openSea || "#";
-      e.hidden = !c.links.openSea;
+      e.href = openSeaUrl || "#";
+      e.hidden = !openSeaUrl;
+      const infoRow = e.closest(".info-row");
+      if (infoRow) infoRow.hidden = !openSeaUrl;
+    });
+    document.querySelectorAll("[data-opensea-action]").forEach((e) => {
+      e.href = openSeaUrl || "#";
+      if (openSeaUrl) {
+        e.target = "_blank";
+        e.rel = "noopener noreferrer";
+        return;
+      }
+      e.removeAttribute("target");
+      e.addEventListener("click", (event) => {
+        event.preventDefault();
+        let status = document.getElementById("openSeaActionStatus");
+        if (!status) {
+          status = document.createElement("div");
+          status.id = "openSeaActionStatus";
+          status.className = "opensea-action-status";
+          status.setAttribute("role", "alert");
+          status.setAttribute("aria-live", "assertive");
+          const host = e.closest(".launch-actions, .official-mint, .terminal-area") || e.parentElement;
+          host?.appendChild(status);
+        }
+        if (status) status.textContent = "[ ERROR ] OpenSea link not configured for this collection.";
+      });
     });
     document.querySelectorAll("[data-nft-explorer-link]").forEach((e) => {
       const base = c.market?.blockscoutExplorerBase || new URL(c.market.blockscoutApiBase).origin;

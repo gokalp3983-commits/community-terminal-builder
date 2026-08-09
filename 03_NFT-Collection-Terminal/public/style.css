@@ -2281,3 +2281,12 @@ img,svg,canvas,video{max-width:100%}
    A fixed display slot lets small-canvas transparent logos enlarge without distortion. */
 .community-header .mascot,.community-header .community-mascot,.mascot.community-mascot{display:block!important;width:min(220px,58vw)!important;height:86px!important;max-width:100%!important;object-fit:contain!important;margin:0 auto 10px!important;background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;filter:none!important;animation:none!important;transform:none!important}
 @media(max-width:560px){.community-header .mascot,.community-header .community-mascot,.mascot.community-mascot{width:min(190px,62vw)!important;height:72px!important}}
+
+
+/* Chapter 17 final polish: configured project links and graceful OpenSea fallback. */
+#terminal-live-panel .market-line{grid-template-columns:19ch 17ch 1ch minmax(0,1fr)!important}
+.project-launch-link a,.project-info-link-row a{color:var(--cyan,#6fd3ff)!important;text-decoration:none;overflow-wrap:anywhere}
+.project-launch-link a:hover,.project-info-link-row a:hover{text-decoration:underline}
+.project-launch-label{color:var(--cyan,#6fd3ff)}
+.opensea-action-status{margin-top:.7rem;color:var(--red,#ff3b30);font:inherit;line-height:1.45}
+@media(max-width:560px){#terminal-live-panel .market-line{grid-template-columns:18ch 10ch 1ch minmax(0,1fr)!important}}

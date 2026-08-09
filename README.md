@@ -1133,3 +1133,15 @@ Chapter 17 starts from the frozen `Community_Terminal_Builder_CHAPTER16_FINAL_AC
 - Multiple-phase schedule validation now re-runs on every date/time input/change, so **cross-phase ordering errors appear immediately** instead of waiting for the user to leave the whole mint-schedule block or press Generate. The invariant remains: each next phase must start at or after the previous phase ends.
 - Guided Mode keeps the successful immediate ZIP download and hides the redundant **DOWNLOAD ZIP** action from the build-complete dialog. Builder Mode retains the re-download action for operator convenience.
 - No generator schema, deployment security behavior, visible Builder version, or accepted Chapter 16 terminal logic changed in this pass.
+
+### Chapter 17 final acceptance polish — SUCCESS (09 Aug 2026)
+
+- Added configured project Website, X, Telegram and OpenSea links to generated terminal surfaces using page-aware placement. Landing, Whale Tracker and Meme Intel show link rows immediately after the token CA row; NFT Countdown reuses its existing launch-command area and existing `[ OPENSEA ]` / `[ SOCIALS ]` conventions; NFT Terminal reuses its collection-information flow and canonical OpenSea row. Existing link areas are reused rather than duplicated.
+- Link rows are emitted **only when a URL is configured**. Blank Website/X/Telegram/OpenSea inputs produce no placeholder row, no “not provided” copy, and no empty visual gap. The NFT Terminal also hides its canonical OpenSea information row when no OpenSea destination exists.
+- Shared generated links use the terminal's clickable ice-blue treatment and open configured external URLs safely in a new tab.
+- Existing NFT **VISIT OPENSEA** actions remain visible. When no OpenSea URL/slug is configured, clicking the action stays on the current page and displays a red terminal-style error: `OpenSea link not configured for this collection.`
+- Increased the reserved live-status column width so long states such as `[ PAIR NOT FOUND ]` do not collide with metric labels. Font size is preserved rather than squeezed smaller.
+- Added `test-chapter17-final-links.js` to protect configured-link rendering, blank-link omission, OpenSea fallback behavior, and long-status row spacing.
+- Full Community Terminal Builder regression suite passes after the final Chapter 17 polish.
+
+**Chapter 17 — User-Friendly Simplification: SUCCESS / ACCEPTED.** The visible Builder version remains `v1.3.2-b`.
