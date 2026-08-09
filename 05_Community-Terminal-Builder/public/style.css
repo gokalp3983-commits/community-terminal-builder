@@ -20,17 +20,17 @@
 }
 *{box-sizing:border-box}
 html{min-height:100%;background:var(--bg);overflow-x:hidden}
-body{position:relative;min-height:100vh;margin:0;background:radial-gradient(circle at 50% -20%,#0a321b 0,transparent 42%),linear-gradient(180deg,#020806,#010403);font-size:15px;line-height:1.48}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:20;background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0,rgba(255,255,255,.018) 1px,transparent 1px,transparent 4px);mix-blend-mode:screen;opacity:.3}
-body::after{content:"101001 011010 110001 010101 001110 101010 011001 110100 010011 101101 001010 111000 010110 100101 011011 001101 110010 010101 101000 011110 001011 110101 010010 101100 001101 111010 010001 100111 011010 001100 110101 010110 101001 001011 111100 010010 100101 011101 001010 110011 010101 101100 001110 111001 010011 100110 011010 001101";position:fixed;inset:-5vh -4vw;z-index:0;pointer-events:none;color:rgba(57,255,20,.035);font-size:clamp(1.35rem,2.5vw,2.8rem);font-weight:800;line-height:1.6;letter-spacing:.34em;word-spacing:.5em;word-break:break-all;overflow:hidden;transform:rotate(-2deg) scale(1.04);text-shadow:0 0 20px rgba(57,255,20,.025)}
+body{position:relative;min-height:100vh;margin:0;background:#000;font-size:15px;line-height:1.48}
+body::before{content:none}
+body::after{content:none}
 button,input,textarea{font:inherit}
 .shell{position:relative;z-index:1;width:min(1240px,calc(100% - 24px));margin:12px auto 28px}
-.terminal-window{border:1px solid var(--line);background:rgba(2,8,6,.96);box-shadow:0 0 55px rgba(57,255,20,.08),0 24px 80px rgba(0,0,0,.55)}
+.terminal-window{border:1px solid var(--line);background:#000;box-shadow:0 0 55px rgba(57,255,20,.05),0 24px 80px rgba(0,0,0,.55)}
 .window-bar{min-height:38px;display:grid;grid-template-columns:170px 1fr 170px;align-items:center;padding:0 12px;border-bottom:1px solid var(--line);background:#04110b;color:var(--muted);font-size:.72rem;letter-spacing:.04em}
 .window-dots{display:flex;gap:7px}.window-dots span{width:9px;height:9px;border:1px solid var(--line-bright);border-radius:50%}.window-dots span:first-child{border-color:var(--danger)}.window-dots span:nth-child(2){border-color:var(--orange)}.window-dots span:last-child{border-color:var(--green)}
 .window-title{text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.window-state{text-align:right;color:var(--green)}
-.hero{position:relative;padding:14px 28px 13px;border-bottom:1px solid var(--line);overflow:hidden}
-.hero::after{content:"01 10 01 01 00 11 10 01 01 10 00 01";position:absolute;right:24px;top:10px;width:210px;color:rgba(57,255,20,.055);font-size:1.85rem;line-height:1;letter-spacing:.16em;word-break:break-all;pointer-events:none}
+.hero{position:relative;padding:22px 28px 18px;border-bottom:1px solid var(--line);overflow:hidden}
+.hero::after{content:none}
 .hero-kicker{color:var(--muted);font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.72rem}.prompt-mark{color:var(--green)}
 h1{position:relative;z-index:1;margin:6px auto 1px;color:var(--orange);font-family:"Share Tech Mono","IBM Plex Mono","Lucida Console","Courier New",monospace;font-size:clamp(1.35rem,2.45vw,2.15rem);font-weight:400;line-height:1;letter-spacing:.075em;text-align:center;text-shadow:0 0 20px rgba(255,106,0,.14)}
 .tagline{margin:6px 0 0;color:#fff;font-family:"IBM Plex Mono",ui-monospace,monospace;letter-spacing:.18em;font-size:clamp(.68rem,1.25vw,.82rem);text-align:center}.tagline span{color:var(--green)}
@@ -392,3 +392,16 @@ body.guided-mode #download-again{display:none!important}
 
 @media(max-width:900px){body.guided-mode .guided-overview{grid-template-columns:repeat(2,minmax(0,1fr))}body.guided-mode .guided-overview a:last-child{grid-column:1/-1}}
 @media(max-width:680px){body.guided-mode .guided-overview{margin:10px 10px 0;grid-template-columns:1fr}body.guided-mode .guided-overview a:last-child{grid-column:auto}body.guided-mode .project-toolbar{grid-template-columns:1fr}body.guided-mode .guided-step-note{font-size:.76rem}}
+
+
+/* Chapter 17 DONE — final public-facing CTB chrome/background/footer polish. */
+html,body{background:#000!important}
+body::before,body::after,.hero::after{content:none!important;display:none!important}
+.terminal-window{background:#000!important}
+.hero{padding:22px 28px 18px!important}
+.builder-footer,.builder-footer .footer-title,.builder-footer .footer-version,.builder-footer .footer-credit,.builder-footer .footer-dot{color:#6FD3FF!important}
+.builder-footer .footer-title,.builder-footer .footer-version,.builder-footer .footer-credit{font-size:.72rem!important;font-weight:700!important;letter-spacing:.08em!important;line-height:1.45!important}
+.builder-footer .footer-version{margin:0!important}
+.builder-footer a{color:#6FD3FF!important;border-bottom-color:rgba(111,211,255,.55)!important}
+.builder-footer a span{color:#fff!important;text-shadow:0 0 6px rgba(255,255,255,.5)!important}
+.builder-footer .x-logo{color:#6FD3FF!important;fill:currentColor!important}

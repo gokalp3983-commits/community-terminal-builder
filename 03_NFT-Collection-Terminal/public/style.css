@@ -2290,3 +2290,8 @@ img,svg,canvas,video{max-width:100%}
 .project-launch-label{color:var(--cyan,#6fd3ff)}
 .opensea-action-status{margin-top:.7rem;color:var(--red,#ff3b30);font:inherit;line-height:1.45}
 @media(max-width:560px){#terminal-live-panel .market-line{grid-template-columns:18ch 10ch 1ch minmax(0,1fr)!important}}
+
+
+/* Chapter 17 DONE — clean black page background; decorative binary texture removed. */
+html,body{background:#000!important}
+.binary-background{display:none!important}

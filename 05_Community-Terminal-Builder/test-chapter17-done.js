@@ -1,0 +1,33 @@
+"use strict";
+const fs=require("fs"),path=require("path"),assert=require("assert");
+const {generate}=require("./generator");
+const pub=path.join(__dirname,"public");
+const html=fs.readFileSync(path.join(pub,"index.html"),"utf8");
+const css=fs.readFileSync(path.join(pub,"style.css"),"utf8");
+assert(!html.includes("window-bar"),"CTB pre-header window bar removed");
+assert(!html.includes("hero-kicker"),"CTB initialize prompt removed");
+assert(!html.includes("boot-log"),"CTB boot log removed for clean header");
+assert(html.includes('<div class="footer-version">ver 1.0</div>'),"CTB footer version stays ver 1.0");
+assert(css.includes(".builder-footer a span{color:#fff!important"),"footer handle is bright white");
+assert(css.includes(".builder-footer,.builder-footer .footer-title,.builder-footer .footer-version"),"footer structural text is ice blue");
+assert(css.includes("body::before,body::after,.hero::after{content:none!important"),"CTB binary/scan texture removed");
+for(const m of ["03_NFT-Collection-Terminal","03_NFT-Collection-Terminal-Multi-Phase"]){
+  const base=path.join(__dirname,"..",m,"public");
+  const idx=fs.readFileSync(path.join(base,"index.html"),"utf8");
+  const term=fs.readFileSync(path.join(base,"terminal.html"),"utf8");
+  const cd=fs.readFileSync(path.join(base,"countdown.css"),"utf8");
+  assert(!idx.includes("binary-background.js"),`${m}: countdown binary script removed`);
+  assert(!term.includes("binary-background.js"),`${m}: terminal binary script removed`);
+  assert(!fs.existsSync(path.join(base,"binary-background.js")),`${m}: binary asset removed`);
+  assert(term.includes("[ WALLET ]"),`${m}: wallet label is provider-neutral`);
+  assert(!term.includes("[ BLOCKSCOUT ]")&&!term.includes("[ ETHERSCAN ]"),`${m}: provider-specific visible wallet label removed`);
+  assert(cd.includes("grid-template-columns:16ch 10ch 1ch minmax(0,1fr)"),`${m}: countdown links use four aligned columns`);
+}
+const input={projectName:"DONE",ticker:"DONE",tokenContract:"0x7a3f4d8c2b1e6f9054a7c2d9e81b3f6a4c5d7e90",nftContract:"0xb6e91c4a7d2f8350e19a6c4f728d3b5e901a7c2d",links:{website:"www.example.xyz",x:"x.com/example"},features:{whaleTracker:true,memeIntel:true,nftTerminal:true,liveMarket:true},nft:{collectionName:"DONE NFT",mode:"single",mintAt:"2026-08-10T15:00:00+03:00",mintEndAt:"2026-08-10T16:00:00+03:00",timezone:"Europe/Istanbul",supply:888}};
+const files=Object.fromEntries(generate(input).entries.map(e=>[e.name.replace(/^DONE_Community_Terminal\//,""),e.data.toString()]));
+const countdown=files["03_NFT-Collection-Terminal/public/index.html"];
+assert(countdown.includes('class="project-launch-colon"'),"generated countdown has dedicated separator column");
+assert(countdown.includes('href="https://www.example.xyz"'),"absolute website URL normalization preserved");
+assert(!files["03_NFT-Collection-Terminal/public/terminal.html"].includes("binary-background.js"),"generated NFT terminal stays binary-free");
+assert(files["03_NFT-Collection-Terminal/public/terminal.html"].includes("[ WALLET ]"),"generated NFT terminal uses WALLET label");
+console.log("Chapter 17 DONE final polish contract: PASS");

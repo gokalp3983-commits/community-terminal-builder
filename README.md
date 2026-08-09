@@ -1152,3 +1152,8 @@ Chapter 17 starts from the frozen `Community_Terminal_Builder_CHAPTER16_FINAL_AC
 - Generated external project URLs are normalized to absolute HTTPS links when users enter bare domains such as `www.example.xyz`, preventing subpage-relative URLs such as `/whales/www.example.xyz`.
 - NFT countdown configured Website/X/Telegram/OpenSea rows reuse the native command-link area with aligned desktop/mobile layout; blank links remain invisible and existing OpenSea actions retain their in-page not-configured warning.
 - Full regression suite passes after these final Chapter 17 fixes.
+
+
+## Chapter 17 — DONE (09 Aug 2026)
+
+Final public-ready polish accepted: Guided Mode simplification, fresh NEW PROJECT startup, conditional shared project links with absolute URL normalization, NFT countdown command-row alignment, provider-neutral `[ WALLET ]` labeling, simplified CTB header/footer (`ver 1.0`), and removal of decorative binary background textures for a clean black presentation.

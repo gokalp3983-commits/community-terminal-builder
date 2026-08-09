@@ -132,7 +132,7 @@ function countdownProjectLinkRows(p) {
     ["SOCIALS", "X", p.links.x, `Visit ${p.name} Official X Account`],
     ["SOCIALS", "Telegram", p.links.telegram, `Join ${p.name} Official Telegram`],
   ];
-  return rows.filter(([, , url]) => url).map(([tag,label,url,copy]) => `          <div class="launch-links-line project-launch-link"><span class="orange">[ ${tag} ]</span> <span class="project-launch-label">${html(label)} :</span> <a href="${html(url)}" target="_blank" rel="noopener noreferrer">${html(copy)}</a></div>`).join("\n");
+  return rows.filter(([, , url]) => url).map(([tag,label,url,copy]) => `          <div class="launch-links-line project-launch-link"><span class="orange">[ ${tag} ]</span><span class="project-launch-label">${html(label)}</span><span class="project-launch-colon" aria-hidden="true">:</span><a href="${html(url)}" target="_blank" rel="noopener noreferrer">${html(copy)}</a></div>`).join("\n");
 }
 function nftInfoLinkRows(p) {
   // OpenSea already has a canonical collection-info row in the NFT terminal. Do not duplicate it.

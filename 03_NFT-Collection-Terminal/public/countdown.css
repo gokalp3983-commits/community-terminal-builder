@@ -112,3 +112,20 @@
     grid-column:2;
   }
 }
+
+
+/* Chapter 17 DONE — native four-column countdown command rows. */
+.launch-links-line.project-launch-link{
+  display:grid!important;
+  grid-template-columns:16ch 10ch 1ch minmax(0,1fr)!important;
+  column-gap:.8ch!important;
+  align-items:baseline!important;
+  width:100%!important;
+}
+.launch-links-line.project-launch-link>span:first-child{white-space:nowrap}
+.launch-links-line.project-launch-link .project-launch-label{white-space:nowrap;color:var(--cyan,#6FD3FF)!important}
+.launch-links-line.project-launch-link .project-launch-colon{color:var(--cyan,#6FD3FF)!important;text-align:center}
+.launch-links-line.project-launch-link a{min-width:0;overflow-wrap:anywhere;color:var(--cyan,#6FD3FF)!important}
+@media(max-width:560px){
+  .launch-links-line.project-launch-link{grid-template-columns:14ch 8ch 1ch minmax(0,1fr)!important;column-gap:.45ch!important;font-size:.90em}
+}

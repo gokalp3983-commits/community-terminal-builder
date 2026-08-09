@@ -690,3 +690,8 @@ h2{
 .project-link-row .project-link-value{color:var(--cyan,#6fd3ff)!important;text-decoration:none;overflow-wrap:anywhere}
 .project-link-row .project-link-value:hover{text-decoration:underline}
 @media(max-width:560px){#terminal-live-panel .market-line{grid-template-columns:18ch 10ch 1ch minmax(0,1fr)!important}}
+
+
+/* Chapter 17 DONE — clean black page background; decorative binary texture removed. */
+html,body{background:#000!important}
+.terminal{background:#000!important}
