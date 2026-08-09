@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#020704">
+  <meta name="description" content="{{PROJECT_NAME}} Community Pulse — explainable community and market signals.">
+  <title>{{PROJECT_NAME}} Community Pulse</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/pulse.css">
+</head>
+<body>
+  <div id="terminal-workspace" class="terminal-workspace">
+    <main id="terminal-frame" class="shell terminal-frame">
+      <section class="terminal" aria-label="{{PROJECT_NAME}} Community Pulse">
+        <div class="terminal-area terminal-header">
+          <header class="header community-header">
+            <a data-project-home href="#" title="Return to {{PROJECT_NAME}} Community Terminal"><img data-project-mascot class="mascot community-mascot" src="" alt=""></a>
+            <div class="community-divider" aria-hidden="true">══════════════════════════════════════════════════════</div>
+            <div class="community-title-row"><h1>{{PROJECT_NAME}} COMMUNITY TERMINAL</h1><span class="online-status"><span class="online-dot">●</span> ONLINE</span></div>
+            <p class="community-subtitle">Independent Community Tools <span aria-hidden="true">•</span> {{PROJECT_ECOSYSTEM}} Ecosystem</p>
+            <div class="community-divider" aria-hidden="true">══════════════════════════════════════════════════════</div>
+            <div class="module-title">Community Pulse</div>
+          </header>
+        </div>
+        <div class="terminal-area terminal-application">
+          <section class="pulse-intro"><div><span class="orange">[ PURPOSE ]</span> A compact, explainable view of community-specific signals.</div><div class="trust">&gt; No prediction engine. No price target. Every label is derived from visible metrics.</div></section>
+          <section id="pulseStatus" class="pulse-status" aria-live="polite">[ CONNECTING ] Building community pulse…</section>
+          <div class="pulse-grid">
+            <article class="pulse-card"><span>MARKET</span><strong id="marketState">—</strong><small id="marketEvidence">Waiting for market data.</small></article>
+            <article class="pulse-card"><span>HOLDERS</span><strong id="holderState">—</strong><small id="holderEvidence">Waiting for holder data.</small></article>
+            <article class="pulse-card"><span>WHALES</span><strong id="whaleState">—</strong><small id="whaleEvidence">Waiting for activity data.</small></article>
+            <article class="pulse-card"><span>NEW WALLETS</span><strong id="freshState">—</strong><small id="freshEvidence">Waiting for activity data.</small></article>
+            <article class="pulse-card"><span>NFT</span><strong id="nftState">—</strong><small id="nftEvidence">Checking project configuration.</small></article>
+            <article class="pulse-card pulse-overall"><span>COMMUNITY PULSE</span><strong id="overallState">BUILDING</strong><small id="overallEvidence">Combining available signals.</small></article>
+          </div>
+          <section class="pulse-method"><span class="cyan">[ METHODOLOGY ]</span> Market direction uses 24h price change. Holder concentration uses current Top-10 distribution. Whale and fresh-wallet labels use classified recent transfer activity when available. Missing or rate-limited data is shown as unavailable rather than inferred.</section>
+        </div>
+        <div class="terminal-area terminal-footer">
+          <div class="footer-version"><span data-project-footer-title></span></div>
+          <div class="powered-by"><span class="orange">[ INFO ]</span> <span data-project-footer-info></span></div>
+          <footer class="footer"><span data-project-footer></span></footer>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/project-config.js"></script>
+  <script src="/project-runtime.js"></script>
+  <script src="/pulse.js"></script>
+</body>
+</html>

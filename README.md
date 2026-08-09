@@ -1157,3 +1157,36 @@ Chapter 17 starts from the frozen `Community_Terminal_Builder_CHAPTER16_FINAL_AC
 ## Chapter 17 — DONE (09 Aug 2026)
 
 Final public-ready polish accepted: Guided Mode simplification, fresh NEW PROJECT startup, conditional shared project links with absolute URL normalization, NFT countdown command-row alignment, provider-neutral `[ WALLET ]` labeling, simplified CTB header/footer (`ver 1.0`), and removal of decorative binary background textures for a clean black presentation.
+
+
+## Chapter 18 — Community Pulse + Timeline (started 2026-08-09)
+
+Chapter 18 starts from the frozen `Community_Terminal_Builder_CHAPTER17_DONE_09AUG2026` baseline. Chapter 17 remains accepted and frozen.
+
+### Chapter 18A — New module foundation
+
+- Added two first-class optional Builder modules alongside Whale Tracker, Meme Intel, and NFT Terminal: **Community Pulse** and **Community Timeline**.
+- **Community Pulse** mounts at `/pulse` and provides an explainable synthesis of available market direction, holder concentration, Top-30 whale flow, newly observed/unranked buyer flow, and NFT configuration state. It does not provide price targets, predictions, or opaque scoring. Missing/rate-limited signals are shown as unavailable/building rather than invented.
+- Community Pulse is independently mountable and does not require Meme Intel to be enabled. It reuses the proven on-chain/market data machinery inside its own module boundary.
+- **Community Timeline** mounts at `/timeline` and presents chronological configured/known milestones. NFT single-phase and multiple-phase launch schedule events are generated automatically from NFT configuration. Empty history is represented explicitly rather than populated with fabricated events.
+- Both modules are integrated into Builder Guided/Builder Mode feature selection, Build Console routes, Landing Preview, generated project config, landing command/module list, unified root server status, release metadata, generated README, deployment verifier, and hosted public acceptance checks.
+- Fresh projects enable Community Pulse and Timeline by default; imported Chapter 17 projects without the new flags remain backward-compatible and receive the new default-enabled module behavior unless explicitly disabled after loading.
+- Existing Whale, Intel, NFT, deployment, release, SSR metadata, first-paint, and Chapter 17 simplification contracts remain unchanged.
+
+### Chapter 18A mint schedule UX hotfix — 09 Aug 2026
+
+- Fixed multiple-phase Start Date → End Date synchronization discovered during the HOODRAT Builder acceptance run.
+- When End Date was auto-filled from Start Date, later Start Date edits now keep End Date synchronized.
+- A deliberate user edit to End Date breaks the auto-link and is preserved, allowing multi-day mint phases without the Builder overwriting the manual schedule.
+- The behavior applies to both typed date edits and native date-picker changes through the existing delegated `input` / `change` handlers.
+
+## Chapter 18A — Live HOODRAT Acceptance Fixes (09 Aug 2026)
+
+Live rebuilding/deployment of HOODRAT exposed and fixed three Builder UX/integration issues while preserving the Chapter 17 DONE baseline and the new Community Pulse + Timeline modules:
+
+- Mint phase End Date now continues to follow Start Date while it remains auto-managed; a deliberate manual End Date remains respected, including after loading saved phase data.
+- Landing Preview project mascot/logo now uses full-fit contain behavior without fixed-height cropping.
+- OpenSea collection slug is now internal and automatically derived from the pasted OpenSea collection URL (including `/overview` URLs). Invalid OpenSea non-collection URLs block generation instead of producing a terminal with broken OpenSea API calls.
+- Community Pulse and Timeline remain first-class generated modules and are covered by Chapter 18A generation/regression tests.
+
+Full release regression suite: PASS.

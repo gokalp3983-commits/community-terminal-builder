@@ -237,6 +237,8 @@ async function start() {
     const featureForModule = {
       whales: "whaleTracker",
       intel: "memeIntel",
+      pulse: "communityPulse",
+      timeline: "timeline",
       nft: "nftTerminal",
     };
     MODULES = Object.fromEntries(

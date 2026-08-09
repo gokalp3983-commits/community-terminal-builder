@@ -182,7 +182,7 @@
                 <label class="advanced-field"><span>Explorer</span><input name="explorer" placeholder="https://..."></label>
                 <label class="advanced-field"><span>DexScreener</span><input name="dexScreener" placeholder="https://dexscreener.com/..."></label>
                 <label class="nft-config"><span>OpenSea</span><input name="openSea" placeholder="Optional"></label>
-                <label class="advanced-field nft-config"><span>OpenSea slug</span><input name="openSeaSlug" placeholder="Optional"></label>
+                <input type="hidden" name="openSeaSlug" value="">
                 <label class="nft-config"><span>NFT collection name</span><input name="nftCollectionName" placeholder="Optional — defaults to project name + NFT"></label>
                 <label class="nft-config"><span>NFT total supply</span><input name="nftSupply" type="number" min="1" step="1" placeholder="Required for canonical NFT mint tracker"></label>
                 <div class="span-2 nft-mint-schedule nft-config" id="nft-mint-schedule">
@@ -214,6 +214,8 @@
               <div class="checks">
                 <label><input name="whaleTracker" type="checkbox" checked><span><strong>WHALE TRACKER</strong><small>Holder and transfer intelligence</small></span></label>
                 <label><input name="memeIntel" type="checkbox" checked><span><strong>MEME INTEL</strong><small>Risk, concentration and market commands</small></span></label>
+                <label><input name="communityPulse" type="checkbox" checked><span><strong>COMMUNITY PULSE</strong><small>Explainable cross-signal community health</small></span></label>
+                <label><input name="timeline" type="checkbox" checked><span><strong>TIMELINE</strong><small>Project, NFT and community milestones</small></span></label>
                 <label><input name="nftTerminal" type="checkbox"><span><strong>NFT TERMINAL</strong><small>Enabled only with NFT configuration</small></span></label>
                 <label><input name="liveMarket" type="checkbox" checked><span><strong>LANDING PAGE MARKET DATA</strong><small>Show live price, market cap, holders and 24h volume</small></span></label>
               </div>

@@ -39,6 +39,15 @@ input{
   margin:12px auto
 }
 
+.module-title {
+	text-align: center;
+	color: var(--green);
+	font-size: 1.15rem;
+	font-weight: 600;
+	margin: 14px 0 12px;
+	letter-spacing: 0.5.px;
+}
+
 .terminal{
   min-height:calc(100vh - 24px);
   border:1px solid var(--line);
@@ -55,11 +64,7 @@ input{
   width:64px;
   height:64px;
   object-fit:contain;
-  margin:0 auto 10px;
-  border:0;
-  outline:0;
-  box-shadow:none;
-  background:transparent
+  margin:0 auto 10px
 }
 
 .header-divider{
@@ -447,7 +452,7 @@ h2{
 
 
 /* =========================================================
-   COMMUNITY TERMINAL — CANONICAL PAGE STRUCTURE
+   COMMUNITY TERMINAL COMMUNITY TERMINAL — CANONICAL PAGE STRUCTURE
    Existing visual classes remain the source of appearance.
    ========================================================= */
 
@@ -505,24 +510,12 @@ h2{
   order:1;
 }
 
-.terminal-modules [data-module="intel"]{
+.terminal-modules [data-module="nft"]{
   order:2;
 }
 
-.terminal-modules [data-module="pulse"]{
-  order:3;
-}
-
-.terminal-modules [data-module="timeline"]{
-  order:4;
-}
-
-.terminal-modules [data-module="nft"]{
-  order:5;
-}
-
 .terminal-modules [data-module="eligibility"]{
-  order:6;
+  order:3;
 }
 
 
@@ -600,10 +593,10 @@ h2{
 }
 
 
-/* Canonical community header/footer — matched to Whale Activity Tracker */
+/* Canonical COMMUNITY TERMINAL header/footer — matched to Whale Activity Tracker */
 .community-header{text-align:center!important}
 .community-header>a{display:inline-block;line-height:0}
-.community-mascot{display:block;width:42px!important;height:42px!important;object-fit:contain;margin:0 auto 7px!important;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important}
+.community-mascot{display:block;width:42px!important;height:42px!important;object-fit:cover;margin:0 auto 7px!important}
 .community-divider{width:100%;overflow:hidden;color:var(--orange)!important;opacity:.9;white-space:nowrap;line-height:1;letter-spacing:.02em;user-select:none}
 .community-title-row{display:flex;align-items:center;justify-content:center;gap:22px;margin:12px 0 7px!important;flex-wrap:wrap}
 .community-title-row h1{margin:0!important;color:var(--yellow)!important;font-size:clamp(1.05rem,2vw,1.42rem)!important;line-height:1.2;letter-spacing:.02em}
@@ -612,17 +605,6 @@ h2{
 .module-title{margin:14px 0 12px!important;text-align:center!important;color:var(--yellow)!important;font-size:1.15rem!important;font-weight:600!important;letter-spacing:.5px!important}
 .footer-version,.terminal-footer .footer-version{color:var(--yellow)!important}
 @media(max-width:560px){.community-title-row{gap:7px;flex-direction:column;margin:10px 0 7px!important}.community-divider{font-size:.72em}.community-subtitle{line-height:1.5}}
-
-/* Mascot artwork is intentionally frameless in generated landing pages. */
-.header>a,.community-header>a{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important}
-.mascot,.community-mascot{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important}
-
-/* Chapter 11.2: visible network and contract identity */
-.network-strip{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.45rem .7rem;margin:.55rem auto .25rem;color:var(--muted);font-size:.72rem;letter-spacing:.04em}
-.network-strip span{color:var(--yellow)}
-.network-strip strong{color:var(--green)}
-.network-strip a{color:var(--cyan);text-decoration:none;border-bottom:1px dotted currentColor}
-.network-strip a:hover{color:#fff}
 
 
 /* =========================================================
@@ -698,23 +680,8 @@ h2{
 @media(max-width:560px){#terminal-live-panel .market-line{grid-template-columns:12ch 10ch 1ch minmax(0,1fr)!important;column-gap:5px!important}.contract-value-wrap{min-width:0;flex-wrap:wrap}}
 
 
-/* Chapter 15A acceptance corrections — canonical frame / CA copy / footer */
-.terminal{border:1px solid var(--green)!important;box-shadow:0 0 0 1px rgba(57,255,20,.10)!important}
-.copy-contract{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;padding:0 2px!important;color:var(--cyan)!important}
-.copy-contract:hover,.copy-contract:focus-visible{border:0!important;outline:0!important;box-shadow:none!important;color:#fff!important}
-#terminal-footer{margin-top:10px!important;padding:0 8px 8px!important;border-top:1px solid rgba(25,75,45,.7)!important;text-align:center!important}
-#terminal-footer .footer-version{margin:0!important;padding:10px 0 0!important;border:0!important;color:var(--orange)!important;text-align:center!important;font-size:.94em!important;font-weight:700!important;letter-spacing:.035em!important;text-shadow:0 0 7px rgba(255,138,0,.18)!important}
-#terminal-footer .powered-by{margin-top:12px!important;text-align:center!important;color:var(--muted)!important;font-size:.78em!important;line-height:1.45!important}
-#terminal-footer .powered-by .orange{color:var(--orange)!important}
-#terminal-footer .footer{padding:7px 4px 0!important;color:#d8e0dc!important;opacity:1!important;text-align:center!important;font-size:.72em!important;line-height:1.45!important}
-#terminal-footer .footer a{color:var(--green)!important;text-decoration:none!important;border:0!important}
-#terminal-footer .footer a:hover{text-decoration:underline!important;text-shadow:0 0 8px rgba(57,255,20,.35)!important}
-
-
-/* Chapter 17B acceptance fix — stable header logo slot for uploaded brand artwork.
-   A fixed display slot lets small-canvas transparent logos enlarge without distortion. */
-.community-header .mascot,.community-header .community-mascot,.mascot.community-mascot{display:block!important;width:min(220px,58vw)!important;height:86px!important;max-width:100%!important;object-fit:contain!important;margin:0 auto 10px!important;background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;filter:none!important;animation:none!important;transform:none!important}
-@media(max-width:560px){.community-header .mascot,.community-header .community-mascot,.mascot.community-mascot{width:min(190px,62vw)!important;height:72px!important}}
+/* Chapter 17A Hotfix 2 — uploaded brand artwork keeps its natural aspect ratio. */
+.community-header .mascot,.community-header .community-mascot,.mascot.community-mascot{display:block!important;width:auto!important;height:auto!important;max-width:min(240px,52vw)!important;max-height:110px!important;object-fit:contain!important;margin:0 auto 10px!important;background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;filter:none!important;animation:none!important;transform:none!important}
 
 
 /* Chapter 17 final polish: readable terminal rows + configured project links. */

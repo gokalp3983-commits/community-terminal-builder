@@ -23,6 +23,8 @@ assert.match(builderCss,/#nft-mint-mode option\{background:#020806!important;col
 assert.match(builderCss,/#nft-mint-mode:invalid\{[^}]*var\(--placeholder\)/,"Mint Structure placeholder state must be visibly muted");
 assert.match(builderApp,/dateAutofillBound/,"Dynamic phase date autofill delegation missing");
 assert.match(builderApp,/input\.dataset\.phaseField!=="startDate"/,"Phase start-date autofill handler missing");
+assert.match(builderApp,/end\.dataset\.dateAutofill==="start"/,"Auto-linked End Date must keep following later Start Date changes");
+assert.match(builderApp,/input\.dataset\.dateAutofill="manual"/,"Manual End Date override must break Start Date auto-linking");
 assert.match(builderApp,/starts before .* ends/,"Sequential phase overlap validation missing");
 assert.match(builderHtml,/id="builder-brand-preview"/,"Builder logo preview container missing");
 assert.match(builderApp,/refreshBuilderMascotPreview/,"Builder logo preview runtime missing");

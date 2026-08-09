@@ -4,7 +4,7 @@ const path = require("path");
 const { createZip } = require("./zip");
 const { DEFAULT_TERMINAL_THEME } = require("./theme-contract");
 const MASTER_ROOT = path.resolve(__dirname, "..");
-const MODULES = ["01_Landing-Page", "02_Whale-Activity-Tracker", "03_NFT-Collection-Terminal", "04_Meme-Intel"];
+const MODULES = ["01_Landing-Page", "02_Whale-Activity-Tracker", "03_NFT-Collection-Terminal", "04_Meme-Intel", "06_Community-Pulse", "07_Timeline"];
 const NFT_MULTI_TEMPLATE = "03_NFT-Collection-Terminal-Multi-Phase";
 const BUILDER_VERSION = "1.3.2-b";
 const CONFIG_SCHEMA_VERSION = 1;
@@ -21,6 +21,17 @@ function normalizeExternalUrl(value) {
   if (/^\/\//.test(raw)) return `https:${raw}`;
   return `https://${raw.replace(/^\/+/, "")}`;
 }
+function openSeaSlugFromUrl(value) {
+  const raw = text(value);
+  if (!raw) return "";
+  try {
+    const parsed = new URL(normalizeExternalUrl(raw));
+    if (!/(^|\.)opensea\.io$/i.test(parsed.hostname)) return "";
+    const parts = parsed.pathname.split("/").filter(Boolean);
+    const index = parts.findIndex(part => part.toLowerCase() === "collection");
+    return index >= 0 && parts[index + 1] ? decodeURIComponent(parts[index + 1]).trim() : "";
+  } catch { return ""; }
+}
 function assertAddress(value, field, optional = false) {
   if (optional && !value) return;
   if (!/^0x[a-fA-F0-9]{40}$/.test(value || "")) throw new Error(`${field} must be a valid 0x EVM address.`);
@@ -36,6 +47,10 @@ function normalize(input) {
   const nft = text(input.nftContract);
   assertAddress(token, "Token contract"); assertAddress(nft, "NFT contract", true);
   const nftEnabled = bool(input.features?.nftTerminal, Boolean(nft)) && Boolean(nft);
+  const openSeaUrl = normalizeExternalUrl(input.links?.openSea);
+  const derivedOpenSeaSlug = openSeaSlugFromUrl(openSeaUrl);
+  const openSeaSlug = derivedOpenSeaSlug || text(input.nft?.openSeaSlug);
+  if (nftEnabled && openSeaUrl && !derivedOpenSeaSlug) throw new Error("OpenSea URL must be a valid collection link (opensea.io/collection/<slug>).");
   const mascot = input.mascot && input.mascot.dataBase64 ? input.mascot : null;
   const ext = mascot ? (text(mascot.extension, "png").replace(/[^a-z0-9]/gi, "").toLowerCase() || "png") : "svg";
   return {
@@ -54,9 +69,9 @@ function normalize(input) {
     },
     links: {
       home: text(input.links?.home) || "/", whales: text(input.links?.whales) || "/whales",
-      intel: text(input.links?.intel) || "/intel", nft: text(input.links?.nft) || "/nft", website: normalizeExternalUrl(input.links?.website),
+      intel: text(input.links?.intel) || "/intel", pulse: text(input.links?.pulse) || "/pulse", timeline: text(input.links?.timeline) || "/timeline", nft: text(input.links?.nft) || "/nft", website: normalizeExternalUrl(input.links?.website),
       x: normalizeExternalUrl(input.links?.x), telegram: normalizeExternalUrl(input.links?.telegram), explorer: normalizeExternalUrl(input.links?.explorer),
-      dexScreener: normalizeExternalUrl(input.links?.dexScreener), openSea: normalizeExternalUrl(input.links?.openSea),
+      dexScreener: normalizeExternalUrl(input.links?.dexScreener), openSea: openSeaUrl,
     },
     nftSettings: (() => {
       const requestedMode = text(input.nft?.mode, "single") === "multiple" ? "multiple" : "single";
@@ -75,9 +90,9 @@ function normalize(input) {
           if (index && start < Date.parse(phases[index - 1].endsAt)) throw new Error(`NFT phase ${index + 1} starts before the previous phase ends.`);
         }
       }
-      return { collectionName: text(input.nft?.collectionName, `${name} NFT`), openSeaSlug: text(input.nft?.openSeaSlug), mode: requestedMode, mintAt: requestedMode === "multiple" ? phases[0]?.startsAt || text(input.nft?.mintAt) : text(input.nft?.mintAt), mintEndAt: text(input.nft?.mintEndAt) || null, mintPhases: requestedMode === "multiple" ? phases : [], timezone: text(input.nft?.timezone, "UTC"), supply: numberOrNull(input.nft?.supply), whaleThreshold: numberOrNull(input.nft?.whaleThreshold) || 10 };
+      return { collectionName: text(input.nft?.collectionName, `${name} NFT`), openSeaSlug, mode: requestedMode, mintAt: requestedMode === "multiple" ? phases[0]?.startsAt || text(input.nft?.mintAt) : text(input.nft?.mintAt), mintEndAt: text(input.nft?.mintEndAt) || null, mintPhases: requestedMode === "multiple" ? phases : [], timezone: text(input.nft?.timezone, "UTC"), supply: numberOrNull(input.nft?.supply), whaleThreshold: numberOrNull(input.nft?.whaleThreshold) || 10 };
     })(),
-    features: { landing: true, whaleTracker: bool(input.features?.whaleTracker, true), nftTerminal: nftEnabled, memeIntel: bool(input.features?.memeIntel, true), liveMarket: bool(input.features?.liveMarket, true) },
+    features: { landing: true, whaleTracker: bool(input.features?.whaleTracker, true), nftTerminal: nftEnabled, memeIntel: bool(input.features?.memeIntel, true), communityPulse: bool(input.features?.communityPulse, true), timeline: bool(input.features?.timeline, true), liveMarket: bool(input.features?.liveMarket, true) },
     mascot, mascotPath: `/assets/${id}-mascot.${ext}`, mascotExt: ext,
   };
 }
@@ -150,12 +165,15 @@ function profileSource(p) {
     contracts: { token:p.token, nft:p.nft },
     market: { dexScreenerChainId:p.dexChain, blockscoutApiBase:p.blockscout, refreshMs:30000, cacheTtlMs:30000 },
     branding: { mascot:p.mascotPath, mascotAlt:`${p.name} mascot`, themeColor:p.colors.background, colors:p.colors },
-    links: { home:p.links.home, modules:{whales:p.links.whales,intel:p.links.intel,nft:p.links.nft}, website:p.links.website,x:p.links.x,telegram:p.links.telegram,explorer:p.links.explorer,dexScreener:p.links.dexScreener,openSea:p.links.openSea },
+    links: { home:p.links.home, modules:{whales:p.links.whales,intel:p.links.intel,pulse:p.links.pulse,timeline:p.links.timeline,nft:p.links.nft}, website:p.links.website,x:p.links.x,telegram:p.links.telegram,explorer:p.links.explorer,dexScreener:p.links.dexScreener,openSea:p.links.openSea },
     nft: p.nftSettings,
+    timeline: { events: [] },
     features: p.features,
     modules: {
       whales:{command:"whales",title:"Whale Activity Tracker",description:"Monitor Top-30 whales, DEX activity, and holder rankings.",status:p.features.whaleTracker?"READY":"DISABLED"},
       intel:{command:"intel",title:"Meme Intelligence Terminal",description:"Read market pulse, buy pressure, holder behavior, and transparent risk signals.",status:p.features.memeIntel?"READY":"DISABLED"},
+      pulse:{command:"pulse",title:"Community Pulse",description:"Synthesize explainable market, holder, whale, fresh-wallet and NFT signals.",status:p.features.communityPulse?"READY":"DISABLED"},
+      timeline:{command:"timeline",title:"Community Timeline",description:"Follow project, NFT and community milestones chronologically.",status:p.features.timeline?"READY":"DISABLED"},
       nft:{command:"nft",title:`${p.name} NFT Terminal`,description:p.features.nftTerminal?"NFT whale analytics and collection statistics.":"NFT collection analytics when configured.",status:p.features.nftTerminal?"READY":"DISABLED"}
     }
   };
@@ -165,7 +183,7 @@ function makeMountableServer(source, moduleName) {
   const marker = source.lastIndexOf("app.listen(");
   if (marker < 0) throw new Error(`Unable to make ${moduleName}/server.js mountable.`);
   let prefix = source.slice(0, marker).trimEnd();
-  if (["02_Whale-Activity-Tracker", "04_Meme-Intel"].includes(moduleName)) {
+  if (["02_Whale-Activity-Tracker", "04_Meme-Intel", "06_Community-Pulse"].includes(moduleName)) {
     prefix += "\n\nstartActivityBackgroundRefresh();";
   }
   return `${prefix}\n\nmodule.exports = app;\n`;
@@ -177,9 +195,13 @@ function prefixBrowserRoutes(source, base) {
     .replace(/(["'`])\/countdown\.css(?:\?[^"'`]*)?\1/g, `$1${base}/countdown.css$1`)
     .replace(/(["'`])\/whale\.css(?:\?[^"'`]*)?\1/g, `$1${base}/whale.css$1`)
     .replace(/(["'`])\/intel\.css(?:\?[^"'`]*)?\1/g, `$1${base}/intel.css$1`)
+    .replace(/(["'`])\/pulse\.css(?:\?[^"'`]*)?\1/g, `$1${base}/pulse.css$1`)
+    .replace(/(["'`])\/timeline\.css(?:\?[^"'`]*)?\1/g, `$1${base}/timeline.css$1`)
     .replace(/(["'`])\/project-runtime\.js(?:\?[^"'`]*)?\1/g, `$1${base}/project-runtime.js$1`)
     .replace(/(["'`])\/whale\.js(?:\?[^"'`]*)?\1/g, `$1${base}/whale.js$1`)
     .replace(/(["'`])\/intel\.js(?:\?[^"'`]*)?\1/g, `$1${base}/intel.js$1`)
+    .replace(/(["'`])\/pulse\.js(?:\?[^"'`]*)?\1/g, `$1${base}/pulse.js$1`)
+    .replace(/(["'`])\/timeline\.js(?:\?[^"'`]*)?\1/g, `$1${base}/timeline.js$1`)
     .replace(/(["'`])\/script\.js(?:\?[^"'`]*)?\1/g, `$1${base}/script.js$1`)
     .replace(/(["'`])\/countdown\.js(?:\?[^"'`]*)?\1/g, `$1${base}/countdown.js$1`)
     .replace(/(["'`])\/binary-background\.js(?:\?[^"'`]*)?\1/g, `$1${base}/binary-background.js$1`)
@@ -278,7 +300,7 @@ function transformModuleFile(moduleName, relativeName, data, p) {
       source = source.replaceAll('href="/" title=', 'href="/nft" title=');
     }
   }
-  if (relativeName === "public/index.html" && ["01_Landing-Page", "02_Whale-Activity-Tracker", "04_Meme-Intel"].includes(moduleName)) {
+  if (relativeName === "public/index.html" && ["01_Landing-Page", "02_Whale-Activity-Tracker", "04_Meme-Intel", "06_Community-Pulse", "07_Timeline"].includes(moduleName)) {
     const links = projectMarketLinkRows(p, { includeOpenSea: true });
     if (links) source = source.replace(/(<div class="market-line contract-address-line"[^>]*>[\s\S]*?<\/div>)/, `$1\n          ${links}`);
   }
@@ -286,7 +308,7 @@ function transformModuleFile(moduleName, relativeName, data, p) {
     const faviconHref = p.mascot ? `assets/${p.id}-mascot.${p.mascotExt}` : "favicon.png";
     source = source.replace("</head>", `  <link rel="icon" href="${faviconHref}">\n  <link rel="apple-touch-icon" href="${faviconHref}">\n</head>`);
   }
-  const bases = {"02_Whale-Activity-Tracker":"/whales", "03_NFT-Collection-Terminal":"/nft", "04_Meme-Intel":"/intel"};
+  const bases = {"02_Whale-Activity-Tracker":"/whales", "03_NFT-Collection-Terminal":"/nft", "04_Meme-Intel":"/intel", "06_Community-Pulse":"/pulse", "07_Timeline":"/timeline"};
   if (bases[moduleName] && relativeName.startsWith("public/") && /\.(html|js)$/.test(relativeName)) {
     source = prefixBrowserRoutes(source, bases[moduleName]);
     return Buffer.from(source);
@@ -342,12 +364,14 @@ function rootServer() {
     '  ok:true,',
     '  project:{id:config.project.id,name:config.project.name,ticker:config.project.ticker,version:config.project.version},',
     '  server:{startedAt:startedAt.toISOString(),uptimeSeconds:Math.floor(process.uptime()),environment:process.env.NODE_ENV||"development",port},',
-    '  modules:{landing:true,whales:Boolean(config.features.whaleTracker),intel:Boolean(config.features.memeIntel),nft:Boolean(config.features.nftTerminal),landingMarket:Boolean(config.features.liveMarket)},',
-    '  routes:{home:"/",health:"/healthz",healthLegacy:"/health",status:"/status",whales:config.features.whaleTracker?"/whales":null,intel:config.features.memeIntel?"/intel":null,nft:config.features.nftTerminal?"/nft":null}',
+    '  modules:{landing:true,whales:Boolean(config.features.whaleTracker),intel:Boolean(config.features.memeIntel),pulse:Boolean(config.features.communityPulse),timeline:Boolean(config.features.timeline),nft:Boolean(config.features.nftTerminal),landingMarket:Boolean(config.features.liveMarket)},',
+    '  routes:{home:"/",health:"/healthz",healthLegacy:"/health",status:"/status",whales:config.features.whaleTracker?"/whales":null,intel:config.features.memeIntel?"/intel":null,pulse:config.features.communityPulse?"/pulse":null,timeline:config.features.timeline?"/timeline":null,nft:config.features.nftTerminal?"/nft":null}',
     '}));',
     'if(config.features.whaleTracker) app.use("/whales",require("./02_Whale-Activity-Tracker/server"));',
     'if(config.features.nftTerminal) app.use("/nft",require("./03_NFT-Collection-Terminal/server"));',
     'if(config.features.memeIntel) app.use("/intel",require("./04_Meme-Intel/server"));',
+    'if(config.features.communityPulse) app.use("/pulse",require("./06_Community-Pulse/server"));',
+    'if(config.features.timeline) app.use("/timeline",require("./07_Timeline/server"));',
     'app.use("/",require("./01_Landing-Page/server"));',
     'app.use((err,req,res,next)=>{',
     '  console.error(`[ ERROR ] ${req.method} ${req.originalUrl}:`,err && err.message ? err.message : err);',
@@ -360,6 +384,8 @@ function rootServer() {
     '  console.log(`[ READY ] Status: http://localhost:${port}/status`);',
     '  if(config.features.whaleTracker) console.log(`[ READY ] Whale Tracker: http://localhost:${port}/whales`);',
     '  if(config.features.memeIntel) console.log(`[ READY ] Meme Intel: http://localhost:${port}/intel`);',
+    '  if(config.features.communityPulse) console.log(`[ READY ] Community Pulse: http://localhost:${port}/pulse`);',
+    '  if(config.features.timeline) console.log(`[ READY ] Community Timeline: http://localhost:${port}/timeline`);',
     '  if(config.features.nftTerminal) console.log(`[ READY ] NFT Terminal: http://localhost:${port}/nft`);',
     '  console.log("");',
     '});',
@@ -427,7 +453,7 @@ function generatedValidator(p) {
     `pass("status route",source.includes('app.get("/status"'));`,
     'execFileSync(process.execPath,["--check","server.js"]);',
     'execFileSync(process.execPath,["--check","verify-deployment.js"]);',
-    'for(const moduleName of ["01_Landing-Page","02_Whale-Activity-Tracker","03_NFT-Collection-Terminal","04_Meme-Intel"])execFileSync(process.execPath,["--check",path.join(moduleName,"server.js")]);',
+    'for(const moduleName of ["01_Landing-Page","02_Whale-Activity-Tracker","03_NFT-Collection-Terminal","04_Meme-Intel","06_Community-Pulse","07_Timeline"])execFileSync(process.execPath,["--check",path.join(moduleName,"server.js")]);',
     `pass("NFT feature state",config.features.nftTerminal===${p.features.nftTerminal});`,
     'console.log(`\nRelease validation passed (${checks.length} checks).`);',
     ''
@@ -435,7 +461,7 @@ function generatedValidator(p) {
 }
 
 function generatedDeploymentVerifier(p) {
-  const expected={whales:Boolean(p.features.whaleTracker),intel:Boolean(p.features.memeIntel),nft:Boolean(p.features.nftTerminal)};
+  const expected={whales:Boolean(p.features.whaleTracker),intel:Boolean(p.features.memeIntel),pulse:Boolean(p.features.communityPulse),timeline:Boolean(p.features.timeline),nft:Boolean(p.features.nftTerminal)};
   return [
     '"use strict";',
     'const raw=process.argv[2]||process.env.TERMINAL_PUBLIC_URL;',
@@ -451,7 +477,7 @@ function generatedDeploymentVerifier(p) {
     ' console.log(`[ ACCEPTANCE ] Public terminal: ${base}`);',
     ' const home=await get("/");check(home.status===200,"Landing Page returned HTTP 200");const html=await home.text();check(html.length>100,"Landing Page returned content");check(home.headers.get("x-content-type-options")==="nosniff","Security headers present");',
     ' const health=await get("/healthz");check(health.status===200,"/healthz returned HTTP 200");const h=await health.json();check(h.ok===true&&h.status==="healthy","/healthz is healthy");',
-    ' const status=await get("/status");check(status.status===200,"/status returned HTTP 200");const s=await status.json();check(s.ok===true,"/status returned ok:true");check(s.modules.whales===expected.whales&&s.modules.intel===expected.intel&&s.modules.nft===expected.nft,"Mounted modules match generated profile");',
+    ' const status=await get("/status");check(status.status===200,"/status returned HTTP 200");const s=await status.json();check(s.ok===true,"/status returned ok:true");check(s.modules.whales===expected.whales&&s.modules.intel===expected.intel&&s.modules.pulse===expected.pulse&&s.modules.timeline===expected.timeline&&s.modules.nft===expected.nft,"Mounted modules match generated profile");',
     ' for(const [name,on] of Object.entries(expected)){if(!on)continue;const r=await get(`/${name}`);check(r.status===200,`/${name} returned HTTP 200`)}',
     ' console.log("\\n[ ACCEPTED ] Public terminal deployment passed current release checks.");',
     '})().catch(e=>{console.error(`\\n[ FAIL ] ${e.name==="AbortError"?`Timed out after ${timeoutMs}ms`:e.message}`);process.exit(1)});',
@@ -467,8 +493,8 @@ function releaseMetadata(p) {
     generatedAt: new Date().toISOString(),
     releaseStatus: "deployment-ready",
     chain: { type:"EVM", dexScreenerChainId:p.dexChain, blockscoutApiBase:p.blockscout },
-    enabledModules: ["landing", ...(p.features.whaleTracker?["whales"]:[]), ...(p.features.memeIntel?["intel"]:[]), ...(p.features.nftTerminal?["nft"]:[])],
-    routes: { home:"/", health:"/healthz", healthLegacy:"/health", status:"/status", whales:p.features.whaleTracker?"/whales":null, intel:p.features.memeIntel?"/intel":null, nft:p.features.nftTerminal?"/nft":null },
+    enabledModules: ["landing", ...(p.features.whaleTracker?["whales"]:[]), ...(p.features.memeIntel?["intel"]:[]), ...(p.features.communityPulse?["pulse"]:[]), ...(p.features.timeline?["timeline"]:[]), ...(p.features.nftTerminal?["nft"]:[])],
+    routes: { home:"/", health:"/healthz", healthLegacy:"/health", status:"/status", whales:p.features.whaleTracker?"/whales":null, intel:p.features.memeIntel?"/intel":null, pulse:p.features.communityPulse?"/pulse":null, timeline:p.features.timeline?"/timeline":null, nft:p.features.nftTerminal?"/nft":null },
     deployment: { provider:"Render Blueprint compatible", blueprint:"render.yaml", publicAcceptanceCommand:"npm run test:deployed -- https://YOUR-TERMINAL.onrender.com" }
   }, null, 2) + "\n";
 }
@@ -549,6 +575,8 @@ npm test
 - Landing Page: / 
 - Whale Tracker: /whales (${p.features.whaleTracker ? "enabled" : "disabled"})
 - Meme Intel: /intel (${p.features.memeIntel ? "enabled" : "disabled"})
+- Community Pulse: /pulse (${p.features.communityPulse ? "enabled" : "disabled"})
+- Community Timeline: /timeline (${p.features.timeline ? "enabled" : "disabled"})
 - NFT Terminal: /nft (${p.features.nftTerminal ? "enabled" : "disabled"})
 - Render health check: /healthz
 - Legacy health alias: /health
