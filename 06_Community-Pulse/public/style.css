@@ -602,7 +602,7 @@ h2{
 .community-title-row h1{margin:0!important;color:var(--yellow)!important;font-size:clamp(1.05rem,2vw,1.42rem)!important;line-height:1.2;letter-spacing:.02em}
 .online-status{display:inline-flex;align-items:center;gap:6px;color:var(--green)!important;font-size:.82em;font-weight:700;white-space:nowrap}
 .community-subtitle{margin:0 0 11px!important;color:#fff!important;font-size:.88em!important}
-.module-title{margin:14px 0 12px!important;text-align:center!important;color:var(--yellow)!important;font-size:1.15rem!important;font-weight:600!important;letter-spacing:.5px!important}
+.module-title{margin:14px 0 12px!important;text-align:center!important;color:var(--green)!important;font-size:1.15rem!important;font-weight:600!important;letter-spacing:.5px!important}
 .footer-version,.terminal-footer .footer-version{color:var(--yellow)!important}
 @media(max-width:560px){.community-title-row{gap:7px;flex-direction:column;margin:10px 0 7px!important}.community-divider{font-size:.72em}.community-subtitle{line-height:1.5}}
 

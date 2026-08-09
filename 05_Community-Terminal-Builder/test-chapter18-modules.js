@@ -26,4 +26,10 @@ assert(builderHtml.includes('type="hidden" name="openSeaSlug"'),"OpenSea slug sh
 assert(builderJs.includes("function openSeaSlugFromUrl"),"Builder must derive OpenSea slug from URL");
 assert(builderJs.includes('data-date-autofill="${phase.endDate&&phase.endDate!==phase.startDate?"manual":"start"}"'),"Loaded mint phases must retain date auto-sync state");
 assert(builderJs.includes("overflow:visible}.mascot img{display:block"),"Landing preview mascot must not crop the uploaded logo");
+const pulseHtml=x.text("06_Community-Pulse/public/index.html"), timelineHtml=x.text("07_Timeline/public/index.html");
+const pulseStyle=x.text("06_Community-Pulse/public/style.css"), timelineStyle=x.text("07_Timeline/public/style.css");
+assert(pulseHtml.includes('id="terminal-footer" class="terminal-area terminal-footer"'),"Pulse must use canonical subcommand footer wrapper");
+assert(timelineHtml.includes('id="terminal-footer" class="terminal-area terminal-footer"'),"Timeline must use canonical subcommand footer wrapper");
+assert(pulseStyle.includes('color:var(--green)!important;font-size:1.15rem'),"Pulse subpage title must use terminal green");
+assert(timelineStyle.includes('color:var(--green)!important;font-size:1.15rem'),"Timeline subpage title must use terminal green");
 console.log("Chapter 18A Community Pulse + Timeline + live acceptance fixes: PASS");
