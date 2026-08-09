@@ -14,6 +14,13 @@ function text(v, fallback = "") { const value = typeof v === "string" ? v.trim()
 function bool(v, fallback = false) { return typeof v === "boolean" ? v : fallback; }
 function numberOrNull(v) { const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : null; }
 function slugify(value) { return text(value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+function normalizeExternalUrl(value) {
+  const raw = text(value);
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (/^\/\//.test(raw)) return `https:${raw}`;
+  return `https://${raw.replace(/^\/+/, "")}`;
+}
 function assertAddress(value, field, optional = false) {
   if (optional && !value) return;
   if (!/^0x[a-fA-F0-9]{40}$/.test(value || "")) throw new Error(`${field} must be a valid 0x EVM address.`);
@@ -47,9 +54,9 @@ function normalize(input) {
     },
     links: {
       home: text(input.links?.home) || "/", whales: text(input.links?.whales) || "/whales",
-      intel: text(input.links?.intel) || "/intel", nft: text(input.links?.nft) || "/nft", website: text(input.links?.website),
-      x: text(input.links?.x), telegram: text(input.links?.telegram), explorer: text(input.links?.explorer),
-      dexScreener: text(input.links?.dexScreener), openSea: text(input.links?.openSea),
+      intel: text(input.links?.intel) || "/intel", nft: text(input.links?.nft) || "/nft", website: normalizeExternalUrl(input.links?.website),
+      x: normalizeExternalUrl(input.links?.x), telegram: normalizeExternalUrl(input.links?.telegram), explorer: normalizeExternalUrl(input.links?.explorer),
+      dexScreener: normalizeExternalUrl(input.links?.dexScreener), openSea: normalizeExternalUrl(input.links?.openSea),
     },
     nftSettings: (() => {
       const requestedMode = text(input.nft?.mode, "single") === "multiple" ? "multiple" : "single";

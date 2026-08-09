@@ -35,6 +35,13 @@ assert.match(css,/body\.guided-mode \.guided-step-note/,"Guided readability trea
 assert.match(app,/markPhaseInvalid\(card,\["endDate","endTime"\]\)/,"Same-phase invalid end fields must be marked visually");
 assert.match(app,/markPhaseInvalid\(cards\[i\],\["startDate","startTime"\]\)/,"Cross-phase invalid start fields must be marked visually");
 assert.match(css,/input\.phase-invalid:focus/,"Invalid phase field focus must remain red");
+
+// Public launch must never auto-load the last user's active project.
+assert(!app.includes('if(state.activeProjectId&&readProjects()[state.activeProjectId])loadProject(state.activeProjectId)'), 'startup does not auto-load prior active project');
+assert(app.includes('resetForm();\nrefreshProjectList();'), 'startup initializes a fresh NEW PROJECT workspace');
+assert(html.includes('<div class="footer-version">ver 1.0</div>'), 'visible CTB footer version is ver 1.0');
+assert(!html.includes('v1.3.2-b'), 'legacy visible builder version is absent from CTB HTML');
+assert(css.includes('color:#6FD3FF'), 'CTB footer X link uses ice blue');
 console.log("Chapter 17B guided simplification + 17A visual hotfix contracts: PASS");
 
 // Chapter 17B pre-break acceptance contracts.

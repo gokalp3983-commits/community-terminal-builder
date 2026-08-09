@@ -61,4 +61,14 @@ assert(multiBlank["03_NFT-Collection-Terminal/public/index.html"].includes("data
 for(const path of ["01_Landing-Page/public/style.css","02_Whale-Activity-Tracker/public/style.css","04_Meme-Intel/public/style.css","03_NFT-Collection-Terminal/public/style.css"]){
   assert(blank[path].includes("grid-template-columns:19ch 17ch 1ch"),`${path}: long status spacing`);
 }
+
+const bareUrls=files({...base,links:{website:"www.trial.xyz",x:"x.com/trial",telegram:"t.me/trial",openSea:"opensea.io/collection/trial"}});
+for(const path of ["01_Landing-Page/public/index.html","02_Whale-Activity-Tracker/public/index.html","04_Meme-Intel/public/index.html","03_NFT-Collection-Terminal/public/index.html","03_NFT-Collection-Terminal/public/terminal.html"]){
+  assert(!bareUrls[path].includes('href="www.trial.xyz"'),`${path}: website is not relative`);
+  assert(bareUrls[path].includes('href="https://www.trial.xyz"'),`${path}: bare website normalized to HTTPS`);
+}
+assert(bareUrls["03_NFT-Collection-Terminal/public/index.html"].includes('href="https://x.com/trial"'),"NFT countdown normalizes bare X URL");
+assert(bareUrls["03_NFT-Collection-Terminal/public/index.html"].includes('href="https://t.me/trial"'),"NFT countdown normalizes bare Telegram URL");
+assert(bareUrls["03_NFT-Collection-Terminal/public/index.html"].includes('href="https://opensea.io/collection/trial"'),"NFT countdown normalizes bare OpenSea URL");
+assert(bareUrls["03_NFT-Collection-Terminal/public/countdown.css"].includes("grid-template-columns:14ch 12ch minmax(0,1fr)"),"single-phase countdown generated link rows have aligned columns");
 console.log("Chapter 17 final shared links + terminal row polish contract: PASS");

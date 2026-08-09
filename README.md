@@ -1145,3 +1145,10 @@ Chapter 17 starts from the frozen `Community_Terminal_Builder_CHAPTER16_FINAL_AC
 - Full Community Terminal Builder regression suite passes after the final Chapter 17 polish.
 
 **Chapter 17 — User-Friendly Simplification: SUCCESS / ACCEPTED.** The visible Builder version remains `v1.3.2-b`.
+
+### Chapter 17 Final Public-Ready Polish — 09 Aug 2026
+- Community Terminal Builder now opens to a clean NEW PROJECT workspace on every fresh page load; browser-local saved projects remain available only by explicit selection.
+- CTB visible branding finalized: legacy header build-version label removed, footer shows `ver 1.0`, and the builder credit X link uses ice blue (`#6FD3FF`).
+- Generated external project URLs are normalized to absolute HTTPS links when users enter bare domains such as `www.example.xyz`, preventing subpage-relative URLs such as `/whales/www.example.xyz`.
+- NFT countdown configured Website/X/Telegram/OpenSea rows reuse the native command-link area with aligned desktop/mobile layout; blank links remain invisible and existing OpenSea actions retain their in-page not-configured warning.
+- Full regression suite passes after these final Chapter 17 fixes.

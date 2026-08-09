@@ -136,7 +136,7 @@ footer a:hover{
 .builder-footer{
   display:grid;
   justify-items:center;
-  gap:5px;
+  gap:4px;
   padding:16px 4px 2px;
   color:#fff;
   text-align:center;
@@ -147,6 +147,14 @@ footer a:hover{
   font-weight:800;
   letter-spacing:.12em;
   text-shadow:0 0 7px rgba(255,255,255,.62),0 0 16px rgba(255,255,255,.16);
+}
+.builder-footer .footer-version{
+  color:#7f9286;
+  font-size:.60rem;
+  font-weight:600;
+  letter-spacing:.08em;
+  margin-top:-1px;
+  margin-bottom:2px;
 }
 .builder-footer .footer-credit{
   display:flex;
@@ -164,20 +172,20 @@ footer a:hover{
   display:inline-flex;
   align-items:center;
   gap:5px;
-  color:#fff;
+  color:#6FD3FF;
   text-decoration:none;
-  border-bottom:1px dotted rgba(255,255,255,.55);
+  border-bottom:1px dotted rgba(111,211,255,.55);
 }
 .builder-footer .x-logo{
   width:12px;
   height:12px;
   fill:currentColor;
-  filter:drop-shadow(0 0 4px rgba(255,255,255,.55));
+  filter:drop-shadow(0 0 4px rgba(111,211,255,.55));
 }
 .builder-footer a:hover{
-  color:#fff;
-  border-bottom-color:#fff;
-  text-shadow:0 0 9px rgba(255,255,255,.85);
+  color:#9DE3FF;
+  border-bottom-color:#9DE3FF;
+  text-shadow:0 0 9px rgba(111,211,255,.85);
 }
 
 
@@ -209,7 +217,6 @@ input:not([type="checkbox"]):not([type="color"])::placeholder,textarea::placehol
 
 
 /* Chapter 12: deployment assistant and release provenance */
-.version-strip{margin-top:7px;text-align:center;color:var(--muted);font-size:.62rem;letter-spacing:.08em}.version-strip span{color:var(--green)}
 .build-complete{width:min(760px,calc(100% - 24px));padding:0;border:1px solid var(--green);background:#020806;color:var(--text);box-shadow:0 0 80px rgba(57,255,20,.18)}
 .build-complete::backdrop{background:rgba(0,0,0,.82);backdrop-filter:blur(3px)}
 .build-modal{padding:0}.build-modal-head{display:flex;justify-content:space-between;align-items:center;padding:13px 15px;border-bottom:1px solid var(--line);background:#04110b;color:var(--green);font-weight:800;letter-spacing:.09em}.build-modal-head button{padding:2px 9px;border-color:var(--danger);background:transparent;color:var(--danger);box-shadow:none;font-size:1.2rem}

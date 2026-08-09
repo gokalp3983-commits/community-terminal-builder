@@ -85,3 +85,30 @@
     column-gap:.6ch;
   }
 }
+
+/* CTB generated project links: keep tag, label and destination aligned on one terminal row. */
+.launch-links-line.project-launch-link{
+  display:grid!important;
+  grid-template-columns:14ch 12ch minmax(0,1fr)!important;
+  column-gap:1ch!important;
+  align-items:baseline!important;
+}
+.launch-links-line.project-launch-link .project-launch-label{
+  white-space:nowrap;
+  color:var(--cyan,#6FD3FF)!important;
+}
+.launch-links-line.project-launch-link a{
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+@media(max-width:700px){
+  .launch-links-line.project-launch-link{
+    grid-template-columns:12ch minmax(0,1fr)!important;
+  }
+  .launch-links-line.project-launch-link .project-launch-label{
+    grid-column:2;
+  }
+  .launch-links-line.project-launch-link a{
+    grid-column:2;
+  }
+}

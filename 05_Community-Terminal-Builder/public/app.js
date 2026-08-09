@@ -327,9 +327,12 @@ document.querySelector("#open-github").addEventListener("click",()=>openDeployme
 document.querySelector("#open-render").addEventListener("click",()=>openDeployment("render"));
 document.querySelector("#verify-public-terminal").addEventListener("click",verifyPublicTerminal);
 
-syncMascotFileName();refreshBuilderMascotPreview();refreshProjectList();validateContractField();loadDeployment();
+syncMascotFileName();refreshBuilderMascotPreview();refreshProjectList();validateContractField();
 initializeBuilderExperience();
-try{const state=JSON.parse(localStorage.getItem(SETTINGS_KEY)||"{}");if(state.activeProjectId&&readProjects()[state.activeProjectId])loadProject(state.activeProjectId);else update()}catch{update()}
+// Public-builder startup rule: always open a clean NEW PROJECT workspace.
+// Saved projects remain browser-local and can be loaded explicitly from PROJECT WORKSPACE.
+resetForm();
+refreshProjectList();
 
 function escapeHtml(value){return String(value||"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]))}
 
