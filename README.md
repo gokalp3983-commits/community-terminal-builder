@@ -1370,3 +1370,13 @@ The second hands-on Chapter 19 acceptance pass tightened NFT state safety and fi
 - Extended Chapter 19 regression coverage so the NFT subtitle must be present in markup and remain visibly enabled by CSS.
 
 **Chapter 19 is ready for the final full hands-on acceptance test.**
+
+### Chapter 19 — FINAL ACCEPTED closeout (10 Aug 2026)
+
+- Final hands-on NFT acceptance testing completed successfully: NFT module disable protection, one-time mint confirmation persistence, confirmation invalidation after NFT edits/CA deletion, required Mint Price and Mint per Wallet validation, single-to-multiple Phase 1 preservation, multi-phase required-field validation, optional/invalid OpenSea handling, no-logo inline warning, past-mint schedule warning, countdown/date presentation, generated NFT header parity, and NFT subtitle visibility were verified.
+- Final phase-card readability polish replaces unlabeled compact fee/limit text with two explicit aligned terminal-style rows: `Mint Fee : <value>` and `Mint per Wallet : <value>`. Free mints render `Mint Fee : FREE`. The rule applies to single-phase generation and every phase in multi-phase generation.
+- The phase detail alignment is implemented structurally with label/colon/value columns so values begin at the same horizontal position on desktop and mobile.
+- Full master validation and the complete Builder regression suite were rerun after the final phase-detail change.
+
+**Chapter 19 is COMPLETE / FINAL ACCEPTED / ARCHIVED.** This archive is the canonical baseline for Chapter 20.
+

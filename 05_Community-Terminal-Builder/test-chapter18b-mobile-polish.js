@@ -55,8 +55,8 @@ assert(countdown.includes('<span class="link-copy-mobile">View Collection</span>
 assert(countdown.includes('<span class="link-copy-mobile">Open X</span>'),"NFT countdown: compact X copy");
 assert(countdown.includes('<span class="link-copy-mobile">Open Telegram</span>'),"NFT countdown: compact Telegram copy");
 assert(countdownCss.includes('grid-template-columns:12ch 7ch 1ch minmax(0,1fr)!important'),"NFT countdown: phone-only link geometry");
-assert(countdown.includes('FREE <span aria-hidden="true">·</span> 222 per Wallet'),"NFT phase wallet limit gets per Wallet suffix");
-assert(countdown.includes('FREE <span aria-hidden="true">·</span> 2 per Wallet'),"NFT phase wallet limit suffix is generated consistently");
+assert(countdown.includes('Mint Fee</span><span class="phase-detail-colon" aria-hidden="true">:</span><span class="phase-detail-value">FREE</span>'),"NFT phase Mint Fee is explicitly labeled");
+assert(countdown.includes('Mint per Wallet</span><span class="phase-detail-colon" aria-hidden="true">:</span><span class="phase-detail-value">2</span>'),"NFT phase wallet limit is explicitly labeled");
 
 const nftTerminal=text("03_NFT-Collection-Terminal/public/terminal.html");
 const nftCss=text("03_NFT-Collection-Terminal/public/style.css");

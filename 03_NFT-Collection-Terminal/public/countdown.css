@@ -141,3 +141,24 @@
   .launch-links-line.project-launch-link{grid-template-columns:12ch 7ch 1ch minmax(0,1fr)!important;column-gap:.45ch!important;font-size:.90em}
 }
 
+/* Chapter 19 FINAL — aligned mint fee / wallet-limit key-value rows. */
+.phase-details-kv{
+  display:grid;
+  gap:2px;
+  width:max-content;
+  max-width:100%;
+  margin-left:auto;
+  margin-right:auto;
+  text-align:left;
+}
+.phase-detail-row{
+  display:grid;
+  grid-template-columns:15ch 1ch minmax(0,1fr);
+  column-gap:.35ch;
+  align-items:baseline;
+}
+.phase-detail-label,.phase-detail-colon,.phase-detail-value{white-space:nowrap}
+.single-phase-details{margin-top:12px;margin-bottom:4px;color:#fff;font-size:.9rem;line-height:1.35}
+@media(max-width:560px){
+  .phase-details-kv{font-size:.86rem}
+}

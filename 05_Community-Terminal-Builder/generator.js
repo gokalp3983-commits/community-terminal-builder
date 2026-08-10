@@ -125,11 +125,28 @@ function phaseTimeDisplay(iso, timeZone) {
     return `${x.day} ${x.month} · ${x.hour}:${x.minute} · ${timeZone || "UTC"}`;
   } catch { return mintDisplayFromIso(iso) || "configured time"; }
 }
+function mintFeeDisplay(value) {
+  const raw = text(value);
+  if (!raw) return "—";
+  if (/^free$/i.test(raw) || /^0(?:\.0+)?(?:\s*(?:eth|ron|usd|usdc|usdt))?$/i.test(raw)) return "FREE";
+  return raw;
+}
+function mintLimitDisplay(value) {
+  const raw = text(value);
+  if (!raw) return "—";
+  return raw.replace(/\s*(?:per\s+wallet|\/?wallet)\s*$/i, "").trim() || raw;
+}
+function phaseDetailsMarkup(price, limit) {
+  return `<div class="phase-details phase-details-kv">
+                <div class="phase-detail-row"><span class="phase-detail-label">Mint Fee</span><span class="phase-detail-colon" aria-hidden="true">:</span><span class="phase-detail-value">${html(mintFeeDisplay(price))}</span></div>
+                <div class="phase-detail-row"><span class="phase-detail-label">Mint per Wallet</span><span class="phase-detail-colon" aria-hidden="true">:</span><span class="phase-detail-value">${html(mintLimitDisplay(limit))}</span></div>
+              </div>`;
+}
 function phaseMarkup(phases) {
   return phases.map((phase, index) => `<section id="phaseCard-${phase.id}" class="phase-countdown-card" data-phase="${phase.id}">
               <div class="phase-card-topline"><span class="phase-kind">[ ${phase.label} ]</span><span id="phaseStatus-${phase.id}" class="phase-status">[ UPCOMING ]</span></div>
               <h2>“${phase.name.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")}”</h2>
-              <div class="phase-details">${phase.price} <span aria-hidden="true">·</span> ${phase.limit} per Wallet</div>
+              ${phaseDetailsMarkup(phase.price, phase.limit)}
               <div id="phaseCountdown-${phase.id}" class="phase-countdown-value">--D --H --M --S</div>
               <div class="phase-time">Starts ${phaseTimeDisplay(phase.startsAt, phase.timezone)} <span aria-hidden="true">·</span> Ends ${phaseTimeDisplay(phase.endsAt, phase.timezone)}</div>
             </section>`).join("\n\n            ");
@@ -239,7 +256,9 @@ function transformModuleFile(moduleName, relativeName, data, p) {
       .replaceAll("__CTB_X_URL__", p.links.x || "#")
       .replaceAll("__CTB_MASCOT_PATH__", p.mascotPath)
       .replaceAll("__CTB_PROJECT_ID__", p.id)
-      .replaceAll("__CTB_NFT_SUPPLY__", String(nftSupply));
+      .replaceAll("__CTB_NFT_SUPPLY__", String(nftSupply))
+      .replaceAll("__CTB_MINT_FEE__", mintFeeDisplay(p.nftSettings.mintPrice))
+      .replaceAll("__CTB_MINT_LIMIT__", mintLimitDisplay(p.nftSettings.mintLimit));
 
     if (relativeName === "server.js") return Buffer.from(makeMountableServer(source, moduleName));
 

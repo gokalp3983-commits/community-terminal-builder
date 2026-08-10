@@ -80,3 +80,18 @@ assert.match(nftMultiCss,/Chapter 19 final NFT header parity:[\s\S]*\.community-
 assert.throws(()=>generate({projectName:"REQ",ticker:"REQ",tokenContract:"0x1111111111111111111111111111111111111111",nftContract:"0x2222222222222222222222222222222222222222",features:{nftTerminal:true},nft:{mode:"single",mintAt:"2026-09-01T12:00:00Z",mintLimit:"1"}}),/Mint Price is required/,'Generator must reject blank single-phase Mint Price');
 assert.throws(()=>generate({projectName:"REQ",ticker:"REQ",tokenContract:"0x1111111111111111111111111111111111111111",nftContract:"0x2222222222222222222222222222222222222222",features:{nftTerminal:true},nft:{mode:"single",mintAt:"2026-09-01T12:00:00Z",mintPrice:"FREE"}}),/Mint Per Wallet \/ Wallet Limit is required/,'Generator must reject blank single-phase wallet limit');
 console.log("Chapter 19 final hands-on NFT state + inline validation contracts: PASS");
+
+// Chapter 19 FINAL: phase cards use explicit aligned Mint Fee / Mint per Wallet rows.
+{
+  const result=generate({projectName:"PHASELABEL",ticker:"P19",tokenContract:"0x1111111111111111111111111111111111111111",nftContract:"0x2222222222222222222222222222222222222222",features:{nftTerminal:true},nft:{mode:"multiple",collectionName:"Phase Label NFT",mintPhases:[{label:"PHASE 1",name:"First",startsAt:"2026-09-01T12:00:00Z",endsAt:"2026-09-01T13:00:00Z",timezone:"UTC",price:"0",limit:"2"},{label:"PHASE 2",name:"Second",startsAt:"2026-09-01T13:00:00Z",endsAt:"2026-09-01T14:00:00Z",timezone:"UTC",price:"0.5",limit:"4"}]}});
+  const page=result.entries.find(x=>x.name.endsWith("/03_NFT-Collection-Terminal/public/index.html")).data.toString("utf8");
+  assert(page.includes('class="phase-details phase-details-kv"'),"Multi-phase cards use aligned phase detail rows");
+  assert(page.includes('Mint Fee</span><span class="phase-detail-colon" aria-hidden="true">:</span><span class="phase-detail-value">FREE</span>'),"Free phase renders Mint Fee: FREE");
+  assert(page.includes('Mint per Wallet</span><span class="phase-detail-colon" aria-hidden="true">:</span><span class="phase-detail-value">4</span>'),"Wallet limit renders as explicit Mint per Wallet value");
+}
+{
+  const result=generate({projectName:"SINGLELABEL",ticker:"S19",tokenContract:"0x1111111111111111111111111111111111111111",nftContract:"0x2222222222222222222222222222222222222222",features:{nftTerminal:true},nft:{mode:"single",collectionName:"Single Label NFT",mintAt:"2026-09-01T12:00:00Z",mintPrice:"0.25",mintLimit:"3"}});
+  const page=result.entries.find(x=>x.name.endsWith("/03_NFT-Collection-Terminal/public/index.html")).data.toString("utf8");
+  assert(page.includes('Mint Fee</span><span class="phase-detail-colon" aria-hidden="true">:</span><span class="phase-detail-value">0.25</span>'),"Single-phase countdown renders explicit Mint Fee value");
+  assert(page.includes('Mint per Wallet</span><span class="phase-detail-colon" aria-hidden="true">:</span><span class="phase-detail-value">3</span>'),"Single-phase countdown renders explicit Mint per Wallet value");
+}
