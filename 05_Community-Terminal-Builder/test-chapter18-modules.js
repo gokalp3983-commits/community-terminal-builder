@@ -28,8 +28,67 @@ assert(builderJs.includes('data-date-autofill="${phase.endDate&&phase.endDate!==
 assert(builderJs.includes("overflow:visible}.mascot img{display:block"),"Landing preview mascot must not crop the uploaded logo");
 const pulseHtml=x.text("06_Community-Pulse/public/index.html"), timelineHtml=x.text("07_Timeline/public/index.html");
 const pulseStyle=x.text("06_Community-Pulse/public/style.css"), timelineStyle=x.text("07_Timeline/public/style.css");
+const pulseModuleCss=x.text("06_Community-Pulse/public/pulse.css"), timelineModuleCss=x.text("07_Timeline/public/timeline.css");
 assert(pulseHtml.includes('id="terminal-footer" class="terminal-area terminal-footer"'),"Pulse must use canonical subcommand footer wrapper");
 assert(timelineHtml.includes('id="terminal-footer" class="terminal-area terminal-footer"'),"Timeline must use canonical subcommand footer wrapper");
-assert(pulseStyle.includes('color:var(--green)!important;font-size:1.15rem'),"Pulse subpage title must use terminal green");
-assert(timelineStyle.includes('color:var(--green)!important;font-size:1.15rem'),"Timeline subpage title must use terminal green");
+assert(pulseModuleCss.includes('.module-title{color:var(--green)!important}'),"Pulse subpage title must use terminal green");
+assert(timelineModuleCss.includes('.module-title{color:var(--green)!important}'),"Timeline subpage title must use terminal green");
+
+// Chapter 18 landing Quick Access + compact explanations + NFT logo parity.
+const landingHtml=x.text("01_Landing-Page/public/index.html");
+const landingStyle=x.text("01_Landing-Page/public/style.css");
+const landingScript=x.text("01_Landing-Page/public/script.js");
+const nftStyle=x.text("03_NFT-Collection-Terminal/public/style.css");
+assert(landingHtml.includes('id="quickAccessTabs" class="quick-access-tabs"'),"Landing must include Quick Access tabs");
+assert(landingHtml.includes('id="availableTerminalsTitle"'),"Landing must include compact Available Terminals explanation area");
+assert(landingScript.includes('window.open(module.url, "_blank", "noopener")'),"Quick Access tabs must open selected terminals directly");
+assert(landingScript.includes('row.className = "module-explanation"'),"Landing module descriptions must render as static explanation rows");
+assert(landingStyle.includes('border:1px solid #6FD3FF'),"Quick Access tabs must use ice-blue borders");
+assert(landingStyle.includes('color:#6FD3FF'),"Quick Access tabs must use ice-blue text");
+assert(nftStyle.includes('Chapter 18 — NFT header logo parity'),"NFT page must inherit header-logo parity fix");
+assert(nftStyle.includes('box-shadow:none!important'),"NFT header logo must not glow or render a hover rectangle");
+
+// Chapter 18 live visual parity: non-NFT titles, Timeline frame, Pulse-only white internal borders.
+const whaleCss=x.text("02_Whale-Activity-Tracker/public/whale.css");
+const intelCss=x.text("04_Meme-Intel/public/intel.css");
+const pulseCss=x.text("06_Community-Pulse/public/pulse.css");
+const timelineCss=x.text("07_Timeline/public/timeline.css");
+for (const [name,css] of [["Whales",whaleCss],["Intel",intelCss],["Pulse",pulseCss],["Timeline",timelineCss]]) {
+  assert(css.includes('.module-title{color:var(--green)!important}'),`${name} sub-terminal title must be terminal green`);
+}
+assert(timelineCss.includes('border:1px solid var(--green)!important'),"Timeline must carry bright-green outer-frame parity");
+assert(pulseCss.includes('flat terminal report separators instead of boxed cards'),"Pulse must use the accepted line-based internal treatment");
+assert(pulseCss.includes('border-bottom:1px solid rgba(255,255,255,.72)!important'),"Pulse sections must use simple bright separators");
+
+// Chapter 18 landing hub finalization + Pulse/Timeline footer parity.
+assert(landingHtml.includes('[ QUICK ACCESS TO TERMINALS ]'),"Landing Quick Access heading must explicitly target terminals");
+assert(!landingHtml.includes('id="terminal-prompt"'),"Landing must not expose a keyboard command prompt");
+assert(!landingHtml.includes('id="commandInput"'),"Landing must not expose command input");
+assert(!landingScript.includes('Type <span class="red">help</span> for available modules.'),"Landing boot must not advertise removed keyboard help");
+assert(landingScript.includes('module.command.charAt(0).toUpperCase() + module.command.slice(1)'),"Available Terminals command labels must start with a capital letter");
+assert(!pulseHtml.includes('data-project-footer-title')&&!pulseHtml.includes('data-project-footer-info'),"Pulse footer must use clean credits-only parity");
+assert(!timelineHtml.includes('data-project-footer-title')&&!timelineHtml.includes('data-project-footer-info'),"Timeline footer must use clean credits-only parity");
+
+// Chapter 18A final accepted HOODRAT baseline.
+x=inspect(generate(multi).buffer);
+const finalLanding=x.text("01_Landing-Page/public/script.js");
+const finalLandingCss=x.text("01_Landing-Page/public/style.css");
+const finalWhaleHtml=x.text("02_Whale-Activity-Tracker/public/index.html");
+const finalWhaleJs=x.text("02_Whale-Activity-Tracker/public/whale.js");
+const finalIntelHtml=x.text("04_Meme-Intel/public/index.html");
+const finalIntelJs=x.text("04_Meme-Intel/public/intel.js");
+const finalPulseCss=x.text("06_Community-Pulse/public/pulse.css");
+const finalTimelineCss=x.text("07_Timeline/public/timeline.css");
+assert(finalLanding.includes('FALLBACK_MODULE_ORDER = ["whales", "intel", "nft", "pulse", "timeline"]')&&finalLanding.includes('CONFIG?.moduleOrder'),"Landing terminal order must be driven by the canonical Whales, Intel, NFT, Pulse, Timeline order");
+assert(finalLandingCss.includes('[data-module="nft"]{\n  order:3;')&&finalLandingCss.includes('[data-module="pulse"]{\n  order:4;')&&finalLandingCss.includes('[data-module="timeline"]{\n  order:5;'),"Landing CSS order override must match Whales, Intel, NFT, Pulse, Timeline");
+assert(finalWhaleHtml.includes('[ AVAILABLE COMMANDS ]')&&finalWhaleHtml.includes('data-guide-command="clear"'),"Whales must expose inline available commands including clear");
+assert(finalWhaleJs.includes('Back to commands'),"Whales must provide a return-to-commands link after output");
+assert(finalIntelHtml.includes('data-quick-command="status"')&&finalIntelHtml.includes('data-quick-command="live"'),"Intel accepted Quick Commands must include STATUS through LIVE");
+assert(finalIntelJs.includes('Back to commands'),"Intel must provide a return-to-commands link after output");
+assert(finalPulseCss.includes('flat terminal report separators instead of boxed cards'),"Pulse must use line separators instead of boxed cards");
+assert(finalPulseCss.includes('keep Pulse dividers open, not box/grid connected'),"Pulse vertical dividers must remain visually detached from horizontal separators");
+assert(finalTimelineCss.includes('flat chronological separators instead of boxed events'),"Timeline must use line separators instead of boxed events");
+assert(finalTimelineCss.includes('stronger event tag + dim orange chronology separators'),"Timeline final event-tag and separator polish must be present");
+assert(!x.exists("deployment-guide.txt"),"Generated terminal must not include deployment/GitHub helper file");
+
 console.log("Chapter 18A Community Pulse + Timeline + live acceptance fixes: PASS");

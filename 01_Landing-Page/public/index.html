@@ -32,8 +32,8 @@
           <div class="market-line"><span id="marketCapStatus" class="market-tag">[ CONNECTING ]</span><span class="market-label">Market Cap</span><span class="market-colon" aria-hidden="true">:</span><strong id="marketCap" class="market-value">—</strong></div>
           <div class="market-line"><span id="marketHoldersStatus" class="market-tag">[ CONNECTING ]</span><span class="market-label">Holders</span><span class="market-colon" aria-hidden="true">:</span><strong id="marketHolders" class="market-value">—</strong></div>
           <div class="market-line"><span id="marketVolumeStatus" class="market-tag">[ CONNECTING ]</span><span class="market-label">24h Volume</span><span class="market-colon" aria-hidden="true">:</span><strong id="marketVolume" class="market-value">—</strong></div>
-          <div class="market-line contract-address-line"><span class="market-tag contract-tag">[ CA ]</span><span class="market-label">Contract</span><span class="market-colon" aria-hidden="true">:</span><span class="contract-value-wrap"><code class="market-value contract-value" data-token-contract>—</code><button class="copy-contract" type="button" data-copy-token-contract aria-label="Copy token contract address" title="Copy token contract address">⧉</button></span></div>
           <div class="market-line market-updated-line"><span id="marketUpdatedStatus" class="market-tag">[ CONNECTING ]</span><span class="market-label">Updated</span><span class="market-colon" aria-hidden="true">:</span><strong id="marketUpdated" class="market-value">—</strong></div>
+          <div class="market-line contract-address-line"><span class="market-tag contract-tag">[ CA ]</span><span class="market-label">Contract</span><span class="market-colon" aria-hidden="true">:</span><span class="contract-value-wrap"><code class="market-value contract-value" data-token-contract>—</code><button class="copy-contract" type="button" data-copy-token-contract aria-label="Copy token contract address" title="Copy token contract address">⧉</button></span></div>
         </section>
       </div>
 
@@ -43,26 +43,24 @@
           <div id="output" class="output" aria-live="polite"></div>
         </div>
         <div id="terminal-modules" class="application-area terminal-modules">
-          <section id="modulesList" class="modules" aria-label="Available modules"></section>
+          <section class="quick-access" aria-labelledby="quickAccessTitle">
+            <h2 id="quickAccessTitle" class="section-label">[ QUICK ACCESS TO TERMINALS ]</h2>
+            <nav id="quickAccessTabs" class="quick-access-tabs" aria-label="Quick terminal access"></nav>
+          </section>
+          <div class="module-section-separator" aria-hidden="true"></div>
+          <section class="terminal-explanations" aria-labelledby="availableTerminalsTitle">
+            <h2 id="availableTerminalsTitle" class="section-label">[ AVAILABLE TERMINALS ]</h2>
+            <div id="modulesList" class="module-explanation-list" aria-label="Available terminal explanations"></div>
+          </section>
         </div>
       </div>
 
-      <div id="terminal-prompt" class="terminal-area terminal-prompt">
-        <form id="terminalForm">
-          <div id="promptRow" class="prompt" hidden>
-            <label id="promptLabel" class="prompt-label" for="commandInput">community@terminal:~$</label>
-            <input id="commandInput" name="command" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Terminal command">
-          </div>
-        </form>
-      </div>
 
       <div id="terminal-footer" class="terminal-area terminal-footer">
-        <div id="footerVersion" class="footer-version">Community Terminal</div>
-        <div id="footerInfo" class="powered-by"><span class="orange">[ INFO ]</span> Independent community terminal tools.</div>
         <footer id="footerCopy" class="footer"></footer>
       </div>
     </section>
   </main>
-  <script src="/script.js"></script>
+  <script src="/script.js?v=chapter18a-master-order-v2"></script>
 </body>
 </html>

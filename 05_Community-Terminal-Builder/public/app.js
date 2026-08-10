@@ -62,8 +62,6 @@ function initializeBuilderExperience(){
   setBuilderExperience(saved==="advanced"?"advanced":"guided",false);
   guidedModeButton?.addEventListener("click",()=>setBuilderExperience("guided"));
   advancedModeButton?.addEventListener("click",()=>setBuilderExperience("advanced"));
-  const colorToggle=document.querySelector("#guided-color-toggle"),colorGrid=document.querySelector(".color-grid");
-  colorToggle?.addEventListener("click",()=>{const expanded=colorGrid?.classList.toggle("guided-expanded")||false;colorToggle.setAttribute("aria-expanded",String(expanded));colorToggle.innerHTML=`CUSTOMIZE COLORS <span>${expanded?"−":"+"}</span>`});
 }
 
 function browserTimeZone(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC"}catch{return "UTC"}}
@@ -206,7 +204,6 @@ async function refreshBuilderMascotPreview(){
 
 async function payload(){const mint=syncNftMintSchedule();return {
   projectName:val("projectName"),ticker:val("ticker"),version:val("version"),description:val("description"),promptUser:val("promptUser"),promptHost:val("promptHost"),ecosystem:val("ecosystem"),tokenContract:val("tokenContract"),nftContract:val("nftContract"),dexScreenerChainId:val("dexScreenerChainId"),blockscoutApiBase:val("blockscoutApiBase"),
-  colors:{primary:val("primary"),accent:val("accent"),background:val("background"),panel:val("panel")},
   links:{home:val("home"),website:val("website"),x:val("x"),telegram:val("telegram"),explorer:val("explorer"),dexScreener:val("dexScreener"),openSea:val("openSea")},
   nft:{openSeaSlug:syncOpenSeaSlug(),collectionName:val("nftCollectionName"),supply:val("nftSupply"),mode:mint.mode||nftMintMode(),mintAt:mint.ok&&!mint.disabled?mint.iso:"",mintPhases:mint.ok&&!mint.disabled&&mint.mode==="multiple"?mint.phases.map(({id,label,name,startsAt,endsAt,price,limit,timezone})=>({id,label,name,startsAt,endsAt,price,limit,timezone})):[],timezone:mint.timeZone||val("nftMintTimezone")||browserTimeZone()},
   features:{whaleTracker:checked("whaleTracker"),memeIntel:checked("memeIntel"),communityPulse:checked("communityPulse"),timeline:checked("timeline"),nftTerminal:checked("nftTerminal"),liveMarket:checked("liveMarket")},
@@ -214,7 +211,6 @@ async function payload(){const mint=syncNftMintSchedule();return {
 };}
 
 function configurationReady(){const mint=syncNftMintSchedule();const openSeaOk=!checked("nftTerminal")||openSeaConfigurationValid();return Boolean(val("projectName")&&val("ticker")&&isEvmAddress(val("tokenContract"))&&openSeaOk&&(!checked("nftTerminal")||(isEvmAddress(val("nftContract"))&&mint.ok&&!mint.disabled)))}
-function syncColorLabels(){document.querySelectorAll('.color-field input[type="color"]').forEach(input=>{const code=input.parentElement.querySelector("code");if(code)code.textContent=input.value.toLowerCase()})}
 function updateWorkspaceStatus(){
   const name=val("projectName");
   currentProjectLabel.textContent=activeProjectId?(name||activeProjectId).toUpperCase():(name?`${name.toUpperCase()} // UNSAVED`:"UNSAVED PROJECT");
@@ -224,10 +220,9 @@ function updateWorkspaceStatus(){
 }
 function update(){
   syncNftConfigVisibility();
-  syncColorLabels();
   const project=val("projectName"); const ticker=val("ticker"); const contract=val("tokenContract");
   const nftEnabled=checked("nftTerminal"); const nftContract=val("nftContract"); const openSeaSlug=syncOpenSeaSlug(); const requiredReady=configurationReady();
-  const modules=[checked("whaleTracker")?"/whales":null,checked("memeIntel")?"/intel":null,checked("communityPulse")?"/pulse":null,checked("timeline")?"/timeline":null,nftEnabled?"/nft":null].filter(Boolean);
+  const modules=[checked("whaleTracker")?"/whales":null,checked("memeIntel")?"/intel":null,nftEnabled?"/nft":null,checked("communityPulse")?"/pulse":null,checked("timeline")?"/timeline":null].filter(Boolean);
   const mascot=document.querySelector("#mascot").files[0];
   preview.textContent=[
     line(project?"ok":"wait",project?`Project identity: ${project.toUpperCase()} (${ticker||"ticker pending"})`:"Project identity required"),
@@ -241,7 +236,7 @@ function update(){
     nftEnabled&&val("openSea")?line(openSeaSlug?"ok":"warn",openSeaSlug?`OpenSea collection detected: ${openSeaSlug}`:"OpenSea URL must be a collection link (opensea.io/collection/...)."):line("skip","OpenSea collection link not configured"),
     nftEnabled?(()=>{const m=syncNftMintSchedule();return m.ok&&!m.disabled?line(m.instant.getTime()>=Date.now()?"ok":"warn",m.mode==="multiple"?`NFT mint structure: ${m.phases.length} phases · starts ${m.iso}`:`NFT mint time: ${m.iso}`):line("warn",m.error||"NFT mint schedule required")})():line("skip","NFT mint schedule not required"),
     line(mascot||persistedMascot?"ok":"skip",mascot?`Brand asset: ${mascot.name}`:persistedMascot?`Brand asset: ${persistedMascot.name||"saved mascot"}`:"Using default terminal asset"),
-    "",`PROFILE     ${project?slugify(project):"pending"}`,`VERSION     ${val("version")||"1.0.0"}`,`ECOSYSTEM   ${val("ecosystem")||"NOT SET"}`,`THEME       ${val("primary")} / ${val("accent")}`,`ROUTES      /${modules.length?`, ${modules.join(", ")}`:""}`,"",
+    "",`PROFILE     ${project?slugify(project):"pending"}`,`VERSION     ${val("version")||"1.0.0"}`,`ECOSYSTEM   ${val("ecosystem")||"NOT SET"}`,`THEME       CANONICAL CTB`,`ROUTES      /${modules.length?`, ${modules.join(", ")}`:""}`,"",
     requiredReady?line("ok","Configuration valid — package ready to generate"):line("wait","Complete required configuration")
   ].join("\n");
   readiness.textContent=requiredReady?"READY":"WAITING"; readiness.classList.toggle("ready",requiredReady); updateWorkspaceStatus();
@@ -285,12 +280,11 @@ mascotInput.addEventListener("change",()=>{persistedMascot=null;syncMascotFileNa
 function setValue(name,value){const el=form.elements[name];if(!el)return;if(el.type==="checkbox")el.checked=Boolean(value);else el.value=value??""}
 function applyPayload(p){
   setValue("projectName",p.projectName);setValue("ticker",p.ticker);setValue("version",p.version||"1.0.0");setValue("description",p.description);setValue("promptUser",p.promptUser);setValue("promptHost",p.promptHost||"terminal");setValue("ecosystem",p.ecosystem||"Robinhood Chain");setValue("tokenContract",p.tokenContract);setValue("nftContract",p.nftContract);setValue("dexScreenerChainId",p.dexScreenerChainId||"robinhood");setValue("blockscoutApiBase",p.blockscoutApiBase||"https://robinhoodchain.blockscout.com/api/v2");
-  for(const k of ["primary","accent","background","panel"])setValue(k,p.colors?.[k]);
   for(const k of ["home","website","x","telegram","explorer","dexScreener","openSea"])setValue(k,p.links?.[k]);
   setValue("openSeaSlug",p.nft?.openSeaSlug);setValue("nftCollectionName",p.nft?.collectionName);setValue("nftSupply",p.nft?.supply);for(const k of ["whaleTracker","memeIntel","communityPulse","timeline","nftTerminal","liveMarket"])setValue(k,p.features?.[k] ?? (["communityPulse","timeline"].includes(k)?true:undefined));setNftMintConfiguration(p.nft||{});
   persistedMascot=p.mascot||null; mascotInput.value=""; syncMascotFileName(); refreshBuilderMascotPreview(); update();
 }
-function resetForm(){form.reset();setValue("version","1.0.0");setValue("promptHost","terminal");setValue("ecosystem","Robinhood Chain");setValue("dexScreenerChainId","robinhood");setValue("blockscoutApiBase","https://robinhoodchain.blockscout.com/api/v2");setValue("nftMintMode","");setValue("nftMintTimezone",browserTimeZone());renderNftPhaseEditor();syncNftMintModeUI();setValue("primary","#39ff14");setValue("accent","#ff6a00");setValue("background","#020806");setValue("panel","#03100b");setValue("whaleTracker",true);setValue("memeIntel",true);setValue("communityPulse",true);setValue("timeline",true);setValue("liveMarket",true);activeProjectId="";persistedMascot=null;mascotInput.value="";syncMascotFileName();refreshBuilderMascotPreview();localStorage.removeItem(SETTINGS_KEY);update();status.textContent="[ NEW ] Blank project workspace ready.";loadDeployment()}
+function resetForm(){form.reset();setValue("version","1.0.0");setValue("promptHost","terminal");setValue("ecosystem","Robinhood Chain");setValue("dexScreenerChainId","robinhood");setValue("blockscoutApiBase","https://robinhoodchain.blockscout.com/api/v2");setValue("nftMintMode","");setValue("nftMintTimezone",browserTimeZone());renderNftPhaseEditor();syncNftMintModeUI();setValue("whaleTracker",true);setValue("memeIntel",true);setValue("communityPulse",true);setValue("timeline",true);setValue("liveMarket",true);activeProjectId="";persistedMascot=null;mascotInput.value="";syncMascotFileName();refreshBuilderMascotPreview();localStorage.removeItem(SETTINGS_KEY);update();status.textContent="[ NEW ] Blank project workspace ready.";loadDeployment()}
 function refreshProjectList(){
   const projects=readProjects(); const current=savedProjectsSelect.value; savedProjectsSelect.innerHTML='<option value="">LOAD SAVED PROJECT...</option>';
   Object.values(projects).sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).forEach(item=>{const option=document.createElement("option");option.value=item.id;option.textContent=`${item.name} // ${item.state} // ${new Date(item.updatedAt).toLocaleDateString()}`;savedProjectsSelect.append(option)});
@@ -306,6 +300,12 @@ function loadProject(id){const item=readProjects()[id];if(!item)return;activePro
 function deleteProject(){if(!activeProjectId){status.textContent="[ WARN ] No saved project is active.";return}const projects=readProjects();const item=projects[activeProjectId];if(!item)return;const answer=prompt(`Type ${item.name} to delete this saved project:`);if(answer!==item.name){status.textContent="[ SKIP ] Project deletion cancelled.";return}delete projects[activeProjectId];writeProjects(projects);resetForm();refreshProjectList();status.textContent=`[ DELETED ] ${item.name} removed from this browser.`}
 async function exportProject(){const data=await payload();const bundle={schemaVersion:SCHEMA_VERSION,builderVersion:"1.3.2-b",terminalEngineVersion:"1.0.0",exportedAt:nowIso(),project:data};const blob=new Blob([JSON.stringify(bundle,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${slugify(data.projectName)||"community-terminal"}-config.json`;a.click();URL.revokeObjectURL(a.href);status.textContent="[ EXPORTED ] Project configuration downloaded."}
 function importProject(bundle){if(!bundle||bundle.schemaVersion!==SCHEMA_VERSION||!bundle.project)throw new Error("Unsupported or invalid project configuration.");activeProjectId="";applyPayload(bundle.project);status.textContent="[ IMPORTED ] Configuration loaded. Press SAVE to keep it locally."}
+function saveProjectSnapshot(project){
+  const id=slugify(project.projectName);if(!id)throw new Error("Project name is required before generating.");
+  const projects=readProjects(),existing=projects[id],timestamp=nowIso();
+  projects[id]={id,name:String(project.projectName||id).toUpperCase(),ticker:project.ticker||"",state:configurationReady()?"READY":"DRAFT",createdAt:existing?.createdAt||timestamp,updatedAt:timestamp,lastGeneratedAt:existing?.lastGeneratedAt||null,generatedFingerprint:existing?.generatedFingerprint||"",schemaVersion:SCHEMA_VERSION,builderVersion:"1.3.2-b",data:project};
+  writeProjects(projects);activeProjectId=id;localStorage.setItem(SETTINGS_KEY,JSON.stringify({activeProjectId:id}));refreshProjectList();savedProjectsSelect.value=id;updateWorkspaceStatus();return true;
+}
 function noteGenerated(project,fingerprint){
   const id=activeProjectId||slugify(project.projectName);if(!id)return false;
   const projects=readProjects(),existing=projects[id],timestamp=nowIso();
@@ -371,10 +371,10 @@ async function openLandingPreview(){
   const ecosystem=val("ecosystem")||"Robinhood Chain";
   const promptUser=(val("promptUser")||project.toLowerCase().replace(/[^a-z0-9]+/g,"" )||"project");
   const promptHost=val("promptHost")||"terminal";
-  const primary=val("primary")||"#39ff14";
-  const accent=val("accent")||"#ff6a00";
-  const background=val("background")||"#020806";
-  const panel=val("panel")||"#03100b";
+  const primary="#39ff14";
+  const accent="#ff8a00";
+  const background="#020806";
+  const panel="#03100b";
   const mascot=await mascotDataUrl();
   const modules=[];
   if(checked("whaleTracker"))modules.push(["whales","Whale Activity Tracker","Monitor whale activity, DEX transfers, and holder rankings."]);
@@ -406,7 +406,7 @@ function showAutoSaveToast(){
 
 let lastBuild={url:"",filename:"",project:null,fingerprint:""};
 function downloadBuild(){if(!lastBuild.url)return;const a=document.createElement("a");a.href=lastBuild.url;a.download=lastBuild.filename;a.click()}
-function enabledModuleNames(project){const names=["LANDING"];if(project.features?.whaleTracker)names.push("WHALES");if(project.features?.memeIntel)names.push("INTEL");if(project.features?.communityPulse)names.push("PULSE");if(project.features?.timeline)names.push("TIMELINE");if(project.features?.nftTerminal&&project.nftContract)names.push("NFT");return names}
+function enabledModuleNames(project){const names=["LANDING"];if(project.features?.whaleTracker)names.push("WHALES");if(project.features?.memeIntel)names.push("INTEL");if(project.features?.nftTerminal&&project.nftContract)names.push("NFT");if(project.features?.communityPulse)names.push("PULSE");if(project.features?.timeline)names.push("TIMELINE");return names}
 function deploymentCommands(kind){const p=lastBuild.project||{};const folder=(String(p.projectName||"PROJECT").toUpperCase().replace(/[^A-Z0-9]+/g,"_")+"_Community_Terminal");const repo=(String(p.projectName||"project").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+"-community-terminal");if(kind==="local")return `cd ${folder}\nnpm install\nnpm test\nnpm start`;if(kind==="github")return `git init\ngit add .\ngit commit -m "Initial ${p.projectName||"Community"} Community Terminal"\ngit branch -M main\ngit remote add origin https://github.com/YOUR-USERNAME/${repo}.git\ngit push -u origin main`;return `1. Push the generated root folder to GitHub.\n2. In Render choose New → Blueprint.\n3. Select the repository and main branch.\n4. Keep Blueprint Path as render.yaml.\n5. Confirm the Free plan before deployment.\n6. After it is Live, run:\n\nnpm run test:deployed -- https://YOUR-TERMINAL.onrender.com`; }
 async function copyDeployment(kind){const text=deploymentCommands(kind);document.querySelector("#deployment-command-preview").textContent=text;try{await navigator.clipboard.writeText(text);status.textContent="[ COPIED ] Deployment commands copied."}catch{status.textContent="[ READY ] Commands shown below; copy them manually."}}
 function showBuildComplete(project,filename){document.querySelector("#built-project").textContent=`${String(project.projectName||"COMMUNITY").toUpperCase()} COMMUNITY TERMINAL`;document.querySelector("#built-package").textContent=`${filename} · deployment-ready`;document.querySelector("#built-modules").innerHTML=enabledModuleNames(project).map(x=>`<span>${x}</span>`).join("");document.querySelector("#deployment-command-preview").textContent="Select an action to copy deployment commands.";document.querySelector("#build-complete").showModal()}
@@ -435,9 +435,10 @@ form.addEventListener("submit",async e=>{
     const schedule=syncNftMintSchedule();if(!schedule.ok||schedule.disabled){status.textContent=`[ WAIT ] ${schedule.error||"Complete the NFT mint schedule."}`;return}
     const confirmed=confirmedMintSignature===mintSignature(schedule)||await requestMintConfirmation();if(!confirmed)return
   }
-  status.textContent="[ BUILD ] Generating unified terminal package..."; button.disabled=true;
+  status.textContent="[ SAVE ] Saving latest configuration..."; button.disabled=true;
   try{
-    const project=await payload();const response=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(project)});
+    const project=await payload();saveProjectSnapshot(project);status.textContent="[ BUILD ] Latest configuration saved · generating unified terminal package...";
+    const response=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(project)});
     if(!response.ok){const x=await response.json();throw new Error(x.error||"Generation failed")}
     const blob=await response.blob(); const disposition=response.headers.get("content-disposition")||""; const filename=/filename="([^"]+)"/.exec(disposition)?.[1]||"Community_Terminal.zip"; const fingerprint=response.headers.get("x-ctb-build-fingerprint")||"";
     if(lastBuild.url)URL.revokeObjectURL(lastBuild.url);lastBuild={url:URL.createObjectURL(blob),filename,project,fingerprint};downloadBuild();const autoSaved=noteGenerated(project,fingerprint);status.textContent=`[ DONE ] Generated ${filename}${autoSaved?" · project auto-saved":""}`;if(autoSaved)showAutoSaveToast();showBuildComplete(project,filename);

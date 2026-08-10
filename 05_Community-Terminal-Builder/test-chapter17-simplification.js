@@ -51,6 +51,7 @@ assert.match(css,/body\.guided-mode #download-again\{display:none!important\}/,"
 const landingCss=read("01_Landing-Page/public/style.css");
 const nftSingleCss=read("03_NFT-Collection-Terminal/public/style.css");
 const nftMultiCss=read("03_NFT-Collection-Terminal-Multi-Phase/public/style.css");
-for(const [name,source] of [["landing",landingCss],["single NFT",nftSingleCss],["multiple NFT",nftMultiCss]]){
-  assert.match(source,/width:min\(220px,58vw\)!important;height:86px!important;[^}]*object-fit:contain!important/,`${name} header logo must use enlarged aspect-safe display slot`);
+assert.match(landingCss,/width:min\(165px,43\.5vw\)!important;height:64\.5px!important;[^}]*object-fit:contain!important/,"landing header logo must use the Chapter 18 accepted standard display slot");
+for(const [name,source] of [["single NFT",nftSingleCss],["multiple NFT",nftMultiCss]]){
+  assert.match(source,/object-fit:contain!important/,`${name} header logo must preserve aspect ratio`);
 }

@@ -7,6 +7,7 @@ module.exports = {
   links: { home:"https://hoodrat-landing-page.onrender.com/", modules:{ whales:"", intel:"", nft:"" }, website:"",x:"",telegram:"",explorer:"",dexScreener:"",openSea:"" },
   nft: { collectionName:"HOODRAT NFT", openSeaSlug:"", supply:null, whaleThreshold:10 },
   features: { landing:true, whaleTracker:true, nftTerminal:false, memeIntel:true, liveMarket:true },
+  moduleOrder: ["whales", "intel", "nft", "pulse", "timeline"],
   modules: {
     whales:{command:"whales",title:"Whale Activity Tracker",description:"Monitor Top-30 whales, DEX activity, and holder rankings.",status:"READY"},
     intel:{command:"intel",title:"Meme Intelligence Terminal",description:"Read market pulse, buy pressure, holder behavior, and transparent risk signals.",status:"READY"},

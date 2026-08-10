@@ -22,8 +22,14 @@
     document.querySelectorAll("[data-project-ticker]").forEach((e) => { e.textContent = c.project.ticker; });
     document.querySelectorAll("[data-project-prompt]").forEach((e) => { e.textContent = window.PROJECT_PROMPT; });
     document.querySelectorAll("[data-project-home]").forEach((e) => {
-      e.href = c.links.home;
+      e.href = "/";
       e.title = `Return to ${c.project.name} Community Terminal`;
+      if (!e.dataset.homeConfirmBound) {
+        e.addEventListener("click", (event) => {
+          if (!window.confirm("Return to the main Community Terminal landing page?")) event.preventDefault();
+        });
+        e.dataset.homeConfirmBound = "true";
+      }
     });
     document.querySelectorAll("[data-project-mascot]").forEach((e) => {
       e.src = c.branding.mascot;
@@ -39,7 +45,7 @@
       e.textContent = `Independent community tools for ${c.project.ecosystem}.`;
     });
     document.querySelectorAll("[data-project-footer]").forEach((e) => {
-      e.innerHTML = `Independently built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp8339 on X">𝕏 @Gokalp8339</a><br>Not affiliated with or endorsed by the official ${c.project.ticker} team.<br>Built for the ${c.project.ecosystem} community.`;
+      e.innerHTML = `Built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp8339 on X">X @Gokalp8339</a><br>Not affiliated with or endorsed by the official ${c.project.ticker} team.`;
     });
 
     document.querySelectorAll("[data-token-contract]").forEach((e) => {

@@ -29,9 +29,15 @@ function validateProjectConfig(value) {
   requireText(value?.branding?.mascot, "branding.mascot");
   requireText(value?.links?.home, "links.home");
 
-  for (const key of ["whales", "intel", "nft"]) {
-    requireText(value?.modules?.[key]?.command, `modules.${key}.command`);
-    requireText(value?.modules?.[key]?.title, `modules.${key}.title`);
+  const canonicalModuleOrder = ["whales", "intel", "nft", "pulse", "timeline"];
+  const moduleOrder = Array.isArray(value?.moduleOrder) ? value.moduleOrder : canonicalModuleOrder;
+  if (moduleOrder.length !== canonicalModuleOrder.length || moduleOrder.some((key, index) => key !== canonicalModuleOrder[index])) {
+    throw new Error("Invalid moduleOrder configuration. Expected whales, intel, nft, pulse, timeline.");
+  }
+  for (const key of canonicalModuleOrder) {
+    if (!value?.modules?.[key]) continue;
+    requireText(value.modules[key].command, `modules.${key}.command`);
+    requireText(value.modules[key].title, `modules.${key}.title`);
   }
 
   return value;

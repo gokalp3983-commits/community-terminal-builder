@@ -123,21 +123,25 @@ body.command-panel-open .terminal-workspace > #terminal-frame{
   padding:4px 0;
 }
 
-#terminal-application table{
+#terminal-application table,
+.whale-command-output table{
   width:100%;
   border-collapse:collapse;
   margin-top:8px;
 }
 
 #terminal-application th,
-#terminal-application td{
+#terminal-application td,
+.whale-command-output th,
+.whale-command-output td{
   padding:8px 6px;
   border-bottom:1px solid var(--border);
   text-align:left;
   vertical-align:top;
 }
 
-#terminal-application th{
+#terminal-application th,
+.whale-command-output th{
   color:var(--yellow);
 }
 
@@ -435,3 +439,198 @@ body.command-panel-open{
 #terminal-footer .footer{padding:7px 4px 0!important;color:#d8e0dc!important;opacity:1!important;text-align:center!important;font-size:.72em!important;line-height:1.45!important}
 #terminal-footer .footer a{color:var(--green)!important;text-decoration:none!important;border:0!important}
 #terminal-footer .footer a:hover{text-decoration:underline!important;text-shadow:0 0 8px rgba(57,255,20,.35)!important}
+
+/* Chapter 18 acceptance — non-NFT sub-terminal title parity */
+.module-title{color:var(--green)!important}
+
+
+/* Chapter 18 — inline quick commands + command guide */
+.whale-section-separator{
+  height:1px;
+  margin:14px 0 12px;
+  background:rgba(255,138,0,.55);
+}
+
+.whale-section-label{
+  margin:0 0 9px;
+  color:var(--green);
+  text-align:left;
+  font-size:.86em;
+  font-weight:700;
+  letter-spacing:.06em;
+}
+
+.whale-quick-commands{
+  margin:0;
+}
+
+.whale-quick-command-tabs{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+  align-items:center;
+}
+
+.whale-quick-command{
+  appearance:none;
+  border:1px solid #6FD3FF;
+  background:transparent;
+  color:#6FD3FF;
+  padding:7px 13px;
+  min-width:0;
+  cursor:pointer;
+  text-align:center;
+  font:inherit;
+  font-weight:700;
+  letter-spacing:.035em;
+  line-height:1.2;
+}
+
+.whale-quick-command:hover,
+.whale-quick-command:focus-visible,
+.whale-quick-command.active{
+  background:rgba(111,211,255,.08);
+  color:#fff;
+  border-color:#fff;
+  outline:none;
+}
+
+.whale-quick-command:disabled{
+  opacity:.45;
+  cursor:wait;
+}
+
+.whale-command-guide{
+  margin:0;
+}
+
+.whale-command-guide-list{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.whale-command-guide-row{
+  display:grid;
+  grid-template-columns:minmax(16ch, 0.7fr) minmax(0,1.4fr);
+  column-gap:12px;
+  align-items:baseline;
+  padding:3px 0;
+  color:var(--muted);
+  font-size:.84em;
+  line-height:1.35;
+}
+
+.whale-command-name{
+  color:var(--cyan);
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.whale-prompt-info{
+  margin:0 0 8px;
+  color:var(--muted);
+  font-size:.84em;
+  line-height:1.4;
+}
+
+@media(max-width:760px){
+  .whale-quick-command-tabs{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .whale-command-guide-row{
+    grid-template-columns:1fr;
+    gap:1px;
+    padding:5px 0;
+  }
+}
+
+@media(max-width:420px){
+  .whale-quick-command-tabs{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* Chapter 18 — clickable command guide + landing-page frame parity */
+.terminal-workspace,
+body.command-panel-open .terminal-workspace,
+body:not(.command-panel-open) .terminal-workspace{
+  display:block!important;
+  width:100%!important;
+  margin:0!important;
+}
+
+.terminal-workspace > #terminal-frame,
+body.command-panel-open .terminal-workspace > #terminal-frame,
+body:not(.command-panel-open) .terminal-workspace > #terminal-frame{
+  width:min(1100px,calc(100% - 24px))!important;
+  margin:12px auto!important;
+}
+
+.whale-command-name{
+  appearance:none;
+  -webkit-appearance:none;
+  display:inline-block;
+  margin:0;
+  padding:0;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:var(--cyan);
+  font:inherit;
+  font-weight:700;
+  text-align:left;
+  cursor:pointer;
+  text-decoration:none;
+}
+
+.whale-command-name:hover,
+.whale-command-name:focus-visible{
+  color:#fff;
+  text-shadow:0 0 8px rgba(111,211,255,.45);
+}
+
+.whale-command-name:disabled{
+  opacity:.45;
+  cursor:default;
+  color:var(--cyan);
+  text-shadow:none;
+}
+
+@media(max-width:760px){
+  .terminal-workspace > #terminal-frame,
+  body.command-panel-open .terminal-workspace > #terminal-frame,
+  body:not(.command-panel-open) .terminal-workspace > #terminal-frame{
+    width:min(100% - 8px,1100px)!important;
+    margin:4px auto!important;
+  }
+}
+
+/* Chapter 18 — single command console: all command output lives with the manual prompt */
+.whale-command-output:not(:empty){
+  margin:0 0 10px;
+}
+
+/* Chapter 18 parameterized-command guidance. */
+.whale-command-input-hint{
+  margin-left:8px;
+  color:var(--muted);
+  font-style:italic;
+  font-weight:400;
+  opacity:.86;
+  white-space:nowrap;
+}
+@media(max-width:760px){
+  .whale-command-input-hint{
+    margin-left:6px;
+  }
+}
+
+
+
+/* Chapter 18A final UX — lightweight return link after command output. */
+.back-to-commands-row{margin:12px 0 2px!important}
+.back-to-commands{border:0!important;background:transparent!important;padding:0!important;color:var(--cyan,#6fd3ff)!important;font:inherit!important;font-style:italic!important;cursor:pointer!important;text-decoration:none!important}
+.back-to-commands:hover,.back-to-commands:focus-visible{color:#fff!important;text-decoration:underline!important;outline:none!important}

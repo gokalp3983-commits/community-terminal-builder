@@ -1,0 +1,14 @@
+"use strict";
+const fs=require("fs");
+const path=require("path");
+const assert=require("assert");
+const source=fs.readFileSync(path.join(__dirname,"public/app.js"),"utf8");
+assert(source.includes("function saveProjectSnapshot(project)"),"Generate flow must expose a pre-generation save helper");
+const submit=source.slice(source.indexOf('form.addEventListener("submit"'), source.indexOf('document.querySelector("#close-build-complete")'));
+const payloadIndex=submit.indexOf("const project=await payload()");
+const saveIndex=submit.indexOf("saveProjectSnapshot(project)");
+const fetchIndex=submit.indexOf('fetch("/api/generate"');
+assert(payloadIndex>=0&&saveIndex>payloadIndex,"Generate flow must capture current form state before saving");
+assert(fetchIndex>saveIndex,"Generate flow must save current project before requesting the ZIP");
+assert(submit.includes("Latest configuration saved · generating unified terminal package"),"Builder should communicate automatic pre-generation save");
+console.log("[ PASS ] Chapter 18B Generate ZIP auto-saves the latest configuration first.");

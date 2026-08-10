@@ -22,8 +22,14 @@
     document.querySelectorAll("[data-project-ticker]").forEach((e) => { e.textContent = c.project.ticker; });
     document.querySelectorAll("[data-project-prompt]").forEach((e) => { e.textContent = window.PROJECT_PROMPT; });
     document.querySelectorAll("[data-project-home]").forEach((e) => {
-      e.href = c.links.home;
+      e.href = "/";
       e.title = `Return to ${c.project.name} Community Terminal`;
+      if (!e.dataset.homeConfirmBound) {
+        e.addEventListener("click", (event) => {
+          if (!window.confirm("Return to the main Community Terminal landing page?")) event.preventDefault();
+        });
+        e.dataset.homeConfirmBound = "true";
+      }
     });
     document.querySelectorAll("[data-project-mascot]").forEach((e) => {
       e.src = c.branding.mascot;

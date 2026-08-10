@@ -692,3 +692,57 @@ h2{
 /* Chapter 17 DONE — clean black page background; decorative binary texture removed. */
 html,body{background:#000!important}
 .terminal{background:#000!important}
+
+/* Chapter 18 acceptance — use the landing-page mascot dimensions as the project-wide standard. */
+.community-header .mascot,
+.community-header .community-mascot,
+.mascot.community-mascot,
+.community-header>a:hover .community-mascot,
+.community-header>a:focus-visible .community-mascot{
+  display:block!important;
+  width:min(165px,43.5vw)!important;
+  height:64.5px!important;
+  max-width:100%!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  margin:0 auto 10px!important;
+  background:transparent!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  filter:none!important;
+  animation:none!important;
+  transform:none!important;
+}
+@media(max-width:560px){
+  .community-header .mascot,
+  .community-header .community-mascot,
+  .mascot.community-mascot,
+  .community-header>a:hover .community-mascot,
+  .community-header>a:focus-visible .community-mascot{
+    width:min(142.5px,46.5vw)!important;
+    height:54px!important;
+  }
+}
+
+
+/* Chapter 18 — compact stable market row geometry: longest status, one-space gaps. */
+#terminal-live-panel .market-line{display:grid!important;grid-template-columns:14ch 10ch 1ch minmax(0,1fr)!important;column-gap:1ch!important;align-items:baseline!important;min-height:1.48em!important;line-height:1.48!important}
+#terminal-live-panel .market-tag,#terminal-live-panel .market-label{white-space:nowrap!important}
+#terminal-live-panel .market-tag{min-width:14ch!important}
+@media(max-width:560px){#terminal-live-panel .market-line{grid-template-columns:14ch 10ch 1ch minmax(0,1fr)!important;column-gap:1ch!important}#terminal-live-panel .market-tag{min-width:14ch!important}}
+
+/* Chapter 18B — mobile-only compact copy for project/social links. */
+.link-copy-mobile{display:none}
+@media(max-width:560px){
+  .link-copy-desktop{display:none!important}
+  .link-copy-mobile{display:inline!important}
+}
+
+
+/* Chapter 18B final mobile polish — keep the CA copy control attached to the contract value. */
+@media(max-width:560px){
+  #terminal-live-panel .contract-value-wrap{display:block!important;min-width:0!important;}
+  #terminal-live-panel .contract-value-wrap .contract-value{display:inline!important;width:auto!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important;}
+  #terminal-live-panel .contract-value-wrap .copy-contract{display:inline-block!important;vertical-align:baseline!important;margin-left:.35ch!important;white-space:nowrap!important;}
+}

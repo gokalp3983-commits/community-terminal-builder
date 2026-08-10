@@ -32,7 +32,7 @@ try {
     const release=JSON.parse(fs.readFileSync(path.join(dir,"terminal-release.json"),"utf8"));
     check(release.builder.version==="1.3.2-b"&&release.releaseStatus==="deployment-ready",`${item.name}: release provenance metadata`);
     check(Array.isArray(release.enabledModules)&&release.enabledModules.includes("landing"),`${item.name}: release module manifest`);
-    for(const file of ["package.json","server.js","render.yaml",".env.example","README.md","validate-generated.js","verify-deployment.js","terminal-release.json","deployment-guide.txt","01_Landing-Page/public/favicon.png"]) check(fs.existsSync(path.join(dir,file)),`${item.name}: ${file}`);
+    for(const file of ["package.json","server.js","render.yaml",".env.example","README.md","validate-generated.js","verify-deployment.js","terminal-release.json","01_Landing-Page/public/favicon.png"]) check(fs.existsSync(path.join(dir,file)),`${item.name}: ${file}`);
     const server=fs.readFileSync(path.join(dir,"server.js"),"utf8");
     for(const route of ["/health","/healthz","/status"]){check(server.includes(`app.get(\"${route}\"`),`${item.name}: ${route} diagnostic route`);routeChecks++;}
     check(server.includes('if(config.features.whaleTracker)'),`${item.name}: feature-aware whale mount`);

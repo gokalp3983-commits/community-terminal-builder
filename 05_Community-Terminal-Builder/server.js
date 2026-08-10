@@ -119,7 +119,7 @@ const server = http.createServer((req,res) => {
         const health=await probe("/healthz");
         const statusResult=await probe("/status");
         const routes=[];
-        for(const name of ["whales","intel","pulse","timeline","nft"]){if(expected[name])routes.push({name,...await probe(`/${name}`)});}
+        for(const name of ["whales","intel","nft","pulse","timeline"]){if(expected[name])routes.push({name,...await probe(`/${name}`)});}
         const checks=[
           {name:"Landing Page",pass:home.status===200},
           {name:"Security headers",pass:home.headers["x-content-type-options"]==="nosniff"},

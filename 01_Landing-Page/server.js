@@ -9,8 +9,13 @@ const port = Number(process.env.PORT || 3000);
 const REQUEST_TIMEOUT_MS = 15_000;
 let priceCache = null;
 
+function getOrderedModules() {
+  const order = Array.isArray(config.moduleOrder) ? config.moduleOrder : ["whales", "intel", "nft", "pulse", "timeline"];
+  return Object.fromEntries(order.filter((key) => config.modules?.[key]).map((key) => [key, config.modules[key]]));
+}
+
 app.disable("x-powered-by");
-app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"], maxAge: "1h" }));
+app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"], maxAge: 0 }));
 
 function formatPriceUsd(value) {
   const price = Number(value);
@@ -101,7 +106,8 @@ app.get("/api/config", (_req, res) => {
     branding: config.branding,
     links: config.links,
     features: config.features,
-    modules: config.modules,
+    moduleOrder: Array.isArray(config.moduleOrder) ? config.moduleOrder : ["whales", "intel", "nft", "pulse", "timeline"],
+    modules: getOrderedModules(),
     contracts: config.contracts,
     market: {
       refreshMs: config.market.refreshMs,

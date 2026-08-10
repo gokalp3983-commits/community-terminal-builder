@@ -13,7 +13,7 @@
 
 This milestone proves that CTB can take a previously hand-built Token + NFT community terminal, regenerate it through the automated Builder workflow, package it as a standalone ZIP, replace the legacy multi-service deployment with a unified service, and serve the complete community terminal live with real token, holder, whale, OpenSea/NFT, Pulse and Timeline functionality.
 
-The HOODRAT live acceptance run also validated the Chapter 18A production fixes: automatic OpenSea slug derivation, NFT sales/floor recovery, mint Start→End date synchronization, full-fit Landing Preview mascot rendering, and the two new Community Pulse and Community Timeline modules.
+The HOODRAT live acceptance run also validated the Chapter 18A production fixes: automatic OpenSea slug derivation, NFT sales/floor recovery, mint Start→End date synchronization, full-fit Landing Preview mascot rendering, the two new Community Pulse and Community Timeline modules, the ice-blue landing Quick Access tab pattern with compact non-clickable terminal explanations, and NFT header-logo size/hover parity with the other module pages.
 
 ## Milestone Status — Chapter 18A Local Builder Ready (2026-08-09)
 
@@ -1183,6 +1183,14 @@ Chapter 18 starts from the frozen `Community_Terminal_Builder_CHAPTER17_DONE_09A
 
 ### Chapter 18A — New module foundation
 
+### Chapter 18A — Live UI acceptance polish
+- Landing page: ice-blue Quick Access tabs with a compact, non-clickable Available Terminals explanation area.
+- NFT: header-logo size/hover behavior aligned with the accepted module treatment.
+- Whales / Intel / Pulse / Timeline: non-NFT sub-terminal titles use terminal green.
+- Timeline: main outer terminal frame uses the canonical bright-green border.
+- Community Pulse only: internal signal/info boxes use bright-white borders to reduce orange visual weight.
+
+
 - Added two first-class optional Builder modules alongside Whale Tracker, Meme Intel, and NFT Terminal: **Community Pulse** and **Community Timeline**.
 - **Community Pulse** mounts at `/pulse` and provides an explainable synthesis of available market direction, holder concentration, Top-30 whale flow, newly observed/unranked buyer flow, and NFT configuration state. It does not provide price targets, predictions, or opaque scoring. Missing/rate-limited signals are shown as unavailable/building rather than invented.
 - Community Pulse is independently mountable and does not require Meme Intel to be enabled. It reuses the proven on-chain/market data machinery inside its own module boundary.
@@ -1216,3 +1224,43 @@ Full release regression suite: PASS.
 - Pulse and Timeline now use the canonical `terminal-footer` wrapper so their footer spacing, borders, credit treatment, and link styling match the established Whale / Intel / NFT subcommand family.
 - No data, routing, generation, OpenSea, NFT schedule, deployment, or Chapter 17 behavior changed in this polish pass.
 - Chapter 18A regression coverage now protects both the green subpage-title treatment and canonical footer wrapper.
+
+### Chapter 18A — SUCCESS / Live Generated-Terminal Baseline Accepted (09 Aug 2026)
+
+- CTB generated the complete HOODRAT Community Terminal ZIP, which was deployed live as a single unified Community Terminal and used as the Chapter 18A real-world acceptance target.
+- The accepted generated-terminal UX is now carried back into CTB as the baseline for future Community Terminal generation.
+- Landing terminal order is fixed to **Whales → Intel → NFT → Pulse → Timeline** in both Quick Access and Available Terminals.
+- Whale Activity Tracker and Meme Intel use inline Quick Commands plus clickable Available Commands, a single manual/output console, one-command-at-a-time locking, `clear` terminal reset, and a lightweight `> Back to commands` return link after completed output.
+- Intel Quick Commands are **STATUS · SCAN · PULSE · PRESSURE · LIVE**. Whale Quick Commands remain **WHALES · WHALES12 · ACTIVITY · MOVERS · STATS**.
+- Shared live-status rows use compact stable spacing based on the longest `[ CONNECTING ]` state; `Updated` is treated as a green live metric above ice-blue project links.
+- Community Pulse and Community Timeline use flat terminal-style separators instead of boxed internal cards/events. Timeline preserves its green chronological rail/dots.
+- Generated page footers use the accepted compact Builder credit + non-affiliation treatment; NFT retains its OpenSea/API information notice where applicable.
+- Generated ZIPs no longer include the redundant `deployment-guide.txt` / GitHub helper file.
+- HOODRAT live acceptance remains the canonical Chapter 18A reference for future generated Community Terminals.
+
+**Chapter 18A — SUCCESS / ACCEPTED.**
+
+### Chapter 18A — Final HOODRAT baseline sync (10 Aug 2026)
+
+- Synced the final accepted HOODRAT generated-terminal UX back into the Builder templates so future generated terminals inherit the same production baseline.
+- Preserved the canonical module sequence **Whales → Intel → NFT → Pulse → Timeline** across config, generated landing data, Builder previews, status metadata, startup logging, and release metadata.
+- Fixed the legacy landing CSS `order` override that could visually force Pulse/Timeline ahead of NFT even when JavaScript/config order was correct; Chapter 18A tests now protect both data order and CSS order.
+- Community Pulse keeps the accepted open-line layout with detached vertical/horizontal separators; Community Timeline keeps the flat chronology with stronger event tags and dim-orange event separators.
+- Generated terminal packages remain free of the redundant GitHub/deployment helper file.
+- Full CTB regression suite passes after the final synchronization.
+
+
+### Chapter 18B — Mobile link polish + generated wallet-limit wording (10 Aug 2026)
+
+- Chapter 18B starts from the frozen accepted Chapter 18A HOODRAT-synchronized baseline.
+- Builder wallet-limit input/UI behavior remains unchanged; generated multi-phase NFT cards now render the configured value as `<number> per Wallet` (for example, `FREE · 2 per Wallet`).
+- Added mobile-only compact copy for long ice-blue project/social links while preserving the full accepted desktop wording.
+- Mobile compact values are: `Visit Website`, `Open X`, `Open Telegram`, and `View Collection`.
+- NFT mint countdown also uses `Visit NFT Terminal` on mobile and a tighter phone-only command-row grid so link values have more usable width.
+- The responsive copy applies only to generated pages that actually expose these project/social link rows: Landing, Whales, Meme Intel, NFT mint countdown, and NFT Terminal. Pulse/Timeline are unchanged because they do not contain this link block.
+- Desktop link wording and Builder UI remain unchanged.
+- Added Chapter 18B regression coverage; full CTB test suite passes.
+- Project mascot navigation is standardized across generated pages: clicking the mascot asks for confirmation before returning to the unified main landing page `/`.
+- Builder color/theme customization is removed; generated terminals use the fixed canonical CTB/HOODRAT visual system while project mascot and token/NFT/project information remain configurable.
+- Generate ZIP now automatically saves the latest Builder configuration **before** requesting the package, so users no longer need to press SAVE manually first. If the browser cannot persist the configuration, generation stops with the normal error state instead of producing a package from an unsaved workflow.
+- Added a dedicated Chapter 18B pre-generation auto-save regression check.

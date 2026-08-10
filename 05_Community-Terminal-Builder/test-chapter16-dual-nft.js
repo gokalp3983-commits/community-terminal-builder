@@ -67,7 +67,8 @@ try{
   assert.match(launch,/src="\/nft\/project-runtime\.js/,"Multiple-phase countdown must load project runtime for mounted branding");
   assert.match(launch,/src="\/nft\/assets\/dualcat-mascot\./,"Multiple-phase countdown mascot must use mounted /nft asset path");
   assert.match(countdown,/"\/nft\/terminal"/,"Multiple-phase JavaScript terminal redirect lost namespace");
-  assert.match(runtime,/"\/nft\/terminal"/,"NFT runtime post-mint home route lost namespace");
+  assert.match(runtime,/e\.href = "\/"/,"NFT mascot must return to the unified main landing page");
+  assert.match(runtime,/Return to the main Community Terminal landing page\?/,"NFT mascot return must require confirmation");
   assert.match(terminal,/Collection Pulse|collectionPulse/,"Multiple-phase generated terminal lost Collection Pulse");
   assert.match(server,/req\.originalUrl/,"Multiple-phase SSR lost mounted URL awareness");
   assert.match(css,/#terminal-frame\.shell\.terminal-frame\{border:1px solid var\(--ice-blue,#6FD3FF\)!important/,"Multiple-phase canonical ice-blue outer frame missing");

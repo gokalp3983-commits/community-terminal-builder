@@ -3,8 +3,6 @@
 const input = document.getElementById("commandInput");
 const history = document.getElementById("history");
 const boot = document.getElementById("boot");
-const commandPanel = document.getElementById("commandPanel");
-const appLayout = document.getElementById("appLayout");
 const promptRow = document.getElementById("promptRow");
 const CFG = window.PROJECT_CONFIG;
 const PROMPT = window.PROJECT_PROMPT;
@@ -214,14 +212,26 @@ async function cmdLive() {
 }
 
 function cmdMethodology(){ block("METHODOLOGY", [["status","Cache build progress and readiness"],["scan","Market + holder + pressure summary"],["pressure","Classified DEX buy/sell transfers"],["fresh","Unranked/newly observed buyers; not wallet age"],["holders","Current distribution plus snapshot movement"],["risk","Rule-based concentration/liquidity/distribution flags"],["pulse","Deterministic synthesis; no AI prediction"]], "Data can be delayed, cached, incomplete or rate-limited. Never treat a terminal label as a recommendation."); }
-function revealCommandPanel(){
-  if(!appLayout || !commandPanel || commandPanel.classList.contains("visible")) return;
-  appLayout.closest(".shell")?.classList.add("panel-open");
-  appLayout.classList.add("commands-visible");
-  commandPanel.hidden = false;
-  document.body.classList.add("command-panel-open");
-  commandPanel.classList.add("visible");
-  commandPanel.setAttribute("aria-hidden", "false");
+function cmdHelp(){
+  block("AVAILABLE COMMANDS", [
+    ["status", "Cache build progress"],
+    ["scan", "Complete market snapshot"],
+    ["pulse", "Market-state interpretation"],
+    ["pressure", "Buy/sell pressure (12h)"],
+    ["fresh", "Newly observed buyer flow"],
+    ["holders", "Distribution and movement"],
+    ["risk", "Transparent risk metrics"],
+    ["live", "Notable recent activity"],
+    ["methodology", "Signal rules and limits"],
+    ["clear", "Resets the terminal."],
+    ["help", "Show command reference"]
+  ], "Click any command above or enter a command manually.");
+}
+
+function setCommandControlsDisabled(disabled){
+  document.querySelectorAll("[data-quick-command], [data-guide-command]").forEach((button) => {
+    button.disabled = disabled;
+  });
 }
 
 function commandRoot(command){
@@ -230,40 +240,98 @@ function commandRoot(command){
 
 function highlightActiveCommand(command){
   const root = commandRoot(command);
-  commandPanel?.querySelectorAll("button[data-command]").forEach((button) => {
-    button.classList.toggle("active", commandRoot(button.dataset.command || "") === root);
+  document.querySelectorAll("[data-quick-command]").forEach((button) => {
+    button.classList.toggle("active", commandRoot(button.dataset.quickCommand || "") === root);
   });
 }
 
-function placeCommandInPrompt(command){
-  promptRow.classList.add("visible");
-  input.disabled = false;
-  input.value = String(command || "");
-  input.focus();
-  const end = input.value.length;
-  input.setSelectionRange?.(end, end);
+function appendBackToCommands(){
+  print('<button type="button" class="back-to-commands">&gt; Back to commands</button>', "back-to-commands-row");
 }
 
-function cmdHelp(){
-  revealCommandPanel();
-  print(`<div class="intel-block"><div class="intel-title">[ READY ] Command panel opened.</div><div class="intel-note">Click any command in the window on the right to place it into the prompt, or type a command manually.</div></div>`);
+async function executeCommand(raw){
+  const cmd = raw.trim().toLowerCase();
+  if(!cmd) return;
+  echo(raw);
+  commandHistory.push(raw);
+  historyIndex = commandHistory.length;
+  const loadingNode = showCommandLoading(cmd);
+  try{
+    if(cmd === "help") cmdHelp();
+    else if(cmd === "status") await cmdStatus();
+    else if(cmd === "scan") await cmdScan();
+    else if(cmd === "pressure") await cmdPressure();
+    else if(cmd === "fresh") await cmdFresh();
+    else if(cmd === "holders") await cmdHolders();
+    else if(cmd === "risk") await cmdRisk();
+    else if(cmd === "pulse") await cmdPulse();
+    else if(cmd === "live") await cmdLive();
+    else if(cmd === "methodology") cmdMethodology();
+    else if(cmd === "clear") history.innerHTML = "";
+    else print(`[ UNKNOWN COMMAND ] ${esc(raw)} — type help`, "status-error");
+  } finally {
+    finishCommandLoading(loadingNode);
+  }
 }
 
-async function run(raw){ const cmd=raw.trim().toLowerCase(); if(!cmd)return; echo(raw); commandHistory.push(raw); historyIndex=commandHistory.length; input.disabled=true; const loadingNode=showCommandLoading(cmd); try{ if(cmd==="help")cmdHelp(); else if(cmd==="status")await cmdStatus(); else if(cmd==="scan")await cmdScan(); else if(cmd==="pressure")await cmdPressure(); else if(cmd==="fresh")await cmdFresh(); else if(cmd==="holders")await cmdHolders(); else if(cmd==="risk")await cmdRisk(); else if(cmd==="pulse")await cmdPulse(); else if(cmd==="live")await cmdLive(); else if(cmd==="methodology")cmdMethodology(); else if(cmd==="clear")history.innerHTML=""; else print(`[ UNKNOWN COMMAND ] ${esc(raw)} — type help`,"status-error"); } finally { finishCommandLoading(loadingNode); input.disabled=false; input.value=""; input.focus(); } }
+async function runTerminalCommand(command){
+  const text = String(command || "").trim();
+  if(!text) return;
+  input.value = "";
+  input.disabled = true;
+  setCommandControlsDisabled(true);
+  highlightActiveCommand(text);
+  try{
+    await executeCommand(text);
+    if(text.toLowerCase()!=="clear") appendBackToCommands();
+  } finally {
+    input.disabled = false;
+    setCommandControlsDisabled(false);
+    highlightActiveCommand("");
+    input.focus();
+  }
+}
 
-input.addEventListener("keydown",e=>{ if(e.key==="Enter"){run(input.value);} else if(e.key==="ArrowUp"){e.preventDefault(); if(historyIndex>0)input.value=commandHistory[--historyIndex]||"";} else if(e.key==="ArrowDown"){e.preventDefault(); if(historyIndex<commandHistory.length-1)input.value=commandHistory[++historyIndex]||""; else {historyIndex=commandHistory.length; input.value="";}}});
-commandPanel.hidden = true;
-document.body.classList.remove("command-panel-open");
-commandPanel.addEventListener("click", (event) => {
-  const button = event.target.closest("button[data-command]");
-  if(!button) return;
-  event.preventDefault();
-  event.stopPropagation();
-  const command = button.dataset.command || "";
-  placeCommandInPrompt(command);
-  highlightActiveCommand(command);
+input.addEventListener("keydown", async (event) => {
+  if(event.key === "Enter"){
+    event.preventDefault();
+    const command = input.value;
+    input.value = "";
+    await runTerminalCommand(command);
+  } else if(event.key === "ArrowUp"){
+    event.preventDefault();
+    if(historyIndex > 0) input.value = commandHistory[--historyIndex] || "";
+  } else if(event.key === "ArrowDown"){
+    event.preventDefault();
+    if(historyIndex < commandHistory.length - 1) input.value = commandHistory[++historyIndex] || "";
+    else { historyIndex = commandHistory.length; input.value = ""; }
+  }
 });
 
-boot.innerHTML=`<div class="boot-line">[ SYSTEM ] ${CFG.project.name} Meme Intelligence Terminal ver ${CFG.project.version}</div><div class="boot-line">[ READY ] Type <strong>help</strong> to inspect available intelligence commands.</div>`;
+document.addEventListener("click", async (event) => {
+  const backButton = event.target.closest(".back-to-commands");
+  if(backButton){
+    document.getElementById("intelCommands")?.scrollIntoView({behavior:"smooth",block:"start"});
+    return;
+  }
+
+  const quickButton = event.target.closest("[data-quick-command]");
+  if(quickButton){
+    if(quickButton.disabled) return;
+    event.preventDefault();
+    await runTerminalCommand(quickButton.dataset.quickCommand || "");
+    return;
+  }
+
+  const guideButton = event.target.closest("[data-guide-command]");
+  if(!guideButton || guideButton.disabled) return;
+  event.preventDefault();
+  await runTerminalCommand(guideButton.dataset.guideCommand || "");
+});
+
+boot.innerHTML = `<div class="boot-line visible">[ <span class="green">OK</span> ] Initializing ${CFG.project.name} Meme Intelligence Terminal</div><div class="boot-line visible">[ <span class="green">OK</span> ] Connecting to market intelligence services</div><div class="boot-line visible">[ <span class="green">OK</span> ] Loading current intelligence signals</div><div class="boot-line visible">[ <span class="green">READY</span> ] Intelligence terminal synchronized</div>`;
 promptRow.classList.add("visible");
-marketHeader(); setInterval(marketHeader,60000); input.focus();
+setCommandControlsDisabled(false);
+marketHeader();
+setInterval(marketHeader, 60000);
+input.focus();

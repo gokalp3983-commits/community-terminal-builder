@@ -126,13 +126,21 @@ function block(html){
 }
 function help(){
   block(`
-    <div>
-      [ <span class="green">READY</span> ] Command panel opened.
-    </div>
-    <div class="help-open-copy">
-      Click any command on the right to place it into the prompt.<br>
-      Type a command manually or select one from the sidebar.
-    </div>
+    <div class="yellow">Whale Terminal Commands</div>
+    <div class="kv"><span class="cyan">whales</span><span>Current Top-30 whales</span></div>
+    <div class="kv"><span class="cyan">whales12</span><span>Top-30 activity (12h)</span></div>
+    <div class="kv"><span class="cyan">whale &lt;rank&gt;</span><span>Whale profile</span></div>
+    <div class="kv"><span class="cyan">rank &lt;wallet&gt;</span><span>Wallet lookup</span></div>
+    <div class="kv"><span class="cyan">leaderboard</span><span>Holder rankings</span></div>
+    <div class="kv"><span class="cyan">activity</span><span>24h market activity</span></div>
+    <div class="kv"><span class="cyan">traders12</span><span>Top buyers/sellers (12h)</span></div>
+    <div class="kv"><span class="cyan">transactions</span><span>Recent whale trades</span></div>
+    <div class="kv"><span class="cyan">accumulators</span><span>Net accumulators (24h)</span></div>
+    <div class="kv"><span class="cyan">distributors</span><span>Net distributors (24h)</span></div>
+    <div class="kv"><span class="cyan">newwhales</span><span>New Top-30 whales</span></div>
+    <div class="kv"><span class="cyan">movers</span><span>Rank changes</span></div>
+    <div class="kv"><span class="cyan">stats</span><span>Market statistics</span></div>
+    <div class="kv"><span class="cyan">clear</span><span>Resets the terminal.</span></div>
   `);
 }
 function whaleTable(data,title,limit=30){
@@ -511,7 +519,6 @@ async function execute(command){
 
   try{
     if(lower==="help"){
-      revealCommandPanel();
       help();
     }
     else if(lower==="clear"){
@@ -618,7 +625,7 @@ async function execute(command){
       progress.remove();
     }
     else{
-      block(`<div class="red">Unknown command.</div><div class="muted">Type help.</div>`);
+      block(`<div class="red">Unknown command.</div><div class="muted">Use Available Commands above.</div>`);
     }
   }catch(error){
     if(progress)progress.remove();
@@ -684,27 +691,93 @@ async function start(){
   const lines=[
     `[ <span class="green">OK</span> ] Initializing ${CFG.project.ecosystem}, ${CFG.project.name} Whale Terminal`,
     `[ <span class="green">OK</span> ] Connecting to ${CFG.project.ecosystem} services`,
-    `[ <span class="green">OK</span> ] Loading current holder rankings`,
-    `[ <span class="green">OK</span> ] Whale database synchronized`
+    `[ <span class="green">OK</span> ] Loading current holder rankings`
   ];
   for(const html of lines){
     const line=document.createElement("div");
     line.className="line boot-line";line.innerHTML=html;boot.append(line);
     requestAnimationFrame(()=>line.classList.add("visible"));await sleep(180);
   }
-  const spacer=document.createElement("div");spacer.className="line";spacer.innerHTML="&nbsp;";boot.append(spacer);
   const ready=document.createElement("div");ready.className="line";
-  ready.innerHTML=`[ <span class="green">READY</span> ] Type help for available commands.`;
-  boot.append(ready);promptRow.classList.add("visible");input.focus();
+  ready.innerHTML=`[ <span class="green">READY</span> ] Whale database synchronized`;
+  boot.append(ready);
+  promptRow.classList.add("visible");
+  setCommandControlsDisabled(false);
+  input.focus();
 }
+
+function setCommandControlsDisabled(disabled){
+  document.querySelectorAll("[data-quick-command], [data-guide-command]").forEach((button)=>{
+    button.disabled=disabled;
+  });
+}
+
+function appendBackToCommands(){
+  const row=document.createElement("div");
+  row.className="back-to-commands-row";
+  row.innerHTML='<button type="button" class="back-to-commands">&gt; Back to commands</button>';
+  history.append(row);
+}
+
+async function runTerminalCommand(command){
+  const text=String(command||"").trim();
+  if(!text)return;
+
+  // Any pending parameterized-command prefill belongs to the prompt only.
+  // Once another command is executed, clear it so there is one active prompt state.
+  input.value="";
+  input.disabled=true;
+  setCommandControlsDisabled(true);
+
+  try{
+    await execute(text);
+    if(text.toLowerCase()!=="clear")appendBackToCommands();
+  }finally{
+    input.disabled=false;
+    setCommandControlsDisabled(false);
+    input.focus();
+  }
+}
+
 input.addEventListener("keydown",async(event)=>{
   if(event.key!=="Enter")return;
   event.preventDefault();
-  const command=input.value;input.value="";input.disabled=true;
-  await execute(command);input.disabled=false;input.focus();
+  const command=input.value;
+  input.value="";
+  await runTerminalCommand(command);
+});
+
+document.addEventListener("click",async(event)=>{
+  const quickButton=event.target.closest("[data-quick-command]");
+  if(quickButton){
+    if(quickButton.disabled)return;
+    event.preventDefault();
+    await runTerminalCommand(quickButton.dataset.quickCommand||"");
+    return;
+  }
+
+  const guideButton=event.target.closest("[data-guide-command]");
+  if(!guideButton||guideButton.disabled)return;
+  event.preventDefault();
+
+  const command=guideButton.dataset.guideCommand||"";
+  if(guideButton.dataset.commandPrefill==="true"){
+    input.value=command;
+    input.focus();
+    input.setSelectionRange(input.value.length,input.value.length);
+    return;
+  }
+
+  await runTerminalCommand(command);
 });
 
 history.addEventListener("click",async(event)=>{
+  const backButton=event.target.closest(".back-to-commands");
+  if(backButton){
+    document.getElementById("whaleCommands")?.scrollIntoView({behavior:"smooth",block:"start"});
+    return;
+  }
+
   const button=event.target.closest(".copy-wallet");
   if(!button)return;
 
@@ -727,8 +800,8 @@ function verifyFrontendIntegrity(){
     ["traders12",typeof traders12],
     ["recentTransactions",typeof recentTransactions],
     ["execute",typeof execute],
-    ["revealCommandPanel",typeof revealCommandPanel],
-    ["placeCommandInPrompt",typeof placeCommandInPrompt]
+    ["runTerminalCommand",typeof runTerminalCommand],
+    ["setCommandControlsDisabled",typeof setCommandControlsDisabled]
   ];
 
   const missing=checks
@@ -747,29 +820,6 @@ refreshMarketPanel();
 setInterval(refreshMarketPanel,MARKET_REFRESH_MS);
 start();
 
-const appLayout=document.getElementById("appLayout");
-const commandPanel=document.getElementById("commandPanel");
-commandPanel.hidden = true;
-  document.body.classList.remove("command-panel-open");
-
-function revealCommandPanel(){
-  if(!appLayout||!commandPanel||commandPanel.classList.contains("visible")){
-    return;
-  }
-
-  appLayout.closest(".shell")?.classList.add("panel-open");
-  appLayout.classList.add("commands-visible");
-  commandPanel.hidden = false;
-  document.body.classList.add("command-panel-open");
-  commandPanel.classList.add("visible");
-  commandPanel.setAttribute("aria-hidden","false");
-}
-
-function activePromptInput(){
-  return input || document.getElementById("commandInput");
-}
-
-
 function commandRoot(command){
   return String(command||"")
     .trim()
@@ -779,41 +829,7 @@ function commandRoot(command){
 
 function highlightActiveCommand(command){
   const root=commandRoot(command);
-
-  commandPanel?.querySelectorAll("button[data-command]").forEach((button)=>{
-    const buttonRoot=commandRoot(button.dataset.command||"");
-    button.classList.toggle("active",buttonRoot===root);
+  document.querySelectorAll("[data-quick-command]").forEach((button)=>{
+    button.classList.toggle("active",commandRoot(button.dataset.quickCommand)===root);
   });
 }
-
-function placeCommandInPrompt(command){
-  const promptInput=activePromptInput();
-
-  if(!promptInput)return;
-
-  promptRow.classList.add("visible");
-  promptInput.disabled=false;
-  promptInput.value=String(command||"");
-  promptInput.focus();
-
-  const end=promptInput.value.length;
-  promptInput.setSelectionRange?.(end,end);
-
-  promptInput.dispatchEvent(
-    new Event("input",{bubbles:true})
-  );
-}
-
-commandPanel?.addEventListener("click",(event)=>{
-  const button=event.target.closest("button[data-command]");
-
-  if(!button)return;
-
-  event.preventDefault();
-  event.stopPropagation();
-  const command=button.dataset.command||"";
-  placeCommandInPrompt(command);
-  highlightActiveCommand(command);
-});
-
-

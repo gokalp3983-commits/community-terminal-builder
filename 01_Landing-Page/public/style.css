@@ -509,15 +509,15 @@ h2{
   order:2;
 }
 
-.terminal-modules [data-module="pulse"]{
+.terminal-modules [data-module="nft"]{
   order:3;
 }
 
-.terminal-modules [data-module="timeline"]{
+.terminal-modules [data-module="pulse"]{
   order:4;
 }
 
-.terminal-modules [data-module="nft"]{
+.terminal-modules [data-module="timeline"]{
   order:5;
 }
 
@@ -713,8 +713,8 @@ h2{
 
 /* Chapter 17B acceptance fix — stable header logo slot for uploaded brand artwork.
    A fixed display slot lets small-canvas transparent logos enlarge without distortion. */
-.community-header .mascot,.community-header .community-mascot,.mascot.community-mascot{display:block!important;width:min(220px,58vw)!important;height:86px!important;max-width:100%!important;object-fit:contain!important;margin:0 auto 10px!important;background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;filter:none!important;animation:none!important;transform:none!important}
-@media(max-width:560px){.community-header .mascot,.community-header .community-mascot,.mascot.community-mascot{width:min(190px,62vw)!important;height:72px!important}}
+.community-header .mascot,.community-header .community-mascot,.mascot.community-mascot{display:block!important;width:min(165px,43.5vw)!important;height:64.5px!important;max-width:100%!important;object-fit:contain!important;margin:0 auto 10px!important;background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;filter:none!important;animation:none!important;transform:none!important}
+@media(max-width:560px){.community-header .mascot,.community-header .community-mascot,.mascot.community-mascot{width:min(142.5px,46.5vw)!important;height:54px!important}}
 
 
 /* Chapter 17 final polish: readable terminal rows + configured project links. */
@@ -728,3 +728,156 @@ h2{
 /* Chapter 17 DONE — clean black page background; decorative binary texture removed. */
 html,body{background:#000!important}
 .terminal{background:#000!important}
+
+
+/* =========================================================
+   HOODRAT LANDING PROTOTYPE — QUICK ACCESS + COMPACT HELP
+   Accepted direction for CTB port after live UX review.
+   ========================================================= */
+.section-label{
+  margin:0 0 9px!important;
+  color:var(--green)!important;
+  text-align:left!important;
+  font-size:.86em!important;
+  font-weight:700!important;
+  letter-spacing:.06em!important;
+}
+
+.quick-access{
+  margin-top:8px;
+}
+
+.quick-access-tabs{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:8px;
+  align-items:center;
+}
+
+.quick-access-tab{
+  appearance:none;
+  border:1px solid #6FD3FF;
+  background:transparent;
+  color:#6FD3FF;
+  padding:7px 13px;
+  min-width:104px;
+  cursor:pointer;
+  text-align:center;
+  font-weight:700;
+  letter-spacing:.035em;
+  line-height:1.2;
+}
+
+.quick-access-tab:hover,
+.quick-access-tab:focus-visible{
+  background:rgba(111,211,255,.08);
+  color:#fff;
+  border-color:#fff;
+  outline:none;
+}
+
+.module-section-separator{
+  height:1px;
+  margin:14px 0 12px;
+  background:rgba(255,138,0,.55);
+}
+
+.terminal-explanations{
+  margin:0 0 12px;
+}
+
+.module-explanation-list{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.module-explanation{
+  display:grid;
+  grid-template-columns:12ch minmax(170px, .7fr) minmax(0, 1.4fr);
+  column-gap:12px;
+  align-items:baseline;
+  padding:3px 0;
+  border:0!important;
+  background:transparent!important;
+  cursor:default!important;
+}
+
+.module-explanation-command{
+  color:var(--cyan);
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.module-explanation-title{
+  color:var(--yellow);
+  font-weight:700;
+}
+
+.module-explanation-copy{
+  color:var(--muted);
+  font-size:.84em;
+  line-height:1.35;
+}
+
+@media(max-width:760px){
+  .quick-access-tabs{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .quick-access-tab{
+    min-width:0;
+    width:100%;
+  }
+  .module-explanation{
+    grid-template-columns:1fr;
+    gap:1px;
+    padding:5px 0;
+  }
+  .module-explanation-copy{
+    padding-left:0;
+  }
+}
+
+@media(max-width:420px){
+  .quick-access-tabs{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* Chapter 18 landing live-panel polish — compact first-paint geometry and metric grouping. */
+#terminal-live-panel .market-panel{margin-top:8px!important;padding-top:8px!important;padding-bottom:8px!important}
+#terminal-live-panel .market-line{grid-template-columns:19ch 17ch 1ch minmax(0,1fr)!important;column-gap:8px!important;min-height:1.48em!important;line-height:1.48!important}
+#terminal-live-panel .market-tag{display:block!important;min-width:19ch!important;white-space:nowrap!important}
+#terminal-live-panel .market-updated-line,
+#terminal-live-panel .market-updated-line .market-tag,
+#terminal-live-panel .market-updated-line .market-label,
+#terminal-live-panel .market-updated-line .market-colon,
+#terminal-live-panel .market-updated-line .market-value,
+#terminal-live-panel .market-updated-line strong{color:var(--green)!important}
+@media(max-width:560px){
+  #terminal-live-panel .market-panel{margin-top:6px!important;padding-top:7px!important;padding-bottom:7px!important}
+  #terminal-live-panel .market-line{grid-template-columns:18ch 10ch 1ch minmax(0,1fr)!important;column-gap:5px!important}
+  #terminal-live-panel .market-tag{min-width:18ch!important}
+}
+
+/* Chapter 18 — compact stable market row geometry: longest status, one-space gaps. */
+#terminal-live-panel .market-line{display:grid!important;grid-template-columns:14ch 10ch 1ch minmax(0,1fr)!important;column-gap:1ch!important;align-items:baseline!important;min-height:1.48em!important;line-height:1.48!important}
+#terminal-live-panel .market-tag,#terminal-live-panel .market-label{white-space:nowrap!important}
+#terminal-live-panel .market-tag{min-width:14ch!important}
+@media(max-width:560px){#terminal-live-panel .market-line{grid-template-columns:14ch 10ch 1ch minmax(0,1fr)!important;column-gap:1ch!important}#terminal-live-panel .market-tag{min-width:14ch!important}}
+
+/* Chapter 18B — mobile-only compact copy for project/social links. */
+.link-copy-mobile{display:none}
+@media(max-width:560px){
+  .link-copy-desktop{display:none!important}
+  .link-copy-mobile{display:inline!important}
+}
+
+
+/* Chapter 18B final mobile polish — keep the CA copy control attached to the contract value. */
+@media(max-width:560px){
+  #terminal-live-panel .contract-value-wrap{display:block!important;min-width:0!important;}
+  #terminal-live-panel .contract-value-wrap .contract-value{display:inline!important;width:auto!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important;}
+  #terminal-live-panel .contract-value-wrap .copy-contract{display:inline-block!important;vertical-align:baseline!important;margin-left:.35ch!important;white-space:nowrap!important;}
+}

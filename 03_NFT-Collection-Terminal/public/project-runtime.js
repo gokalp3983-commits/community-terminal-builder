@@ -22,12 +22,14 @@
     document.querySelectorAll("[data-project-ticker]").forEach((e) => { e.textContent = c.project.ticker; });
     document.querySelectorAll("[data-project-prompt]").forEach((e) => { e.textContent = window.PROJECT_PROMPT; });
     document.querySelectorAll("[data-project-home]").forEach((e) => {
-      const mintAt = c.nft?.mintAt ? new Date(c.nft.mintAt).getTime() : NaN;
-      const postMint = Number.isFinite(mintAt) && Date.now() >= mintAt;
-      e.href = postMint ? "/terminal" : c.links.home;
-      e.title = postMint
-        ? `${c.project.name} NFT Terminal`
-        : `Return to ${c.project.name} mint countdown`;
+      e.href = "/";
+      e.title = `Return to ${c.project.name} Community Terminal`;
+      if (!e.dataset.homeConfirmBound) {
+        e.addEventListener("click", (event) => {
+          if (!window.confirm("Return to the main Community Terminal landing page?")) event.preventDefault();
+        });
+        e.dataset.homeConfirmBound = "true";
+      }
     });
     document.querySelectorAll("[data-project-mascot]").forEach((e) => {
       e.src = c.branding.mascot;

@@ -602,7 +602,7 @@ h2{
 .community-title-row h1{margin:0!important;color:var(--yellow)!important;font-size:clamp(1.05rem,2vw,1.42rem)!important;line-height:1.2;letter-spacing:.02em}
 .online-status{display:inline-flex;align-items:center;gap:6px;color:var(--green)!important;font-size:.82em;font-weight:700;white-space:nowrap}
 .community-subtitle{margin:0 0 11px!important;color:#fff!important;font-size:.88em!important}
-.module-title{margin:14px 0 12px!important;text-align:center!important;color:var(--green)!important;font-size:1.15rem!important;font-weight:600!important;letter-spacing:.5px!important}
+.module-title{margin:14px 0 12px!important;text-align:center!important;color:var(--yellow)!important;font-size:1.15rem!important;font-weight:600!important;letter-spacing:.5px!important}
 .footer-version,.terminal-footer .footer-version{color:var(--yellow)!important}
 @media(max-width:560px){.community-title-row{gap:7px;flex-direction:column;margin:10px 0 7px!important}.community-divider{font-size:.72em}.community-subtitle{line-height:1.5}}
 
@@ -695,3 +695,50 @@ h2{
 /* Chapter 17 DONE — clean black page background; decorative binary texture removed. */
 html,body{background:#000!important}
 .terminal{background:#000!important}
+
+/* Chapter 18 acceptance — use the landing-page mascot dimensions as the project-wide standard. */
+.community-header .mascot,
+.community-header .community-mascot,
+.mascot.community-mascot,
+.community-header>a:hover .community-mascot,
+.community-header>a:focus-visible .community-mascot{
+  display:block!important;
+  width:min(165px,43.5vw)!important;
+  height:64.5px!important;
+  max-width:100%!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  margin:0 auto 10px!important;
+  background:transparent!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  filter:none!important;
+  animation:none!important;
+  transform:none!important;
+}
+@media(max-width:560px){
+  .community-header .mascot,
+  .community-header .community-mascot,
+  .mascot.community-mascot,
+  .community-header>a:hover .community-mascot,
+  .community-header>a:focus-visible .community-mascot{
+    width:min(142.5px,46.5vw)!important;
+    height:54px!important;
+  }
+}
+
+
+/* Chapter 18 — compact stable market row geometry: longest status, one-space gaps. */
+#terminal-live-panel .market-line{display:grid!important;grid-template-columns:14ch 10ch 1ch minmax(0,1fr)!important;column-gap:1ch!important;align-items:baseline!important;min-height:1.48em!important;line-height:1.48!important}
+#terminal-live-panel .market-tag,#terminal-live-panel .market-label{white-space:nowrap!important}
+#terminal-live-panel .market-tag{min-width:14ch!important}
+@media(max-width:560px){#terminal-live-panel .market-line{grid-template-columns:14ch 10ch 1ch minmax(0,1fr)!important;column-gap:1ch!important}#terminal-live-panel .market-tag{min-width:14ch!important}}
+
+/* Chapter 18B — mobile-only compact copy for project/social links. */
+.link-copy-mobile{display:none}
+@media(max-width:560px){
+  .link-copy-desktop{display:none!important}
+  .link-copy-mobile{display:inline!important}
+}
+

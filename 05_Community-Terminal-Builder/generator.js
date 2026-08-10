@@ -60,13 +60,7 @@ function normalize(input) {
     promptUser: text(input.promptUser, id), promptHost: text(input.promptHost, "terminal"),
     token, nft, dexChain: text(input.dexScreenerChainId, "robinhood"),
     blockscout: text(input.blockscoutApiBase, "https://robinhoodchain.blockscout.com/api/v2").replace(/\/$/, ""),
-    colors: {
-      background: text(input.colors?.background, DEFAULT_TERMINAL_THEME.background), panel: text(input.colors?.panel, DEFAULT_TERMINAL_THEME.panel),
-      green: text(input.colors?.primary, DEFAULT_TERMINAL_THEME.green), yellow: text(input.colors?.accent, DEFAULT_TERMINAL_THEME.yellow),
-      cyan: text(input.colors?.cyan, DEFAULT_TERMINAL_THEME.cyan), blue: text(input.colors?.blue, DEFAULT_TERMINAL_THEME.blue),
-      orange: text(input.colors?.orange, DEFAULT_TERMINAL_THEME.orange), red: text(input.colors?.red, DEFAULT_TERMINAL_THEME.red),
-      muted: text(input.colors?.muted, DEFAULT_TERMINAL_THEME.muted), line: text(input.colors?.line, DEFAULT_TERMINAL_THEME.line),
-    },
+    colors: { ...DEFAULT_TERMINAL_THEME },
     links: {
       home: text(input.links?.home) || "/", whales: text(input.links?.whales) || "/whales",
       intel: text(input.links?.intel) || "/intel", pulse: text(input.links?.pulse) || "/pulse", timeline: text(input.links?.timeline) || "/timeline", nft: text(input.links?.nft) || "/nft", website: normalizeExternalUrl(input.links?.website),
@@ -117,7 +111,7 @@ function phaseMarkup(phases) {
   return phases.map((phase, index) => `<section id="phaseCard-${phase.id}" class="phase-countdown-card" data-phase="${phase.id}">
               <div class="phase-card-topline"><span class="phase-kind">[ ${phase.label} ]</span><span id="phaseStatus-${phase.id}" class="phase-status">[ UPCOMING ]</span></div>
               <h2>“${phase.name.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")}”</h2>
-              <div class="phase-details">${phase.price} <span aria-hidden="true">·</span> ${phase.limit}</div>
+              <div class="phase-details">${phase.price} <span aria-hidden="true">·</span> ${phase.limit} per Wallet</div>
               <div id="phaseCountdown-${phase.id}" class="phase-countdown-value">--D --H --M --S</div>
               <div class="phase-time">Starts ${phaseTimeDisplay(phase.startsAt, phase.timezone)} <span aria-hidden="true">·</span> Ends ${phaseTimeDisplay(phase.endsAt, phase.timezone)}</div>
             </section>`).join("\n\n            ");
@@ -129,34 +123,37 @@ function phaseCommandMarkup(phases) {
 function html(value) {
   return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
+function responsiveLinkCopy(desktopCopy, mobileCopy) {
+  return `<span class="link-copy-desktop">${html(desktopCopy)}</span><span class="link-copy-mobile">${html(mobileCopy)}</span>`;
+}
 function projectMarketLinkRows(p, { includeOpenSea = false } = {}) {
   const rows = [
-    ["Website", p.links.website, `Visit ${p.name} Official Website`],
-    ["X", p.links.x, `Visit ${p.name} Official X Account`],
-    ["Telegram", p.links.telegram, `Join ${p.name} Official Telegram`],
-    ...(includeOpenSea ? [["OpenSea", p.links.openSea || (p.nftSettings.openSeaSlug ? `https://opensea.io/collection/${p.nftSettings.openSeaSlug}/overview` : ""), `View ${p.name} NFT Collection on OpenSea`]] : []),
+    ["Website", p.links.website, `Visit ${p.name} Official Website`, "Visit Website"],
+    ["X", p.links.x, `Visit ${p.name} Official X Account`, "Open X"],
+    ["Telegram", p.links.telegram, `Join ${p.name} Official Telegram`, "Open Telegram"],
+    ...(includeOpenSea ? [["OpenSea", p.links.openSea || (p.nftSettings.openSeaSlug ? `https://opensea.io/collection/${p.nftSettings.openSeaSlug}/overview` : ""), `View ${p.name} NFT Collection on OpenSea`, "View Collection"]] : []),
   ];
-  return rows.filter(([,url]) => url).map(([label,url,copy]) => `<div class="market-line project-link-row"><span class="market-tag project-link-tag">[ LINK ]</span><span class="market-label">${html(label)}</span><span class="market-colon" aria-hidden="true">:</span><a class="market-value project-link-value" href="${html(url)}" target="_blank" rel="noopener noreferrer">${html(copy)}</a></div>`).join("\n          ");
+  return rows.filter(([,url]) => url).map(([label,url,copy,mobileCopy]) => `<div class="market-line project-link-row"><span class="market-tag project-link-tag">[ LINK ]</span><span class="market-label">${html(label)}</span><span class="market-colon" aria-hidden="true">:</span><a class="market-value project-link-value" href="${html(url)}" target="_blank" rel="noopener noreferrer">${responsiveLinkCopy(copy,mobileCopy)}</a></div>`).join("\n          ");
 }
 function countdownProjectLinkRows(p) {
   // Reuse the countdown page's existing command-link area instead of adding a second social block.
   const openSea = p.links.openSea || (p.nftSettings.openSeaSlug ? `https://opensea.io/collection/${p.nftSettings.openSeaSlug}/overview` : "");
   const rows = [
-    ["LINK", "Website", p.links.website, `Visit ${p.name} Official Website`],
-    ["OPENSEA", "OpenSea", openSea, `View ${p.name} NFT Collection on OpenSea`],
-    ["SOCIALS", "X", p.links.x, `Visit ${p.name} Official X Account`],
-    ["SOCIALS", "Telegram", p.links.telegram, `Join ${p.name} Official Telegram`],
+    ["LINK", "Website", p.links.website, `Visit ${p.name} Official Website`, "Visit Website"],
+    ["OPENSEA", "OpenSea", openSea, `View ${p.name} NFT Collection on OpenSea`, "View Collection"],
+    ["SOCIALS", "X", p.links.x, `Visit ${p.name} Official X Account`, "Open X"],
+    ["SOCIALS", "Telegram", p.links.telegram, `Join ${p.name} Official Telegram`, "Open Telegram"],
   ];
-  return rows.filter(([, , url]) => url).map(([tag,label,url,copy]) => `          <div class="launch-links-line project-launch-link"><span class="orange">[ ${tag} ]</span><span class="project-launch-label">${html(label)}</span><span class="project-launch-colon" aria-hidden="true">:</span><a href="${html(url)}" target="_blank" rel="noopener noreferrer">${html(copy)}</a></div>`).join("\n");
+  return rows.filter(([, , url]) => url).map(([tag,label,url,copy,mobileCopy]) => `          <div class="launch-links-line project-launch-link"><span class="orange">[ ${tag} ]</span><span class="project-launch-label">${html(label)}</span><span class="project-launch-colon" aria-hidden="true">:</span><a href="${html(url)}" target="_blank" rel="noopener noreferrer">${responsiveLinkCopy(copy,mobileCopy)}</a></div>`).join("\n");
 }
 function nftInfoLinkRows(p) {
   // OpenSea already has a canonical collection-info row in the NFT terminal. Do not duplicate it.
   const rows = [
-    ["Website", p.links.website, `Visit ${p.name} Official Website`],
-    ["X", p.links.x, `Visit ${p.name} Official X Account`],
-    ["Telegram", p.links.telegram, `Join ${p.name} Official Telegram`],
+    ["Website", p.links.website, `Visit ${p.name} Official Website`, "Visit Website"],
+    ["X", p.links.x, `Visit ${p.name} Official X Account`, "Open X"],
+    ["Telegram", p.links.telegram, `Join ${p.name} Official Telegram`, "Open Telegram"],
   ];
-  return rows.filter(([,url]) => url).map(([label,url,copy]) => `        <div class="info-row project-info-link-row"><span>${html(label)}</span><a href="${html(url)}" target="_blank" rel="noopener noreferrer">${html(copy)}</a></div>`).join("\n");
+  return rows.filter(([,url]) => url).map(([label,url,copy,mobileCopy]) => `        <div class="info-row project-info-link-row"><span>${html(label)}</span><a href="${html(url)}" target="_blank" rel="noopener noreferrer">${responsiveLinkCopy(copy,mobileCopy)}</a></div>`).join("\n");
 }
 
 function profileSource(p) {
@@ -165,16 +162,17 @@ function profileSource(p) {
     contracts: { token:p.token, nft:p.nft },
     market: { dexScreenerChainId:p.dexChain, blockscoutApiBase:p.blockscout, refreshMs:30000, cacheTtlMs:30000 },
     branding: { mascot:p.mascotPath, mascotAlt:`${p.name} mascot`, themeColor:p.colors.background, colors:p.colors },
-    links: { home:p.links.home, modules:{whales:p.links.whales,intel:p.links.intel,pulse:p.links.pulse,timeline:p.links.timeline,nft:p.links.nft}, website:p.links.website,x:p.links.x,telegram:p.links.telegram,explorer:p.links.explorer,dexScreener:p.links.dexScreener,openSea:p.links.openSea },
+    links: { home:p.links.home, modules:{whales:p.links.whales,intel:p.links.intel,nft:p.links.nft,pulse:p.links.pulse,timeline:p.links.timeline}, website:p.links.website,x:p.links.x,telegram:p.links.telegram,explorer:p.links.explorer,dexScreener:p.links.dexScreener,openSea:p.links.openSea },
     nft: p.nftSettings,
     timeline: { events: [] },
     features: p.features,
+    moduleOrder: ["whales", "intel", "nft", "pulse", "timeline"],
     modules: {
       whales:{command:"whales",title:"Whale Activity Tracker",description:"Monitor Top-30 whales, DEX activity, and holder rankings.",status:p.features.whaleTracker?"READY":"DISABLED"},
       intel:{command:"intel",title:"Meme Intelligence Terminal",description:"Read market pulse, buy pressure, holder behavior, and transparent risk signals.",status:p.features.memeIntel?"READY":"DISABLED"},
+      nft:{command:"nft",title:`${p.name} NFT Terminal`,description:p.features.nftTerminal?"NFT whale analytics and collection statistics.":"NFT collection analytics when configured.",status:p.features.nftTerminal?"READY":"DISABLED"},
       pulse:{command:"pulse",title:"Community Pulse",description:"Synthesize explainable market, holder, whale, fresh-wallet and NFT signals.",status:p.features.communityPulse?"READY":"DISABLED"},
-      timeline:{command:"timeline",title:"Community Timeline",description:"Follow project, NFT and community milestones chronologically.",status:p.features.timeline?"READY":"DISABLED"},
-      nft:{command:"nft",title:`${p.name} NFT Terminal`,description:p.features.nftTerminal?"NFT whale analytics and collection statistics.":"NFT collection analytics when configured.",status:p.features.nftTerminal?"READY":"DISABLED"}
+      timeline:{command:"timeline",title:"Community Timeline",description:"Follow project, NFT and community milestones chronologically.",status:p.features.timeline?"READY":"DISABLED"}
     }
   };
   return `"use strict";\nmodule.exports = ${js(value)};\n`;
@@ -285,7 +283,7 @@ function transformModuleFile(moduleName, relativeName, data, p) {
       const infoLinks = nftInfoLinkRows(p);
       source = source.replace(/(<div class="info-row">\s*<span>NFT Contract<\/span>[\s\S]*?<\/div>)/, infoLinks ? `$1\n${infoLinks}` : "$1");
       source = source.replace(/<a\s+href="#" data-opensea-link/g, '<a href="#" data-opensea-link');
-      source = source.replace(/<a\s+href="#" data-opensea-link([\s\S]*?)>\s*View ([^<]+) NFT Collection on OpenSea\s*<\/a>/, '<a href="#" data-opensea-action$1>View $2 NFT Collection on OpenSea</a>');
+      source = source.replace(/<a\s+href="#" data-opensea-link([\s\S]*?)>\s*View ([^<]+) NFT Collection on OpenSea\s*<\/a>/, '<a href="#" data-opensea-action$1><span class="link-copy-desktop">View $2 NFT Collection on OpenSea</span><span class="link-copy-mobile">View Collection</span></a>');
       source = source.replace(/<span data-project-version><\/span>/, `${p.name} NFT Terminal`);
     }
     if (["public/terminal.html", "public/script.js"].includes(relativeName) && p.nftSettings.supply) {
@@ -297,7 +295,6 @@ function transformModuleFile(moduleName, relativeName, data, p) {
     }
     if (relativeName === "public/index.html") {
       source = source.replaceAll('href="/terminal"', 'href="/nft/terminal"');
-      source = source.replaceAll('href="/" title=', 'href="/nft" title=');
     }
   }
   if (relativeName === "public/index.html" && ["01_Landing-Page", "02_Whale-Activity-Tracker", "04_Meme-Intel", "06_Community-Pulse", "07_Timeline"].includes(moduleName)) {
@@ -364,7 +361,8 @@ function rootServer() {
     '  ok:true,',
     '  project:{id:config.project.id,name:config.project.name,ticker:config.project.ticker,version:config.project.version},',
     '  server:{startedAt:startedAt.toISOString(),uptimeSeconds:Math.floor(process.uptime()),environment:process.env.NODE_ENV||"development",port},',
-    '  modules:{landing:true,whales:Boolean(config.features.whaleTracker),intel:Boolean(config.features.memeIntel),pulse:Boolean(config.features.communityPulse),timeline:Boolean(config.features.timeline),nft:Boolean(config.features.nftTerminal),landingMarket:Boolean(config.features.liveMarket)},',
+    '  moduleOrder:Array.isArray(config.moduleOrder)?config.moduleOrder:["whales","intel","nft","pulse","timeline"],',
+    '  modules:{landing:true,whales:Boolean(config.features.whaleTracker),intel:Boolean(config.features.memeIntel),nft:Boolean(config.features.nftTerminal),pulse:Boolean(config.features.communityPulse),timeline:Boolean(config.features.timeline),landingMarket:Boolean(config.features.liveMarket)},',
     '  routes:{home:"/",health:"/healthz",healthLegacy:"/health",status:"/status",whales:config.features.whaleTracker?"/whales":null,intel:config.features.memeIntel?"/intel":null,pulse:config.features.communityPulse?"/pulse":null,timeline:config.features.timeline?"/timeline":null,nft:config.features.nftTerminal?"/nft":null}',
     '}));',
     'if(config.features.whaleTracker) app.use("/whales",require("./02_Whale-Activity-Tracker/server"));',
@@ -384,9 +382,9 @@ function rootServer() {
     '  console.log(`[ READY ] Status: http://localhost:${port}/status`);',
     '  if(config.features.whaleTracker) console.log(`[ READY ] Whale Tracker: http://localhost:${port}/whales`);',
     '  if(config.features.memeIntel) console.log(`[ READY ] Meme Intel: http://localhost:${port}/intel`);',
+    '  if(config.features.nftTerminal) console.log(`[ READY ] NFT Terminal: http://localhost:${port}/nft`);',
     '  if(config.features.communityPulse) console.log(`[ READY ] Community Pulse: http://localhost:${port}/pulse`);',
     '  if(config.features.timeline) console.log(`[ READY ] Community Timeline: http://localhost:${port}/timeline`);',
-    '  if(config.features.nftTerminal) console.log(`[ READY ] NFT Terminal: http://localhost:${port}/nft`);',
     '  console.log("");',
     '});',
     ''
@@ -445,7 +443,6 @@ function generatedValidator(p) {
     'pass("environment example",fs.existsSync(".env.example"));',
     'pass("deployment verifier",fs.existsSync("verify-deployment.js"));',
     'pass("release metadata",fs.existsSync("terminal-release.json"));',
-    'pass("deployment guide",fs.existsSync("deployment-guide.txt"));',
     'pass("landing favicon",fs.existsSync(path.join("01_Landing-Page","public","favicon.png"))||fs.readFileSync(path.join("01_Landing-Page","public","index.html"),"utf8").includes("assets/"));',
     'const source=fs.readFileSync("server.js","utf8");',
     `pass("health route",source.includes('app.get("/health"'));`,
@@ -493,8 +490,8 @@ function releaseMetadata(p) {
     generatedAt: new Date().toISOString(),
     releaseStatus: "deployment-ready",
     chain: { type:"EVM", dexScreenerChainId:p.dexChain, blockscoutApiBase:p.blockscout },
-    enabledModules: ["landing", ...(p.features.whaleTracker?["whales"]:[]), ...(p.features.memeIntel?["intel"]:[]), ...(p.features.communityPulse?["pulse"]:[]), ...(p.features.timeline?["timeline"]:[]), ...(p.features.nftTerminal?["nft"]:[])],
-    routes: { home:"/", health:"/healthz", healthLegacy:"/health", status:"/status", whales:p.features.whaleTracker?"/whales":null, intel:p.features.memeIntel?"/intel":null, pulse:p.features.communityPulse?"/pulse":null, timeline:p.features.timeline?"/timeline":null, nft:p.features.nftTerminal?"/nft":null },
+    enabledModules: ["landing", ...(p.features.whaleTracker?["whales"]:[]), ...(p.features.memeIntel?["intel"]:[]), ...(p.features.nftTerminal?["nft"]:[]), ...(p.features.communityPulse?["pulse"]:[]), ...(p.features.timeline?["timeline"]:[])],
+    routes: { home:"/", health:"/healthz", healthLegacy:"/health", status:"/status", whales:p.features.whaleTracker?"/whales":null, intel:p.features.memeIntel?"/intel":null, nft:p.features.nftTerminal?"/nft":null, pulse:p.features.communityPulse?"/pulse":null, timeline:p.features.timeline?"/timeline":null },
     deployment: { provider:"Render Blueprint compatible", blueprint:"render.yaml", publicAcceptanceCommand:"npm run test:deployed -- https://YOUR-TERMINAL.onrender.com" }
   }, null, 2) + "\n";
 }
@@ -623,7 +620,6 @@ function generate(input) {
   entries.push({name:`${root}/validate-generated.js`,data:generatedValidator(p)});
   entries.push({name:`${root}/verify-deployment.js`,data:generatedDeploymentVerifier(p)});
   entries.push({name:`${root}/terminal-release.json`,data:releaseMetadata(p)});
-  entries.push({name:`${root}/deployment-guide.txt`,data:deploymentGuide(p)});
   entries.push({name:`${root}/render.yaml`,data:renderYaml(p)});
   entries.push({name:`${root}/.env.example`,data:envExample()});
   const mascotData = p.mascot ? Buffer.from(p.mascot.dataBase64, "base64") : defaultMascot(p.name);

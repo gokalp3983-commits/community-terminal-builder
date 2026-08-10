@@ -129,3 +129,15 @@
 @media(max-width:560px){
   .launch-links-line.project-launch-link{grid-template-columns:14ch 8ch 1ch minmax(0,1fr)!important;column-gap:.45ch!important;font-size:.90em}
 }
+
+/* Chapter 18B — mobile-only compact copy for project/social links. */
+.link-copy-mobile{display:none}
+@media(max-width:560px){
+  .link-copy-desktop{display:none!important}
+  .link-copy-mobile{display:inline!important}
+}
+/* Chapter 18B — phone-only countdown link geometry. */
+@media(max-width:560px){
+  .launch-links-line.project-launch-link{grid-template-columns:12ch 7ch 1ch minmax(0,1fr)!important;column-gap:.45ch!important;font-size:.90em}
+}
+

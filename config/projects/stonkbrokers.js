@@ -45,7 +45,8 @@ module.exports = {
 
   links: {
     home: "https://stonkbrokers-community-terminal.onrender.com/",
-    modules: {
+    moduleOrder: ["whales", "intel", "nft", "pulse", "timeline"],
+  modules: {
       whales: "https://stonkbrokers-community-terminal-1.onrender.com/",
       intel: "https://stonkbrokers-04-meme-intel.onrender.com/",
       nft: "https://stonkbrokers-community-terminal-1-ioe9.onrender.com/",

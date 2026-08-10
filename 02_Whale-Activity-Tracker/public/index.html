@@ -84,7 +84,7 @@
   <div id="terminalColumn" class="whale-terminal-column">
     <section class="whale-howto">
       <div class="whale-howto-title">How to use:</div>
-      <div>&gt; Type <strong class="red">help</strong> for available commands.</div>
+      <div>&gt; Click a command below and wait for the output. (Some commands will need user input)</div>
       <div class="trust">
         &gt; No wallet connection required. No transaction or signature will ever be requested.
       </div>
@@ -92,15 +92,51 @@
 
     <section class="whale-console">
       <div id="boot"></div>
-      <div id="history" class="whale-output" aria-live="polite"></div>
     </section>
+
+    <div class="whale-section-separator" aria-hidden="true"></div>
+
+    <section id="whaleCommands" class="whale-quick-commands" aria-labelledby="quickCommandsTitle">
+      <h2 id="quickCommandsTitle" class="whale-section-label">[ QUICK COMMANDS ]</h2>
+      <div class="whale-quick-command-tabs" aria-label="Whale quick commands">
+        <button class="whale-quick-command" type="button" data-quick-command="whales" disabled>WHALES</button>
+        <button class="whale-quick-command" type="button" data-quick-command="whales12" disabled>WHALES12</button>
+        <button class="whale-quick-command" type="button" data-quick-command="activity" disabled>ACTIVITY</button>
+        <button class="whale-quick-command" type="button" data-quick-command="movers" disabled>MOVERS</button>
+        <button class="whale-quick-command" type="button" data-quick-command="stats" disabled>STATS</button>
+      </div>
+    </section>
+
+    <div class="whale-section-separator" aria-hidden="true"></div>
+
+    <section class="whale-command-guide" aria-labelledby="commandGuideTitle">
+      <h2 id="commandGuideTitle" class="whale-section-label">[ AVAILABLE COMMANDS ]</h2>
+      <div class="whale-command-guide-list" aria-label="Whale terminal available commands">
+        <div class="whale-command-guide-row"><button class="whale-command-name" type="button" data-guide-command="whales">&gt; Whales</button><span>Current Top-30 whales</span></div>
+        <div class="whale-command-guide-row"><button class="whale-command-name" type="button" data-guide-command="whales12">&gt; Whales12</button><span>Top-30 activity (12h)</span></div>
+        <div class="whale-command-guide-row"><button class="whale-command-name" type="button" data-guide-command="whale " data-command-prefill="true">&gt; Whale &lt;rank&gt;</button><span>Whale profile <em class="whale-command-input-hint">requires rank input</em></span></div>
+        <div class="whale-command-guide-row"><button class="whale-command-name" type="button" data-guide-command="rank " data-command-prefill="true">&gt; Rank &lt;wallet&gt;</button><span>Wallet lookup <em class="whale-command-input-hint">requires wallet input</em></span></div>
+        <div class="whale-command-guide-row"><button class="whale-command-name" type="button" data-guide-command="leaderboard">&gt; Leaderboard</button><span>Holder rankings</span></div>
+        <div class="whale-command-guide-row"><button class="whale-command-name" type="button" data-guide-command="activity">&gt; Activity</button><span>24h market activity</span></div>
+        <div class="whale-command-guide-row"><button class="whale-command-name" type="button" data-guide-command="traders12">&gt; Traders12</button><span>Top buyers/sellers (12h)</span></div>
+        <div class="whale-command-guide-row"><button class="whale-command-name" type="button" data-guide-command="transactions">&gt; Transactions</button><span>Recent whale trades</span></div>
+        <div class="whale-command-guide-row"><button class="whale-command-name" type="button" data-guide-command="accumulators">&gt; Accumulators</button><span>Net accumulators (24h)</span></div>
+        <div class="whale-command-guide-row"><button class="whale-command-name" type="button" data-guide-command="distributors">&gt; Distributors</button><span>Net distributors (24h)</span></div>
+        <div class="whale-command-guide-row"><button class="whale-command-name" type="button" data-guide-command="newwhales">&gt; Newwhales</button><span>New Top-30 whales</span></div>
+        <div class="whale-command-guide-row"><button class="whale-command-name" type="button" data-guide-command="movers">&gt; Movers</button><span>Rank changes</span></div>
+        <div class="whale-command-guide-row"><button class="whale-command-name" type="button" data-guide-command="stats">&gt; Stats</button><span>Market statistics</span></div>
+        <div class="whale-command-guide-row"><button class="whale-command-name" type="button" data-guide-command="clear">&gt; Clear</button><span>Resets the terminal.</span></div>
+      </div>
+    </section>
+
+    <div class="whale-section-separator" aria-hidden="true"></div>
   </div>
 </div>
 
         </div>
 
-        
 <div id="terminal-prompt" class="terminal-area terminal-prompt">
+  <div id="history" class="whale-output whale-command-output" aria-live="polite"></div>
   <div id="promptRow" class="whale-prompt-row">
     <label class="whale-prompt-label" for="commandInput">
       <span data-project-prompt></span>
@@ -117,53 +153,14 @@
 
 
         <div id="terminal-footer" class="terminal-area terminal-footer">
-        <div class="footer-version"><span data-project-footer-title></span></div>
-        <div class="powered-by"><span class="orange">[ INFO ]</span> Independent community tools for {{PROJECT_ECOSYSTEM}}.</div>
         <footer class="footer">
-          Independently built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp8339 on X">𝕏 @Gokalp8339</a><br>
-          Not affiliated with or endorsed by the official {{PROJECT_TICKER}} team.<br>
-          Built for the {{PROJECT_ECOSYSTEM}} community.
+          Built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp8339 on X">X @Gokalp8339</a><br>
+          Not affiliated with or endorsed by the official {{PROJECT_TICKER}} team.
         </footer>
       </div>
       </section>
     </main>
 
-    <div id="command-panel-slot" class="command-panel-slot">
-      <aside
-    id="commandPanel"
-    class="command-panel floating-command-panel"
-    aria-label="Available terminal commands"
-    aria-hidden="true"
-  >
-    <div class="command-panel-title">AVAILABLE COMMANDS</div>
-    <div class="command-panel-note">
-      Click a command to place it in the terminal prompt.
-    </div>
-
-    <div class="command-panel-list">
-      <div class="command-group">
-        <div class="command-group-title">WHALES</div>
-        <button type="button" data-command="whales">whales<span>Current Top-30 whales</span></button>
-        <button type="button" data-command="whales12">whales12<span>Top-30 activity (12h)</span></button>
-        <button type="button" data-command="whale ">whale &lt;rank&gt;<span>Whale profile</span></button>
-        <button type="button" data-command="rank ">rank &lt;wallet&gt;<span>Wallet lookup</span></button>
-        <button type="button" data-command="leaderboard">leaderboard<span>Holder rankings</span></button>
-      </div>
-
-      <div class="command-group">
-        <div class="command-group-title">MARKET</div>
-        <button type="button" data-command="activity">activity<span>24h market activity</span></button>
-        <button type="button" data-command="traders12">traders12<span>Top buyers/sellers (12h)</span></button>
-        <button type="button" data-command="transactions">transactions<span>Recent whale trades</span></button>
-        <button type="button" data-command="accumulators">accumulators<span>Net accumulators (24h)</span></button>
-        <button type="button" data-command="distributors">distributors<span>Net distributors (24h)</span></button>
-        <button type="button" data-command="newwhales">newwhales<span>New Top-30 whales</span></button>
-        <button type="button" data-command="movers">movers<span>Rank changes</span></button>
-        <button type="button" data-command="stats">stats<span>Market statistics</span></button>
-      </div>
-
-  </aside>
-    </div>
   </div>
 
   <script src="/project-config.js"></script>
