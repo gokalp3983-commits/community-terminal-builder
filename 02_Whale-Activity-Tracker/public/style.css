@@ -746,3 +746,14 @@ html,body{background:#000!important}
   #terminal-live-panel .contract-value-wrap .contract-value{display:inline!important;width:auto!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important;}
   #terminal-live-panel .contract-value-wrap .copy-contract{display:inline-block!important;vertical-align:baseline!important;margin-left:.35ch!important;white-space:nowrap!important;}
 }
+
+
+/* Chapter 18B: keep Updated green and grouped with live metrics on Whale Activity. */
+.market-updated-line,
+.market-updated-line .market-tag,
+.market-updated-line .market-label,
+.market-updated-line .market-colon,
+.market-updated-line .market-value,
+.market-updated-line strong{
+  color:var(--green)!important;
+}
