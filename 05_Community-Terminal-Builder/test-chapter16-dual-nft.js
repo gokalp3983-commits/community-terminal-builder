@@ -74,7 +74,7 @@ try{
   assert.match(css,/#terminal-frame\.shell\.terminal-frame\{border:1px solid var\(--ice-blue,#6FD3FF\)!important/,"Multiple-phase canonical ice-blue outer frame missing");
   assert.match(css,/\.nft-sales-window \.sales-floor-primary\{[\s\S]*?flex-wrap:wrap;/,"Sales floor summary must wrap safely inside the sidebar");
   assert.match(css,/\.nft-sales-window \.sales-floor-price\{[\s\S]*?overflow-wrap:anywhere;/,"Long floor values must not overflow the sales summary");
-  assert.match(css,/generic brand parity: do not apply the 888-specific glow/,"Multiple-phase generic logo parity override missing");
+  assert.match(css,/generic brand parity: do not apply the reference-project-specific glow/,"Multiple-phase generic logo parity override missing");
   assert.match(css,/filter:none!important;animation:none!important/,"Generic multi-phase logo must not inherit square-revealing template glow");
   assert.match(runtime,/const assetRoot = \["\/", "assets\/"\]\.join\(""\)/,"Mounted NFT mascot path resolver missing");
   assert.doesNotMatch(launch,/888 SOCIETY|888 Society|605141138/,"888 project branding leaked into generic multiple-phase output");

@@ -334,4 +334,3 @@ promptRow.classList.add("visible");
 setCommandControlsDisabled(false);
 marketHeader();
 setInterval(marketHeader, 60000);
-input.focus();

@@ -17,6 +17,9 @@ const guidedModeButton=document.querySelector("#guided-mode");
 const advancedModeButton=document.querySelector("#advanced-mode");
 let activeProjectId="";
 let persistedMascot=null;
+let nftMintConfirmResolver=null;
+let confirmedMintSignature="";
+let pastScheduleWarningSignature="";
 
 function val(name){return form.elements[name]?.value?.trim()||""}
 function checked(name){return Boolean(form.elements[name]?.checked)}
@@ -37,6 +40,12 @@ function syncOpenSeaSlug(){const field=form.elements.openSeaSlug;if(!field)retur
 function openSeaConfigurationValid(){return !val("openSea")||Boolean(syncOpenSeaSlug())}
 function line(state,text){const tag=state==="ok"?" OK ":state==="skip"?"SKIP":state==="warn"?"WARN":"WAIT";return `[${tag}] ${text}`}
 function slugify(value){return String(value||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
+function normalizeXUrl(value){
+  const raw=String(value||"").trim();if(!raw)return "";
+  if(/^@?[A-Za-z0-9_]{1,15}$/.test(raw))return `https://x.com/${raw.replace(/^@/,"")}`;
+  const candidate=/^https?:\/\//i.test(raw)?raw:`https://${raw.replace(/^\/+/,"")}`;
+  try{const url=new URL(candidate);if(/(^|\.)twitter\.com$/i.test(url.hostname))url.hostname="x.com";return url.href.replace(/\/$/,"")}catch{return candidate}
+}
 function nowIso(){return new Date().toISOString()}
 function readProjects(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}")||{}}catch{return {}}}
 function writeProjects(projects){localStorage.setItem(STORAGE_KEY,JSON.stringify(projects))}
@@ -204,13 +213,13 @@ async function refreshBuilderMascotPreview(){
 
 async function payload(){const mint=syncNftMintSchedule();return {
   projectName:val("projectName"),ticker:val("ticker"),version:val("version"),description:val("description"),promptUser:val("promptUser"),promptHost:val("promptHost"),ecosystem:val("ecosystem"),tokenContract:val("tokenContract"),nftContract:val("nftContract"),dexScreenerChainId:val("dexScreenerChainId"),blockscoutApiBase:val("blockscoutApiBase"),
-  links:{home:val("home"),website:val("website"),x:val("x"),telegram:val("telegram"),explorer:val("explorer"),dexScreener:val("dexScreener"),openSea:val("openSea")},
+  links:{home:val("home"),website:val("website"),x:normalizeXUrl(val("x")),telegram:val("telegram"),explorer:val("explorer"),dexScreener:val("dexScreener"),openSea:val("openSea")},
   nft:{openSeaSlug:syncOpenSeaSlug(),collectionName:val("nftCollectionName"),supply:val("nftSupply"),mode:mint.mode||nftMintMode(),mintAt:mint.ok&&!mint.disabled?mint.iso:"",mintPhases:mint.ok&&!mint.disabled&&mint.mode==="multiple"?mint.phases.map(({id,label,name,startsAt,endsAt,price,limit,timezone})=>({id,label,name,startsAt,endsAt,price,limit,timezone})):[],timezone:mint.timeZone||val("nftMintTimezone")||browserTimeZone()},
   features:{whaleTracker:checked("whaleTracker"),memeIntel:checked("memeIntel"),communityPulse:checked("communityPulse"),timeline:checked("timeline"),nftTerminal:checked("nftTerminal"),liveMarket:checked("liveMarket")},
   mascot:await mascotPayload()
 };}
 
-function configurationReady(){const mint=syncNftMintSchedule();const openSeaOk=!checked("nftTerminal")||openSeaConfigurationValid();return Boolean(val("projectName")&&val("ticker")&&isEvmAddress(val("tokenContract"))&&openSeaOk&&(!checked("nftTerminal")||(isEvmAddress(val("nftContract"))&&mint.ok&&!mint.disabled)))}
+function configurationReady(){const mint=syncNftMintSchedule();const nftEnabled=checked("nftTerminal");const openSeaOk=!nftEnabled||openSeaConfigurationValid();const mintConfirmed=!nftEnabled||(mint.ok&&!mint.disabled&&confirmedMintSignature===mintSignature(mint));return Boolean(val("projectName")&&val("ticker")&&isEvmAddress(val("tokenContract"))&&openSeaOk&&(!nftEnabled||(isEvmAddress(val("nftContract"))&&mint.ok&&!mint.disabled&&mintConfirmed)))}
 function updateWorkspaceStatus(){
   const name=val("projectName");
   currentProjectLabel.textContent=activeProjectId?(name||activeProjectId).toUpperCase():(name?`${name.toUpperCase()} // UNSAVED`:"UNSAVED PROJECT");
@@ -218,7 +227,26 @@ function updateWorkspaceStatus(){
   projectStateLabel.textContent=ready?"READY":"DRAFT";
   projectStateLabel.classList.toggle("ready",ready);
 }
+
+function syncNftContractState(){
+  const raw=val("nftContract"),output=document.querySelector("#nft-contract-check"),toggle=form.elements.nftTerminal;
+  if(!raw){if(output){output.className="contract-check";output.textContent="[ OPTIONAL ] No NFT contract entered."}return}
+  if(!isEvmAddress(raw)){if(output){output.className="contract-check fail";output.textContent="[ WAIT ] Enter a valid 42-character 0x NFT contract address."}return}
+  if(output){output.className="contract-check pass";output.textContent="[ OK ] Valid NFT contract detected."}
+  if(toggle&&!toggle.checked){toggle.checked=true;confirmedMintSignature="";status.textContent="[ NFT ] NFT contract detected · NFT Terminal enabled automatically."}
+}
+function syncMintConfirmationState(){
+  const out=document.querySelector("#nft-mint-confirmed-state");if(!out)return;
+  if(!checked("nftTerminal")){out.className="contract-check";out.textContent="[ SKIP ] NFT Terminal is disabled.";return}
+  if(!isEvmAddress(val("nftContract"))){out.className="contract-check fail";out.textContent="[ WAIT ] A valid NFT Contract Address is required before mint confirmation.";return}
+  const schedule=nftMintSchedule();
+  if(!schedule.ok){out.className="contract-check fail";out.textContent="[ WAIT ] Complete valid NFT mint details before confirmation.";return}
+  const confirmed=confirmedMintSignature&&confirmedMintSignature===mintSignature(schedule);
+  out.className=`contract-check ${confirmed?"pass":"warn"}`;out.textContent=confirmed?"[ CONFIRMED ] NFT mint details confirmed.":"[ CONFIRM ] NFT mint details require confirmation before terminal creation.";
+}
+
 function update(){
+  syncNftContractState();
   syncNftConfigVisibility();
   const project=val("projectName"); const ticker=val("ticker"); const contract=val("tokenContract");
   const nftEnabled=checked("nftTerminal"); const nftContract=val("nftContract"); const openSeaSlug=syncOpenSeaSlug(); const requiredReady=configurationReady();
@@ -239,7 +267,7 @@ function update(){
     "",`PROFILE     ${project?slugify(project):"pending"}`,`VERSION     ${val("version")||"1.0.0"}`,`ECOSYSTEM   ${val("ecosystem")||"NOT SET"}`,`THEME       CANONICAL CTB`,`ROUTES      /${modules.length?`, ${modules.join(", ")}`:""}`,"",
     requiredReady?line("ok","Configuration valid — package ready to generate"):line("wait","Complete required configuration")
   ].join("\n");
-  readiness.textContent=requiredReady?"READY":"WAITING"; readiness.classList.toggle("ready",requiredReady); updateWorkspaceStatus();
+  readiness.textContent=requiredReady?"READY":"WAITING"; readiness.classList.toggle("ready",requiredReady); updateWorkspaceStatus();syncMintConfirmationState();
 }
 
 
@@ -279,12 +307,13 @@ mascotInput.addEventListener("change",()=>{persistedMascot=null;syncMascotFileNa
 
 function setValue(name,value){const el=form.elements[name];if(!el)return;if(el.type==="checkbox")el.checked=Boolean(value);else el.value=value??""}
 function applyPayload(p){
+  confirmedMintSignature="";pastScheduleWarningSignature="";
   setValue("projectName",p.projectName);setValue("ticker",p.ticker);setValue("version",p.version||"1.0.0");setValue("description",p.description);setValue("promptUser",p.promptUser);setValue("promptHost",p.promptHost||"terminal");setValue("ecosystem",p.ecosystem||"Robinhood Chain");setValue("tokenContract",p.tokenContract);setValue("nftContract",p.nftContract);setValue("dexScreenerChainId",p.dexScreenerChainId||"robinhood");setValue("blockscoutApiBase",p.blockscoutApiBase||"https://robinhoodchain.blockscout.com/api/v2");
   for(const k of ["home","website","x","telegram","explorer","dexScreener","openSea"])setValue(k,p.links?.[k]);
   setValue("openSeaSlug",p.nft?.openSeaSlug);setValue("nftCollectionName",p.nft?.collectionName);setValue("nftSupply",p.nft?.supply);for(const k of ["whaleTracker","memeIntel","communityPulse","timeline","nftTerminal","liveMarket"])setValue(k,p.features?.[k] ?? (["communityPulse","timeline"].includes(k)?true:undefined));setNftMintConfiguration(p.nft||{});
   persistedMascot=p.mascot||null; mascotInput.value=""; syncMascotFileName(); refreshBuilderMascotPreview(); update();
 }
-function resetForm(){form.reset();setValue("version","1.0.0");setValue("promptHost","terminal");setValue("ecosystem","Robinhood Chain");setValue("dexScreenerChainId","robinhood");setValue("blockscoutApiBase","https://robinhoodchain.blockscout.com/api/v2");setValue("nftMintMode","");setValue("nftMintTimezone",browserTimeZone());renderNftPhaseEditor();syncNftMintModeUI();setValue("whaleTracker",true);setValue("memeIntel",true);setValue("communityPulse",true);setValue("timeline",true);setValue("liveMarket",true);activeProjectId="";persistedMascot=null;mascotInput.value="";syncMascotFileName();refreshBuilderMascotPreview();localStorage.removeItem(SETTINGS_KEY);update();status.textContent="[ NEW ] Blank project workspace ready.";loadDeployment()}
+function resetForm(){form.reset();confirmedMintSignature="";pastScheduleWarningSignature="";setValue("version","1.0.0");setValue("promptHost","terminal");setValue("ecosystem","Robinhood Chain");setValue("dexScreenerChainId","robinhood");setValue("blockscoutApiBase","https://robinhoodchain.blockscout.com/api/v2");setValue("nftMintMode","");setValue("nftMintTimezone",browserTimeZone());renderNftPhaseEditor();syncNftMintModeUI();setValue("whaleTracker",true);setValue("memeIntel",true);setValue("communityPulse",true);setValue("timeline",true);setValue("liveMarket",true);activeProjectId="";persistedMascot=null;mascotInput.value="";syncMascotFileName();refreshBuilderMascotPreview();localStorage.removeItem(SETTINGS_KEY);update();status.textContent="[ NEW ] Blank project workspace ready.";loadDeployment()}
 function refreshProjectList(){
   const projects=readProjects(); const current=savedProjectsSelect.value; savedProjectsSelect.innerHTML='<option value="">LOAD SAVED PROJECT...</option>';
   Object.values(projects).sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).forEach(item=>{const option=document.createElement("option");option.value=item.id;option.textContent=`${item.name} // ${item.state} // ${new Date(item.updatedAt).toLocaleDateString()}`;savedProjectsSelect.append(option)});
@@ -314,9 +343,24 @@ function noteGenerated(project,fingerprint){
 }
 
 form.addEventListener("input",update);form.addEventListener("change",update);
+form.elements.nftContract.addEventListener("input",()=>{confirmedMintSignature="";syncNftContractState();syncNftConfigVisibility();syncMintConfirmationState();update()});
+function closeNftDisableDialog(disable){
+  const dialog=document.querySelector("#nft-disable-warning");if(dialog?.open)dialog.close();
+  if(disable){form.elements.nftTerminal.checked=false;confirmedMintSignature="";status.textContent="[ NFT ] NFT Terminal disabled for this build · NFT configuration preserved."}
+  else{form.elements.nftTerminal.checked=true;status.textContent="[ NFT ] NFT Terminal remains enabled."}
+  syncNftConfigVisibility();syncMintConfirmationState();update();
+}
+form.elements.nftTerminal.addEventListener("change",event=>{
+  if(!event.currentTarget.checked&&val("nftContract")){event.currentTarget.checked=true;const dialog=document.querySelector("#nft-disable-warning");if(dialog&&!dialog.open)dialog.showModal();syncNftConfigVisibility();syncMintConfirmationState();update();return}
+  confirmedMintSignature="";syncNftConfigVisibility();syncMintConfirmationState();update();
+});
+document.querySelector("#nft-disable-keep").addEventListener("click",()=>closeNftDisableDialog(false));
+document.querySelector("#nft-disable-confirm").addEventListener("click",()=>closeNftDisableDialog(true));
+document.querySelector("#nft-disable-close").addEventListener("click",()=>closeNftDisableDialog(false));
+document.querySelector("#nft-disable-warning").addEventListener("cancel",event=>{event.preventDefault();closeNftDisableDialog(false)});
 document.querySelector("#use-local-timezone").addEventListener("click",()=>{setValue("nftMintTimezone",browserTimeZone());syncNftMintSchedule();update();status.textContent=`[ TIMEZONE ] Using your computer timezone: ${browserTimeZone()}`});
-document.querySelector("#nft-mint-mode").addEventListener("change",()=>{confirmedMintSignature="";syncNftMintModeUI();syncNftMintSchedule();update();status.textContent=nftMintMode()==="multiple"?"[ NFT ] Multiple-phase canonical mint base selected.":nftMintMode()==="single"?"[ NFT ] Single-phase canonical mint base selected.":"[ NFT ] Please select mint structure."});
-document.querySelector("#add-nft-phase").addEventListener("click",()=>{const drafts=currentPhaseDrafts();if(drafts.length>=6)return;drafts.push(defaultPhase(drafts.length));renderNftPhaseEditor(drafts);confirmedMintSignature="";syncNftMintSchedule();update()});
+document.querySelector("#nft-mint-mode").addEventListener("change",()=>{confirmedMintSignature="";pastScheduleWarningSignature="";syncNftMintModeUI();syncNftMintSchedule();syncMintConfirmationState();setTimeout(warnIfPastSchedule,0);update();status.textContent=nftMintMode()==="multiple"?"[ NFT ] Multiple-phase canonical mint base selected.":nftMintMode()==="single"?"[ NFT ] Single-phase canonical mint base selected.":"[ NFT ] Please select mint structure."});
+document.querySelector("#add-nft-phase").addEventListener("click",()=>{const drafts=currentPhaseDrafts();if(drafts.length>=6)return;drafts.push(defaultPhase(drafts.length));renderNftPhaseEditor(drafts);confirmedMintSignature="";pastScheduleWarningSignature="";syncNftMintSchedule();syncMintConfirmationState();update()});
 document.querySelector("#new-project").addEventListener("click",()=>{if(confirm("Start a new project? Unsaved form changes will be cleared."))resetForm()});
 document.querySelector("#save-project").addEventListener("click",()=>saveProject().catch(err=>status.textContent=`[ ERROR ] ${err.message}`));
 document.querySelector("#duplicate-project").addEventListener("click",()=>saveProject({duplicate:true}).catch(err=>status.textContent=`[ ERROR ] ${err.message}`));
@@ -379,14 +423,15 @@ async function openLandingPreview(){
   const modules=[];
   if(checked("whaleTracker"))modules.push(["whales","Whale Activity Tracker","Monitor whale activity, DEX transfers, and holder rankings."]);
   if(checked("memeIntel"))modules.push(["intel","Meme Intelligence Terminal","Read market pulse, buy pressure, holder behavior, and risk signals."]);
-  if(checked("communityPulse"))modules.push(["pulse","Community Pulse","See explainable market, holder, whale, fresh-wallet and NFT signals in one view."]);
-  if(checked("timeline"))modules.push(["timeline","Community Timeline","Follow configured project, NFT and community milestones chronologically."]);
-  if(checked("nftTerminal")&&val("nftContract"))modules.push(["nft",`${project} NFT Terminal`,`Explore collection analytics, ownership, rarity, and marketplace activity.`]);
-  const moduleHtml=modules.length?modules.map(([cmd,title,desc])=>`<div class="module"><div>&gt; ${escapeHtml(cmd)}</div><strong>${escapeHtml(title)}</strong><p>${escapeHtml(desc)}</p><em>[ READY ]</em></div>`).join(""):`<div class="module empty">[ NO MODULES ENABLED ]</div>`;
+  if(checked("nftTerminal")&&val("nftContract"))modules.push(["nft",`${project} NFT Terminal`,`NFT analytics and collection statistics.`]);
+  if(checked("communityPulse"))modules.push(["pulse","Community Pulse","Synthesized market, holder, whale, fresh-wallet and NFT signals."]);
+  if(checked("timeline"))modules.push(["timeline","Community Timeline","Project, NFT and community milestones chronologically."]);
+  const quickHtml=modules.length?modules.map(([cmd])=>`<a href="#">${escapeHtml(cmd.toUpperCase())}</a>`).join(""):"";
+  const moduleHtml=modules.length?modules.map(([cmd,title,desc])=>`<div class="terminal-row"><b>&gt; ${escapeHtml(cmd.charAt(0).toUpperCase()+cmd.slice(1))}</b><strong>${escapeHtml(title)}</strong><span>${escapeHtml(desc)}</span></div>`).join(""):`<div class="terminal-row"><b>[ NO MODULES ENABLED ]</b></div>`;
   const mascotHtml=mascot?`<img src="${mascot}" alt="Project mascot">`:`<span>&gt;_</span>`;
   const html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(project)} Landing Preview</title><style>
-  :root{--p:${primary};--a:${accent};--bg:${background};--panel:${panel}}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:#e8fff0;font-family:"IBM Plex Mono",Consolas,monospace;padding:18px}body:before{content:"101001 011010 110001 010101 001110 101010 011001 110100";position:fixed;inset:0;color:color-mix(in srgb,var(--p) 4%,transparent);font-size:4vw;letter-spacing:.35em;word-break:break-all;pointer-events:none}.wrap{position:relative;max-width:1040px;margin:auto;border:1px solid var(--a);background:color-mix(in srgb,var(--bg) 96%,black);padding:24px;box-shadow:0 0 60px color-mix(in srgb,var(--p) 10%,transparent)}.mode{color:var(--a);font-size:.72rem;letter-spacing:.12em}.mascot{width:min(220px,48vw);height:auto;min-height:0;margin:4px auto 14px;border:0;outline:0;box-shadow:none;display:grid;place-items:center;background:transparent;color:var(--p);font-weight:800;overflow:visible}.mascot img{display:block;width:min(220px,100%);max-width:100%;height:auto;max-height:none;object-fit:contain;border:0;outline:0;box-shadow:none;background:transparent}.title{text-align:center;color:var(--a);font-size:1.35rem;font-weight:800;letter-spacing:.07em;padding:12px;border-top:1px solid var(--a);border-bottom:1px solid var(--a)}.sub{text-align:center;color:#a8b9ae;margin:8px}.sub b{color:var(--p)}.market{display:grid;grid-template-columns:14ch 17ch 1ch minmax(0,1fr);gap:5px 8px;padding:14px 0;border-top:1px solid color-mix(in srgb,var(--a) 55%,transparent);border-bottom:1px solid color-mix(in srgb,var(--a) 55%,transparent);font-size:.88rem}.market{grid-template-columns:max-content minmax(0,1fr)!important;column-gap:12px!important}.market span{color:var(--a)}.market b{text-align:left}.market .preview-ca{color:var(--cyan);overflow-wrap:anywhere}.boot{padding:14px 0;font-size:.9rem;line-height:1.55}.boot b{color:var(--p)}.modules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.module{border:1px solid color-mix(in srgb,var(--p) 42%,transparent);background:var(--panel);padding:14px;min-height:120px}.module>div{color:var(--p)}.module strong{display:block;text-align:center;color:var(--a);margin:14px 0 8px}.module p{color:#83978a;font-size:.8rem}.module em{color:var(--p);font-style:normal;font-size:.75rem}.prompt{margin-top:16px;padding-top:11px;border-top:1px solid color-mix(in srgb,var(--a) 55%,transparent);color:var(--p)}.preview-footer{margin-top:10px;padding:0 8px 8px;border-top:1px solid rgba(25,75,45,.7);text-align:center}.preview-footer .footer-version{padding:10px 0 0;color:var(--a);font-size:.94em;font-weight:700;letter-spacing:.035em}.preview-footer .powered-by{margin-top:12px;color:#83978a;font-size:.78em;line-height:1.45}.preview-footer .powered-by .orange{color:var(--a)}.preview-footer .footer-copy{padding:7px 4px 0;color:#d8e0dc;font-size:.72em;line-height:1.45}.preview-footer a{color:var(--p);text-decoration:none}.preview-footer a:hover{text-decoration:underline}.cursor{display:inline-block;width:8px;height:1em;background:var(--p);vertical-align:-2px;animation:b 1s steps(1) infinite}@keyframes b{50%{opacity:0}}@media(max-width:700px){.modules{grid-template-columns:1fr}.wrap{padding:14px}}
-  </style></head><body><main class="wrap"><div class="mode">[ PREVIEW MODE — SAMPLE DATA ]</div><div class="mascot">${mascotHtml}</div><div class="title">${escapeHtml(project)} COMMUNITY TERMINAL</div><div class="sub">Independent Community Tools • <b>${escapeHtml(ecosystem)}</b> Ecosystem</div><div class="market"><span>[ PREVIEW ] Price :</span><b>$0.000000</b><span>[ PREVIEW ] Market Cap :</span><b>$0.00</b><span>[ PREVIEW ] Holders :</span><b>0</b><span>[ PREVIEW ] 24h Volume :</span><b>$0.00</b><span class="preview-ca">[ CA ] Contract :</span><b class="preview-ca">${escapeHtml(val("tokenContract"))} ⧉</b><span>[ PREVIEW ] Updated :</span><b>sample</b></div><div class="boot">Initializing <b>${escapeHtml(project)}</b> Community Terminal...<br>Loading ${escapeHtml(ecosystem)}...<br>Loading available project modules...</div><div class="modules">${moduleHtml}</div><div class="prompt">${escapeHtml(promptUser)}@${escapeHtml(promptHost)}:~$ <span class="cursor"></span></div><div class="preview-footer"><div class="footer-version">${escapeHtml(project)} Community Terminal</div><div class="powered-by"><span class="orange">[ INFO ]</span> Independent community tools for ${escapeHtml(ecosystem)}.</div><div class="footer-copy">Independently built by Gokalp <a href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer">𝕏 @Gokalp8339</a><br>Not affiliated with or endorsed by the official ${escapeHtml(val("ticker")||project)} team.<br>Built for the ${escapeHtml(ecosystem)} community.</div></div></main></body></html>`;
+  :root{--p:${primary};--a:${accent};--bg:${background};--panel:${panel}}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:#e8fff0;font-family:"IBM Plex Mono",Consolas,monospace;padding:18px}body:before{content:"101001 011010 110001 010101 001110 101010 011001 110100";position:fixed;inset:0;color:color-mix(in srgb,var(--p) 4%,transparent);font-size:4vw;letter-spacing:.35em;word-break:break-all;pointer-events:none}.wrap{position:relative;max-width:1040px;margin:auto;border:1px solid var(--a);background:color-mix(in srgb,var(--bg) 96%,black);padding:24px;box-shadow:0 0 60px color-mix(in srgb,var(--p) 10%,transparent)}.mode{color:var(--a);font-size:.72rem;letter-spacing:.12em}.mascot{width:min(220px,48vw);height:auto;min-height:0;margin:4px auto 14px;border:0;outline:0;box-shadow:none;display:grid;place-items:center;background:transparent;color:var(--p);font-weight:800;overflow:visible}.mascot img{display:block;width:min(220px,100%);max-width:100%;height:auto;max-height:none;object-fit:contain;border:0;outline:0;box-shadow:none;background:transparent}.title{text-align:center;color:var(--a);font-size:1.35rem;font-weight:800;letter-spacing:.07em;padding:12px;border-top:1px solid var(--a);border-bottom:1px solid var(--a)}.sub{text-align:center;color:#a8b9ae;margin:8px}.sub b{color:var(--p)}.market{display:grid;grid-template-columns:14ch 17ch 1ch minmax(0,1fr);gap:5px 8px;padding:14px 0;border-top:1px solid color-mix(in srgb,var(--a) 55%,transparent);border-bottom:1px solid color-mix(in srgb,var(--a) 55%,transparent);font-size:.88rem}.market{grid-template-columns:max-content minmax(0,1fr)!important;column-gap:12px!important}.market span{color:var(--a)}.market b{text-align:left}.market .preview-ca{color:var(--cyan);overflow-wrap:anywhere}.boot{padding:14px 0;font-size:.9rem;line-height:1.55}.boot b{color:var(--p)}.quick-label,.available-label{margin-top:14px;color:var(--p);font-weight:700}.quick{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:8px}.quick a{border:1px solid #6fd3ff;color:#6fd3ff;text-align:center;padding:8px;text-decoration:none;font-size:.76rem}.terminal-list{margin-top:8px;border-bottom:1px solid rgba(25,75,45,.7);padding-bottom:8px}.terminal-row{display:grid;grid-template-columns:120px 230px 1fr;gap:14px;padding:5px 0;font-size:.78rem}.terminal-row b{color:#6fd3ff}.terminal-row strong{color:var(--a)}.terminal-row span{color:#83978a}.prompt{margin-top:16px;padding-top:11px;border-top:1px solid color-mix(in srgb,var(--a) 55%,transparent);color:var(--p)}.preview-footer{margin-top:10px;padding:0 8px 8px;border-top:1px solid rgba(25,75,45,.7);text-align:center}.preview-footer .footer-version{padding:10px 0 0;color:var(--a);font-size:.94em;font-weight:700;letter-spacing:.035em}.preview-footer .powered-by{margin-top:12px;color:#83978a;font-size:.78em;line-height:1.45}.preview-footer .powered-by .orange{color:var(--a)}.preview-footer .footer-copy{padding:7px 4px 0;color:#d8e0dc;font-size:.72em;line-height:1.45}.preview-footer a{color:var(--p);text-decoration:none}.preview-footer a:hover{text-decoration:underline}.cursor{display:inline-block;width:8px;height:1em;background:var(--p);vertical-align:-2px;animation:b 1s steps(1) infinite}@keyframes b{50%{opacity:0}}@media(max-width:700px){.quick{grid-template-columns:repeat(2,minmax(0,1fr))}.terminal-row{grid-template-columns:1fr;gap:2px}.wrap{padding:14px}}
+  </style></head><body><main class="wrap"><div class="mode">[ PREVIEW MODE — SAMPLE DATA ]</div><div class="mascot">${mascotHtml}</div><div class="title">${escapeHtml(project)} COMMUNITY TERMINAL</div><div class="sub">Independent Community Tools • <b>${escapeHtml(ecosystem)}</b> Ecosystem</div><div class="market"><span>[ PREVIEW ] Price :</span><b>$0.000000</b><span>[ PREVIEW ] Market Cap :</span><b>$0.00</b><span>[ PREVIEW ] Holders :</span><b>0</b><span>[ PREVIEW ] 24h Volume :</span><b>$0.00</b><span>[ PREVIEW ] Updated :</span><b style="color:var(--p)">sample</b><span class="preview-ca">[ CA ] Contract :</span><b class="preview-ca">${escapeHtml(val("tokenContract"))} ⧉</b></div><div class="boot">Initializing <b>${escapeHtml(project)}</b> Community Terminal...<br>Loading ${escapeHtml(ecosystem)}...<br>Loading available project modules...</div><div class="quick-label">[ QUICK ACCESS TO TERMINALS ]</div><div class="quick">${quickHtml}</div><div class="available-label">[ AVAILABLE TERMINALS ]</div><div class="terminal-list">${moduleHtml}</div><div class="prompt">${escapeHtml(promptUser)}@${escapeHtml(promptHost)}:~$ <span class="cursor"></span></div><div class="preview-footer"><div class="footer-version">${escapeHtml(project)} Community Terminal</div><div class="powered-by"><span class="orange">[ INFO ]</span> Independent community tools for ${escapeHtml(ecosystem)}.</div><div class="footer-copy">Independently built by Gokalp <a href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer">𝕏 @Gokalp8339</a><br>Not affiliated with or endorsed by the official ${escapeHtml(val("ticker")||project)} team.<br>Built for the ${escapeHtml(ecosystem)} community.</div></div></main></body></html>`;
   const previewWindow=window.open("","_blank");
   if(!previewWindow){status.textContent="[ ERROR ] Preview window was blocked by the browser.";return;}
   previewWindow.document.open();previewWindow.document.write(html);previewWindow.document.close();
@@ -409,10 +454,9 @@ function downloadBuild(){if(!lastBuild.url)return;const a=document.createElement
 function enabledModuleNames(project){const names=["LANDING"];if(project.features?.whaleTracker)names.push("WHALES");if(project.features?.memeIntel)names.push("INTEL");if(project.features?.nftTerminal&&project.nftContract)names.push("NFT");if(project.features?.communityPulse)names.push("PULSE");if(project.features?.timeline)names.push("TIMELINE");return names}
 function deploymentCommands(kind){const p=lastBuild.project||{};const folder=(String(p.projectName||"PROJECT").toUpperCase().replace(/[^A-Z0-9]+/g,"_")+"_Community_Terminal");const repo=(String(p.projectName||"project").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+"-community-terminal");if(kind==="local")return `cd ${folder}\nnpm install\nnpm test\nnpm start`;if(kind==="github")return `git init\ngit add .\ngit commit -m "Initial ${p.projectName||"Community"} Community Terminal"\ngit branch -M main\ngit remote add origin https://github.com/YOUR-USERNAME/${repo}.git\ngit push -u origin main`;return `1. Push the generated root folder to GitHub.\n2. In Render choose New → Blueprint.\n3. Select the repository and main branch.\n4. Keep Blueprint Path as render.yaml.\n5. Confirm the Free plan before deployment.\n6. After it is Live, run:\n\nnpm run test:deployed -- https://YOUR-TERMINAL.onrender.com`; }
 async function copyDeployment(kind){const text=deploymentCommands(kind);document.querySelector("#deployment-command-preview").textContent=text;try{await navigator.clipboard.writeText(text);status.textContent="[ COPIED ] Deployment commands copied."}catch{status.textContent="[ READY ] Commands shown below; copy them manually."}}
-function showBuildComplete(project,filename){document.querySelector("#built-project").textContent=`${String(project.projectName||"COMMUNITY").toUpperCase()} COMMUNITY TERMINAL`;document.querySelector("#built-package").textContent=`${filename} · deployment-ready`;document.querySelector("#built-modules").innerHTML=enabledModuleNames(project).map(x=>`<span>${x}</span>`).join("");document.querySelector("#deployment-command-preview").textContent="Select an action to copy deployment commands.";document.querySelector("#build-complete").showModal()}
+function mockTerminalUrl(project){const slug=String(project?.projectName||"project").trim().replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"")||"project";return `https://www.terminal.xyz/${slug}-landing-page`}
+function showBuildComplete(project){const url=mockTerminalUrl(project);document.querySelector("#built-project").textContent=`${String(project.projectName||"COMMUNITY").toUpperCase()} COMMUNITY TERMINAL`;document.querySelector("#built-modules").innerHTML=enabledModuleNames(project).map(x=>`<span>${x}</span>`).join("");const link=document.querySelector("#built-terminal-url");link.textContent=url;link.href=url;document.querySelector("#open-built-terminal").dataset.url=url;document.querySelector("#copy-built-terminal-link").dataset.url=url;document.querySelector("#build-complete").showModal()}
 
-let nftMintConfirmResolver=null;
-let confirmedMintSignature="";
 function mintSignature(schedule){return schedule&&schedule.ok?`${schedule.mode||"single"}|${schedule.iso}|${schedule.timeZone}|${JSON.stringify((schedule.phases||[]).map(x=>[x.label,x.startsAt,x.endsAt,x.price,x.limit]))}`:""}
 function closeNftMintConfirmation(result){const dialog=document.querySelector("#nft-mint-confirm");if(dialog.open)dialog.close();const resolve=nftMintConfirmResolver;nftMintConfirmResolver=null;if(resolve)resolve(result)}
 function confirmNftMintSchedule(schedule){
@@ -421,19 +465,31 @@ function confirmNftMintSchedule(schedule){
   if(diff<0){state.textContent=schedule.mode==="multiple"?"[ WARN ] This mint schedule has already started.":"[ WARN ] This mint time is already in the past.";state.classList.add("warn")}else if(diff<60*60*1000){state.textContent="[ CHECK ] Mint starts in less than 1 hour.";state.classList.add("warn")}else{state.textContent=schedule.mode==="multiple"?"[ OK ] Multi-phase mint schedule is configured in the future.":"[ OK ] Mint is scheduled in the future.";state.classList.add("pass")}
   dialog.showModal();return new Promise(resolve=>{nftMintConfirmResolver=resolve});
 }
-async function requestMintConfirmation(){const schedule=syncNftMintSchedule();if(!checked("nftTerminal")||!schedule.ok||schedule.disabled)return false;const sig=mintSignature(schedule);if(confirmedMintSignature===sig)return true;const confirmed=await confirmNftMintSchedule(schedule);if(confirmed){confirmedMintSignature=sig;status.textContent="[ CONFIRMED ] NFT mint schedule confirmed.";return true}status.textContent="[ EDIT ] Review the NFT mint schedule.";setTimeout(()=>{if(nftMintMode()==="multiple")document.querySelector("#nft-phase-list input")?.focus();else form.elements.nftMintDate?.focus()},0);return false}
+async function requestMintConfirmation(){
+  if(!checked("nftTerminal"))return false;
+  if(!isEvmAddress(val("nftContract"))){confirmedMintSignature="";status.textContent="[ WAIT ] NFT Contract Address is required before confirming NFT mint details.";syncMintConfirmationState();form.elements.nftContract?.focus();return false}
+  const schedule=syncNftMintSchedule();if(!schedule.ok||schedule.disabled)return false;const sig=mintSignature(schedule);if(confirmedMintSignature===sig)return true;const confirmed=await confirmNftMintSchedule(schedule);if(confirmed){confirmedMintSignature=sig;status.textContent="[ CONFIRMED ] NFT mint details confirmed.";syncMintConfirmationState();return true}status.textContent="[ EDIT ] Review the NFT mint details.";setTimeout(()=>{if(nftMintMode()==="multiple")document.querySelector("#nft-phase-list input")?.focus();else form.elements.nftMintDate?.focus()},0);syncMintConfirmationState();return false}
+function closePastScheduleWarning(edit){const dialog=document.querySelector("#nft-past-warning");if(dialog?.open)dialog.close();if(edit)setTimeout(()=>{if(nftMintMode()==="multiple")document.querySelector("#nft-phase-list [data-phase-field=startDate]")?.focus();else form.elements.nftMintDate?.focus()},0)}
+function warnIfPastSchedule(){
+  if(!checked("nftTerminal"))return;const schedule=nftMintSchedule();if(!schedule.ok||schedule.instant.getTime()>=Date.now())return;
+  const sig=mintSignature(schedule);if(!sig||pastScheduleWarningSignature===sig)return;pastScheduleWarningSignature=sig;
+  document.querySelector("#nft-past-warning-mint").textContent=formatMintForReview(schedule);document.querySelector("#nft-past-warning-now").textContent=formatComputerTime();const dialog=document.querySelector("#nft-past-warning");if(dialog&&!dialog.open)dialog.showModal();
+}
+function invalidateMintConfirmation(){confirmedMintSignature="";syncNftMintSchedule();syncMintConfirmationState();setTimeout(warnIfPastSchedule,0)}
 document.querySelector("#nft-mint-edit").addEventListener("click",()=>closeNftMintConfirmation(false));document.querySelector("#nft-mint-confirm-close").addEventListener("click",()=>closeNftMintConfirmation(false));document.querySelector("#nft-mint-proceed").addEventListener("click",()=>closeNftMintConfirmation(true));document.querySelector("#nft-mint-confirm").addEventListener("cancel",event=>{event.preventDefault();closeNftMintConfirmation(false)});
+document.querySelector("#confirm-nft-mint-details").addEventListener("click",()=>requestMintConfirmation());
+document.querySelector("#nft-past-warning-edit").addEventListener("click",()=>closePastScheduleWarning(true));document.querySelector("#nft-past-warning-close").addEventListener("click",()=>closePastScheduleWarning(true));document.querySelector("#nft-past-warning-keep").addEventListener("click",()=>closePastScheduleWarning(false));document.querySelector("#nft-past-warning").addEventListener("cancel",event=>{event.preventDefault();closePastScheduleWarning(true)});
 const mintScheduleBlock=document.querySelector("#nft-mint-schedule");
-mintScheduleBlock.addEventListener("input",()=>{confirmedMintSignature="";syncNftMintSchedule()});
-mintScheduleBlock.addEventListener("change",()=>{confirmedMintSignature="";syncNftMintSchedule()});
-mintScheduleBlock.addEventListener("focusout",()=>{setTimeout(()=>{if(!mintScheduleBlock.contains(document.activeElement)&&checked("nftTerminal")){const schedule=syncNftMintSchedule();if(schedule.ok&&!schedule.disabled&&confirmedMintSignature!==mintSignature(schedule))requestMintConfirmation()}},0)});
-mintScheduleBlock.addEventListener("keydown",event=>{if(event.key==="Enter"&&!event.shiftKey){const schedule=syncNftMintSchedule();if(schedule.ok&&!schedule.disabled){event.preventDefault();requestMintConfirmation()}}});
+mintScheduleBlock.addEventListener("input",invalidateMintConfirmation);
+mintScheduleBlock.addEventListener("change",invalidateMintConfirmation);
+for(const name of ["nftCollectionName","nftSupply"]){form.elements[name]?.addEventListener("input",()=>{confirmedMintSignature="";syncMintConfirmationState()});form.elements[name]?.addEventListener("change",()=>{confirmedMintSignature="";syncMintConfirmationState()})}
 
 form.addEventListener("submit",async e=>{
   e.preventDefault();
   if(checked("nftTerminal")){
+    if(!isEvmAddress(val("nftContract"))){confirmedMintSignature="";status.textContent="[ WAIT ] NFT Contract Address is required while NFT Terminal is enabled.";syncMintConfirmationState();form.elements.nftContract?.focus();return}
     const schedule=syncNftMintSchedule();if(!schedule.ok||schedule.disabled){status.textContent=`[ WAIT ] ${schedule.error||"Complete the NFT mint schedule."}`;return}
-    const confirmed=confirmedMintSignature===mintSignature(schedule)||await requestMintConfirmation();if(!confirmed)return
+    if(confirmedMintSignature!==mintSignature(schedule)){status.textContent="[ WAIT ] Confirm NFT Mint Details before creating the terminal.";syncMintConfirmationState();document.querySelector("#confirm-nft-mint-details")?.focus();return}
   }
   status.textContent="[ SAVE ] Saving latest configuration..."; button.disabled=true;
   try{
@@ -441,14 +497,13 @@ form.addEventListener("submit",async e=>{
     const response=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(project)});
     if(!response.ok){const x=await response.json();throw new Error(x.error||"Generation failed")}
     const blob=await response.blob(); const disposition=response.headers.get("content-disposition")||""; const filename=/filename="([^"]+)"/.exec(disposition)?.[1]||"Community_Terminal.zip"; const fingerprint=response.headers.get("x-ctb-build-fingerprint")||"";
-    if(lastBuild.url)URL.revokeObjectURL(lastBuild.url);lastBuild={url:URL.createObjectURL(blob),filename,project,fingerprint};downloadBuild();const autoSaved=noteGenerated(project,fingerprint);status.textContent=`[ DONE ] Generated ${filename}${autoSaved?" · project auto-saved":""}`;if(autoSaved)showAutoSaveToast();showBuildComplete(project,filename);
+    if(lastBuild.url)URL.revokeObjectURL(lastBuild.url);lastBuild={url:URL.createObjectURL(blob),filename,project,fingerprint};downloadBuild();const autoSaved=noteGenerated(project,fingerprint);status.textContent=`[ DONE ] Community Terminal created${autoSaved?" · project auto-saved":""}`;if(autoSaved)showAutoSaveToast();showBuildComplete(project);
   }catch(err){status.textContent=`[ ERROR ] ${err.message}`}finally{button.disabled=false}
 });
 document.querySelector("#close-build-complete").addEventListener("click",()=>document.querySelector("#build-complete").close());
-document.querySelector("#download-again").addEventListener("click",downloadBuild);
-document.querySelector("#copy-local-commands").addEventListener("click",()=>copyDeployment("local"));
-document.querySelector("#copy-github-commands").addEventListener("click",()=>copyDeployment("github"));
-document.querySelector("#copy-render-guide").addEventListener("click",()=>copyDeployment("render"));
+document.querySelector("#close-build-complete-action").addEventListener("click",()=>document.querySelector("#build-complete").close());
+document.querySelector("#open-built-terminal").addEventListener("click",event=>{const url=event.currentTarget.dataset.url;if(url)window.open(url,"_blank","noopener,noreferrer")});
+document.querySelector("#copy-built-terminal-link").addEventListener("click",async event=>{const url=event.currentTarget.dataset.url;if(!url)return;try{await navigator.clipboard.writeText(url);status.textContent="[ COPIED ] Terminal link copied."}catch{status.textContent=`[ READY ] Terminal link: ${url}`}});
 
 async function syncBuilderRuntime(){
   try{

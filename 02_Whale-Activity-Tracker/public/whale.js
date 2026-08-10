@@ -703,7 +703,6 @@ async function start(){
   boot.append(ready);
   promptRow.classList.add("visible");
   setCommandControlsDisabled(false);
-  input.focus();
 }
 
 function setCommandControlsDisabled(disabled){

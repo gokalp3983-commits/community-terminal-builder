@@ -1,0 +1,51 @@
+"use strict";
+const assert=require("assert");
+const fs=require("fs");
+const path=require("path");
+const ROOT=path.resolve(__dirname,"..");
+const read=rel=>fs.readFileSync(path.join(ROOT,rel),"utf8");
+const html=read("05_Community-Terminal-Builder/public/index.html");
+const app=read("05_Community-Terminal-Builder/public/app.js");
+const generator=read("05_Community-Terminal-Builder/generator.js");
+const single=read("03_NFT-Collection-Terminal/public/countdown.js");
+const multi=read("03_NFT-Collection-Terminal-Multi-Phase/public/countdown.js");
+
+assert.match(html,/NFT Contract Address \(optional\)/,"NFT CA must be visible as an optional top-level contract field");
+assert.match(app,/NFT contract detected · NFT Terminal enabled automatically/,"Valid NFT CA must auto-enable NFT Terminal");
+assert.match(html,/id="nft-disable-warning"/,"Manual NFT disable with configured data must use an explicit warning dialog");
+assert.match(app,/NFT Terminal disabled for this build · NFT configuration preserved/,"Disabling NFT must preserve entered NFT configuration");
+assert.match(html,/id="guided-nft-mint"/,"Dedicated NFT Mint Details section missing");
+assert.match(html,/CONFIRM NFT MINT DETAILS/,"Explicit NFT mint confirmation button missing");
+assert(!app.includes('mintScheduleBlock.addEventListener("focusout"'),"Mint confirmation must not trigger on focusout");
+assert.match(app,/Confirm NFT Mint Details before creating the terminal/,"Generation must block on unconfirmed NFT mint details");
+assert.match(app,/MINT START TIME IS IN THE PAST|nft-past-warning/,"Past mint warning flow missing");
+assert.match(generator,/function normalizeXUrl/,"Central X URL normalization missing");
+const {normalize}=require("./generator");
+const project=normalize({projectName:"HANDLETEST",ticker:"HND",tokenContract:"0x1111111111111111111111111111111111111111",links:{x:"@CHAPTER19TEST"}});
+assert.equal(project.links.x,"https://x.com/CHAPTER19TEST","X handle normalization is incorrect");
+assert.throws(()=>normalize({projectName:"NFTNOCONTRACT",ticker:"NOC",tokenContract:"0x1111111111111111111111111111111111111111",nftContract:"",features:{nftTerminal:true}}),/NFT contract is required when NFT Terminal is enabled/,"Generator must refuse NFT-enabled output without an NFT contract");
+assert.match(single,/days > 0 \? `\$\{pad\(days\)\}D:\$\{clock\}` : clock/,"Single-phase countdown must use DD:HH:MM:SS above 24h");
+assert.match(multi,/days > 0 \? `\$\{pad\(days\)\}D:\$\{pad\(hours\)\}:\$\{pad\(mins\)\}:\$\{pad\(secs\)\}`/,"Multi-phase countdown must use DD:HH:MM:SS above 24h");
+assert.match(app,/modules\.push\(\["nft"[\s\S]*modules\.push\(\["pulse"[\s\S]*modules\.push\(\["timeline"/,"Landing Preview module order must be Whales → Intel → NFT → Pulse → Timeline");
+assert.match(app,/\[ QUICK ACCESS TO TERMINALS \]/,"Landing Preview must use current Quick Access area");
+assert.match(app,/\[ AVAILABLE TERMINALS \]/,"Landing Preview must use current Available Terminals area");
+assert.match(html,/\[ TERMINAL READY \]/,"Final-product terminal-ready popup missing");
+assert.match(html,/id="built-terminal-url"/,"Terminal-ready popup must expose the generated website link");
+assert.match(app,/https:\/\/www\.terminal\.xyz\/\$\{slug\}-landing-page/,"Acceptance mock terminal URL missing");
+assert.match(app,/resetForm\(\);\nrefreshProjectList\(\);/,"Builder must start with a clean project-neutral workspace");
+assert.match(app,/NFT Contract Address is required before confirming NFT mint details/,"NFT mint confirmation must require a valid NFT contract first");
+assert.match(app,/NFT Contract Address is required while NFT Terminal is enabled/,"Generation must validate NFT CA before mint confirmation state");
+assert.match(html,/Your terminal has been created with the modules listed below\./,"Final terminal-ready wording must describe the listed modules");
+assert.match(generator,/Mint begins on \$\{mintDisplay/,"Generated upcoming mint status must include the full scheduled date");
+assert.match(html,/id="nft-past-warning-edit"[\s\S]*GO BACK AND EDIT/,"Past-schedule warning must offer an edit action");
+assert.match(html,/id="nft-past-warning-keep"[\s\S]*KEEP THIS SCHEDULE/,"Past-schedule warning must offer an explicit keep action");
+
+
+const whaleCss=read("02_Whale-Activity-Tracker/public/whale.css");
+const intelCss=read("04_Meme-Intel/public/intel.css");
+assert.match(whaleCss,/@media\(max-width:720px\)\{[\s\S]*\.whale-command-output\{[\s\S]*overflow-x:auto/,'Whales wide command results must scroll internally on mobile');
+assert.match(whaleCss,/\.whale-command-output table\{\s*min-width:720px/,'Whales mobile tables must preserve readable width inside the scroll container');
+assert.match(intelCss,/@media\(max-width:720px\)\{[\s\S]*\.intel-command-output\{[\s\S]*overflow-x:auto/,'Intel wide command results must scroll internally on mobile');
+assert.match(intelCss,/\.intel-command-output table\{\s*min-width:720px/,'Intel mobile tables must preserve readable width inside the scroll container');
+
+console.log("Chapter 19 consolidated acceptance UX contracts: PASS");

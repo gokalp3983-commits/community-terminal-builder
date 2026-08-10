@@ -21,6 +21,17 @@ function normalizeExternalUrl(value) {
   if (/^\/\//.test(raw)) return `https:${raw}`;
   return `https://${raw.replace(/^\/+/, "")}`;
 }
+function normalizeXUrl(value) {
+  const raw = text(value);
+  if (!raw) return "";
+  if (/^@?[A-Za-z0-9_]{1,15}$/.test(raw)) return `https://x.com/${raw.replace(/^@/, "")}`;
+  const normalized = normalizeExternalUrl(raw);
+  try {
+    const url = new URL(normalized);
+    if (/(^|\.)twitter\.com$/i.test(url.hostname)) url.hostname = "x.com";
+    return url.href.replace(/\/$/, "");
+  } catch { return normalized; }
+}
 function openSeaSlugFromUrl(value) {
   const raw = text(value);
   if (!raw) return "";
@@ -46,7 +57,9 @@ function normalize(input) {
   const token = text(input.tokenContract);
   const nft = text(input.nftContract);
   assertAddress(token, "Token contract"); assertAddress(nft, "NFT contract", true);
-  const nftEnabled = bool(input.features?.nftTerminal, Boolean(nft)) && Boolean(nft);
+  const nftRequested = bool(input.features?.nftTerminal, Boolean(nft));
+  if (nftRequested && !nft) throw new Error("NFT contract is required when NFT Terminal is enabled.");
+  const nftEnabled = nftRequested && Boolean(nft);
   const openSeaUrl = normalizeExternalUrl(input.links?.openSea);
   const derivedOpenSeaSlug = openSeaSlugFromUrl(openSeaUrl);
   const openSeaSlug = derivedOpenSeaSlug || text(input.nft?.openSeaSlug);
@@ -64,7 +77,7 @@ function normalize(input) {
     links: {
       home: text(input.links?.home) || "/", whales: text(input.links?.whales) || "/whales",
       intel: text(input.links?.intel) || "/intel", pulse: text(input.links?.pulse) || "/pulse", timeline: text(input.links?.timeline) || "/timeline", nft: text(input.links?.nft) || "/nft", website: normalizeExternalUrl(input.links?.website),
-      x: normalizeExternalUrl(input.links?.x), telegram: normalizeExternalUrl(input.links?.telegram), explorer: normalizeExternalUrl(input.links?.explorer),
+      x: normalizeXUrl(input.links?.x), telegram: normalizeExternalUrl(input.links?.telegram), explorer: normalizeExternalUrl(input.links?.explorer),
       dexScreener: normalizeExternalUrl(input.links?.dexScreener), openSea: openSeaUrl,
     },
     nftSettings: (() => {
@@ -93,10 +106,11 @@ function normalize(input) {
 function js(value) { return JSON.stringify(value, null, 2); }
 function mintDisplayFromIso(value) {
   const raw = text(value);
-  const m = raw.match(/^\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/);
+  const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/);
   if (!m) return "";
-  let zone = m[3] === "Z" ? "UTC" : `GMT${m[3].replace(":00", "").replace(/^\+0/, "+").replace(/^-0/, "-")}`;
-  return `${m[1]}:${m[2]} ${zone}`;
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const zone = m[6] === "Z" ? "UTC" : `GMT${m[6].replace(":00", "").replace(/^\+0/, "+").replace(/^-0/, "-")}`;
+  return `${m[3]} ${months[Number(m[2]) - 1]} ${m[1]} at ${m[4]}:${m[5]} ${zone}`;
 }
 function phaseTimeDisplay(iso, timeZone) {
   const date = new Date(iso || "");
@@ -209,37 +223,23 @@ function prefixBrowserRoutes(source, base) {
 
 function transformModuleFile(moduleName, relativeName, data, p) {
   let source = data.toString("utf8");
-  if (relativeName === "server.js") {
-    if (moduleName === "03_NFT-Collection-Terminal") {
-      source = source
-        .replaceAll("888 Society NFT Terminal", `${p.name} NFT Terminal`)
-        .replaceAll("888 SOCIETY", p.name)
-        .replaceAll("888 Society", p.name)
-        .replaceAll("/assets/888-society-mark.png", p.mascotPath)
-        .replaceAll("/assets/gangsterrobins-mascot.png", p.mascotPath);
-    }
-    return Buffer.from(makeMountableServer(source, moduleName));
-  }
   if (moduleName === "03_NFT-Collection-Terminal") {
     const nftName = p.nftSettings.collectionName || `${p.name} NFT`;
     const openSea = p.links.openSea || (p.nftSettings.openSeaSlug ? `https://opensea.io/collection/${p.nftSettings.openSeaSlug}/overview` : "#");
+    const nftSupply = p.nftSettings.supply == null ? 0 : p.nftSettings.supply;
     source = source
-      .replaceAll("GANGSTERROBINS NFT", nftName.toUpperCase())
-      .replaceAll("GANGSTERROBINS", p.name)
-      .replaceAll("GangsterRobins", p.name)
-      .replaceAll("888 SOCIETY", p.name)
-      .replaceAll("888 Society", p.name)
-      .replaceAll("https://opensea.io/collection/gangsterrobins/overview", openSea)
-      .replaceAll("https://opensea.io/collection/888-society-605141138/overview", openSea)
-      .replaceAll("/assets/gangsterrobins-mascot.png", p.mascotPath)
-      .replaceAll("/assets/gangsterrobins-favicon.png", p.mascotPath)
-      .replaceAll("/assets/888-society-mark.png", p.mascotPath)
-      .replaceAll("/assets/888-favicon.png", p.mascotPath)
-      .replaceAll("888-society", p.id);
+      .replaceAll("__CTB_NFT_COLLECTION_NAME_UPPER__", nftName.toUpperCase())
+      .replaceAll("__CTB_PROJECT_NAME_UPPER__", p.name)
+      .replaceAll("__CTB_PROJECT_NAME__", p.name)
+      .replaceAll("__CTB_OPENSEA_URL__", openSea)
+      .replaceAll("__CTB_X_URL__", p.links.x || "#")
+      .replaceAll("__CTB_MASCOT_PATH__", p.mascotPath)
+      .replaceAll("__CTB_PROJECT_ID__", p.id)
+      .replaceAll("__CTB_NFT_SUPPLY__", String(nftSupply));
+
+    if (relativeName === "server.js") return Buffer.from(makeMountableServer(source, moduleName));
 
     if (p.nftSettings.mode === "multiple") {
-      source = source.replaceAll("888-phase-live-seen", `${p.id}-phase-live-seen`).replaceAll("gold 888 mascot", `${p.name} mascot`);
-      if (["public/terminal.html", "public/script.js"].includes(relativeName) && p.nftSettings.supply) source = source.replace(/\b888\b/g, String(p.nftSettings.supply));
       if (/\.(css|js|html)$/.test(relativeName)) {
         source = source
           .replaceAll("#d4af37", p.colors.yellow)
@@ -273,11 +273,15 @@ function transformModuleFile(moduleName, relativeName, data, p) {
       const mintDisplay = mintDisplayFromIso(p.nftSettings.mintAt);
       source = source
         .replace(/<h1>[^<]*<\/h1>/, `<h1>${p.name} NFT COLLECTION TERMINAL</h1>`)
-        .replace(/<div id="mintReady" class="line"><span class="orange">\[ UPCOMING \]<\/span> Mint begins at [^<]*<\/div>/, `<div id="mintReady" class="line"><span class="orange">[ UPCOMING ]</span> Mint begins at ${mintDisplay || "the configured mint time"}.</div>`)
-        .replace(/after the mint begins at [^<]*<\/p>/, `after the mint begins at ${mintDisplay || "the configured mint time"}.</p>`)
+        .replace(/<div id="mintReady" class="line"><span class="orange">\[ UPCOMING \]<\/span> Mint begins at [^<]*<\/div>/, `<div id="mintReady" class="line"><span class="orange">[ UPCOMING ]</span> Mint begins on ${mintDisplay || "the configured mint time"}.</div>`)
+        .replace(/after the mint begins at [^<]*<\/p>/, `after the mint begins on ${mintDisplay || "the configured mint time"}.</p>`)
         .replaceAll("[ ENTER NFT TERMINAL ]", "[ VISIT NFT TERMINAL ]")
         .replaceAll("ENTER NFT TERMINAL", "VISIT NFT TERMINAL");
       source = source.replace(/<div class="footer-version">\s*[^<]+\s*<\/div>/, `<div class="footer-version">\n            ${p.name} NFT Terminal\n          </div>`);
+    }
+    if (relativeName === "public/script.js") {
+      const mintDisplay = mintDisplayFromIso(p.nftSettings.mintAt);
+      source = source.replace(/Mint begins at \d{2}:\d{2} GMT[+-]\d+\./g, `Mint begins on ${mintDisplay || "the configured mint time"}.`);
     }
     if (relativeName === "public/terminal.html") {
       const infoLinks = nftInfoLinkRows(p);
@@ -285,9 +289,6 @@ function transformModuleFile(moduleName, relativeName, data, p) {
       source = source.replace(/<a\s+href="#" data-opensea-link/g, '<a href="#" data-opensea-link');
       source = source.replace(/<a\s+href="#" data-opensea-link([\s\S]*?)>\s*View ([^<]+) NFT Collection on OpenSea\s*<\/a>/, '<a href="#" data-opensea-action$1><span class="link-copy-desktop">View $2 NFT Collection on OpenSea</span><span class="link-copy-mobile">View Collection</span></a>');
       source = source.replace(/<span data-project-version><\/span>/, `${p.name} NFT Terminal`);
-    }
-    if (["public/terminal.html", "public/script.js"].includes(relativeName) && p.nftSettings.supply) {
-      source = source.replaceAll("420", String(p.nftSettings.supply)).replaceAll("10014", String(p.nftSettings.supply)).replaceAll("10,014", Number(p.nftSettings.supply).toLocaleString("en-US"));
     }
     if (["public/project-runtime.js", "public/countdown.js"].includes(relativeName)) {
       source = source.replace(/(["'])\/terminal\1/g, `$1/nft/terminal$1`);
@@ -297,6 +298,7 @@ function transformModuleFile(moduleName, relativeName, data, p) {
       source = source.replaceAll('href="/terminal"', 'href="/nft/terminal"');
     }
   }
+  if (relativeName === "server.js") return Buffer.from(makeMountableServer(source, moduleName));
   if (relativeName === "public/index.html" && ["01_Landing-Page", "02_Whale-Activity-Tracker", "04_Meme-Intel", "06_Community-Pulse", "07_Timeline"].includes(moduleName)) {
     const links = projectMarketLinkRows(p, { includeOpenSea: true });
     if (links) source = source.replace(/(<div class="market-line contract-address-line"[^>]*>[\s\S]*?<\/div>)/, `$1\n          ${links}`);
@@ -316,6 +318,7 @@ function transformModuleFile(moduleName, relativeName, data, p) {
 function walkModule(dir, prefix, moduleName, entries, p, relative = "") {
   for (const item of fs.readdirSync(dir, { withFileTypes:true })) {
     if (["node_modules", ".git"].includes(item.name)) continue;
+    if (["hoodrat-mascot.jpeg", "stonkbrokers-mascot.jpg", "stonkbrokers-mascot.svg"].includes(item.name)) continue;
     if (moduleName === "03_NFT-Collection-Terminal" && relative === "public" && item.name === "assets") continue;
     const full = path.join(dir, item.name);
     const relLocal = relative ? path.posix.join(relative, item.name) : item.name;
@@ -495,51 +498,11 @@ function releaseMetadata(p) {
     deployment: { provider:"Render Blueprint compatible", blueprint:"render.yaml", publicAcceptanceCommand:"npm run test:deployed -- https://YOUR-TERMINAL.onrender.com" }
   }, null, 2) + "\n";
 }
-function deploymentGuide(p) {
-  const repo=`${p.id}-community-terminal`;
-  return `[ COMMUNITY TERMINAL DEPLOYMENT GUIDE ]
-
-PROJECT: ${p.name}
-REPOSITORY SUGGESTION: ${repo}
-BUILDER VERSION: ${BUILDER_VERSION}
-CONFIG SCHEMA: ${CONFIG_SCHEMA_VERSION}
-TERMINAL ENGINE: ${TERMINAL_ENGINE_VERSION}
-
-1. LOCAL VALIDATION
-
-cd ${p.name.replace(/[^A-Z0-9]+/g, "_")}_Community_Terminal
-npm install
-npm test
-npm start
-
-Open http://localhost:3000 and verify /healthz and /status.
-
-2. GITHUB
-
-git init
-git add .
-git commit -m "Initial ${p.name} Community Terminal"
-git branch -M main
-git remote add origin https://github.com/YOUR-USERNAME/${repo}.git
-git push -u origin main
-
-3. RENDER
-
-Create a new Blueprint from the GitHub repository. Render reads render.yaml, installs dependencies, starts the service, and checks /healthz.
-
-4. PUBLIC ACCEPTANCE
-
-npm run test:deployed -- https://YOUR-TERMINAL.onrender.com
-
-Keep terminal-release.json with the deployment. It records the builder, schema, engine, modules, routes and generation time.
-`;
-}
 function generatedReadme(p) { return `# ${p.name} Community Terminal
 
 Generated with Community Terminal Builder **v${BUILDER_VERSION}**.
 
-Release metadata: \`terminal-release.json\`  
-Copy-ready deployment instructions: \`deployment-guide.txt\`
+Release metadata: \`terminal-release.json\`
 
 Built by Gokalp — X: @Gokalp8339 (https://x.com/Gokalp8339)
 

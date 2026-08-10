@@ -165,10 +165,12 @@ function tick(){
   }
 
   const total = Math.floor(left / 1000);
-  const hours = Math.floor(total / 3600);
+  const days = Math.floor(total / 86400);
+  const hours = Math.floor((total % 86400) / 3600);
   const mins = Math.floor((total % 3600) / 60);
   const secs = total % 60;
-  const display = `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
+  const clock = `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
+  const display = days > 0 ? `${pad(days)}D:${clock}` : clock;
 
   if ($("countdownValue")) $("countdownValue").textContent = display;
   if ($("inlineCountdownValue")) $("inlineCountdownValue").textContent = display;

@@ -1865,7 +1865,7 @@ a:hover,a:focus-visible{
 .footer-version,.terminal-footer .footer-version{color:var(--yellow)!important}
 @media(max-width:560px){.community-title-row{gap:7px;flex-direction:column;margin:10px 0 7px!important}.community-divider{font-size:.72em}.community-subtitle{line-height:1.5}}
 
-/* GangsterRobins launch polish */
+/* __CTB_PROJECT_NAME__ launch polish */
 .module-title{color:var(--green)!important;font-size:1.3rem!important;font-weight:700!important}.x-credit{color:var(--green);text-decoration:none}.x-credit:hover{text-decoration:underline;text-shadow:0 0 8px rgba(57,255,20,.35)}
 
 

@@ -21,7 +21,7 @@ function isMintComplete(now = Date.now()){
   const finalPhase = phases[phases.length - 1];
   return Boolean(finalPhase?.endMs && now >= finalPhase.endMs);
 }
-function phaseSessionKey(id){ return `888-phase-live-seen:${id}`; }
+function phaseSessionKey(id){ return `__CTB_PROJECT_ID__-phase-live-seen:${id}`; }
 
 function durationText(ms){
   const total = Math.max(0, Math.floor(ms / 1000));
@@ -29,7 +29,7 @@ function durationText(ms){
   const hours = Math.floor((total % 86400) / 3600);
   const mins = Math.floor((total % 3600) / 60);
   const secs = total % 60;
-  return `${pad(days)}D ${pad(hours)}H ${pad(mins)}M ${pad(secs)}S`;
+  return days > 0 ? `${pad(days)}D:${pad(hours)}:${pad(mins)}:${pad(secs)}` : `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
 }
 
 function shortDurationText(ms){
@@ -38,7 +38,7 @@ function shortDurationText(ms){
   const hours = Math.floor((total % 86400) / 3600);
   const mins = Math.floor((total % 3600) / 60);
   const secs = total % 60;
-  return days > 0 ? `${days}d ${pad(hours)}:${pad(mins)}:${pad(secs)}` : `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
+  return days > 0 ? `${pad(days)}D:${pad(hours)}:${pad(mins)}:${pad(secs)}` : `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
 }
 
 function showPhaseModal(phase){
@@ -73,7 +73,7 @@ function setOverallComplete(){
   if (terminalLine) terminalLine.hidden = false;
 
   $("mintCommand").innerHTML =
-    '<span class="green">[ COMPLETE ]</span> 888 SOCIETY mint schedule has concluded.';
+    '<span class="green">[ COMPLETE ]</span> __CTB_PROJECT_NAME_UPPER__ mint schedule has concluded.';
   $("mintReady").innerHTML =
     '<span class="green">[ READY ]</span> NFT Terminal is tracking collection activity.';
 }
@@ -95,7 +95,7 @@ function setOverallLive(){
 
   const terminalLine = $("postMintTerminalLine");
   if (terminalLine) terminalLine.hidden = false;
-  $("mintCommand").innerHTML = '<span class="green">[ LIVE ]</span> 888 SOCIETY mint schedule is underway.';
+  $("mintCommand").innerHTML = '<span class="green">[ LIVE ]</span> __CTB_PROJECT_NAME_UPPER__ mint schedule is underway.';
   $("mintReady").innerHTML = '<span class="green">[ READY ]</span> NFT Terminal is the live collection dashboard.';
 }
 

@@ -9,8 +9,16 @@ const modules = [
   "01_Landing-Page",
   "02_Whale-Activity-Tracker",
   "03_NFT-Collection-Terminal",
+  "03_NFT-Collection-Terminal-Multi-Phase",
   "04_Meme-Intel",
+  "06_Community-Pulse",
+  "07_Timeline",
 ];
+const referenceMascotModules = new Set([
+  "01_Landing-Page",
+  "02_Whale-Activity-Tracker",
+  "04_Meme-Intel",
+]);
 const profiles = ["stonkbrokers", "hoodrat"];
 const forbiddenInModules = [
   "STONKBROKERS",
@@ -70,10 +78,12 @@ for (const moduleName of modules) {
     else fail(`${moduleName}/${required} is missing`);
   }
 
-  for (const mascot of ["stonkbrokers-mascot.jpg", "hoodrat-mascot.jpeg"]) {
-    const mascotPath = path.join(modulePath, "public", "assets", mascot);
-    if (fs.existsSync(mascotPath)) pass(`${moduleName} contains ${mascot}`);
-    else fail(`${moduleName} is missing ${mascot}`);
+  if (referenceMascotModules.has(moduleName)) {
+    for (const mascot of ["stonkbrokers-mascot.jpg", "hoodrat-mascot.jpeg"]) {
+      const mascotPath = path.join(modulePath, "public", "assets", mascot);
+      if (fs.existsSync(mascotPath)) pass(`${moduleName} contains ${mascot}`);
+      else fail(`${moduleName} is missing ${mascot}`);
+    }
   }
 
   for (const file of walk(modulePath)) {

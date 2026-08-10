@@ -38,7 +38,7 @@ function renderProjectPage(fileName, pagePath, req, res) {
   const origin = requestOrigin(req);
   const requestPath = String(req.originalUrl || req.url || pagePath || "/").split("?")[0] || pagePath || "/";
   const pageUrl = new URL(requestPath, `${origin}/`).toString();
-  const mascotPath = config.branding?.mascot || "/assets/gangsterrobins-mascot.png";
+  const mascotPath = config.branding?.mascot || "__CTB_MASCOT_PATH__";
   const mountedMascotPath = requestPath.startsWith("/nft") && mascotPath.startsWith("/assets/") ? `/nft${mascotPath}` : mascotPath;
   const socialImageUrl = new URL(mountedMascotPath, `${origin}/`).toString();
   const projectName = config.project?.displayName || config.project?.name || "NFT";

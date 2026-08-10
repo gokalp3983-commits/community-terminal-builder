@@ -13,7 +13,7 @@ assert.match(html,/deployment-dashboard advanced-only/,"Manual deployment dashbo
 assert.match(html,/connected-dashboard advanced-only/,"Connected deployment dashboard must remain available in Builder Mode");
 assert.match(html,/release-control advanced-only/,"Protected release control must remain available in Builder Mode");
 assert.match(html,/class="advanced-field"[^>]*><span>Blockscout API base/,"Low-level provider field should be advanced");
-assert.match(html,/class="span-2 nft-mint-schedule nft-config"/,"NFT schedule must be conditionally presented");
+assert.match(html,/id="guided-nft-mint"[^>]*class="panel nft-config"|class="panel nft-config"[^>]*id="guided-nft-mint"/,"NFT mint details section must be conditionally presented");
 assert.match(app,/UX_MODE_KEY="ctb\.ux-mode\.v1"/,"UX mode persistence missing");
 assert.match(app,/setBuilderExperience/,"Builder experience switch runtime missing");
 assert.match(app,/syncNftConfigVisibility/,"NFT conditional visibility runtime missing");
@@ -29,7 +29,7 @@ const guidedFresh = normalize({
 assert.equal(guidedFresh.promptUser,"trial","Fresh Guided project must derive terminal user from project id");
 assert.equal(guidedFresh.promptHost,"terminal","Fresh Guided project must default terminal host");
 
-assert.match(html,/class="guided-overview"/,"Guided five-step overview missing");
+assert.match(html,/class="guided-overview"/,"Guided setup overview missing");
 assert.match(css,/body\.guided-mode \.console-panel\{display:none\}/,"Guided Mode should hide developer console");
 assert.match(css,/body\.guided-mode \.guided-step-note/,"Guided readability treatment missing");
 assert.match(app,/markPhaseInvalid\(card,\["endDate","endTime"\]\)/,"Same-phase invalid end fields must be marked visually");
@@ -45,8 +45,10 @@ assert(css.includes('color:#6FD3FF'), 'CTB footer X link uses ice blue');
 console.log("Chapter 17B guided simplification + 17A visual hotfix contracts: PASS");
 
 // Chapter 17B pre-break acceptance contracts.
-assert.match(app,/mintScheduleBlock\.addEventListener\("input",\(\)=>\{confirmedMintSignature="";syncNftMintSchedule\(\)\}\)/,"Phase schedule must validate live on input");
-assert.match(app,/mintScheduleBlock\.addEventListener\("change",\(\)=>\{confirmedMintSignature="";syncNftMintSchedule\(\)\}\)/,"Phase schedule must validate live on change");
+assert.match(app,/mintScheduleBlock\.addEventListener\("input",invalidateMintConfirmation\)/,"Phase schedule must validate live on input and invalidate confirmation");
+assert.match(app,/mintScheduleBlock\.addEventListener\("change",invalidateMintConfirmation\)/,"Phase schedule must validate live on change and invalidate confirmation");
+assert(!app.includes('mintScheduleBlock.addEventListener("focusout"'),"NFT mint confirmation must not trigger on focusout");
+assert.match(html,/id="confirm-nft-mint-details"/,"Explicit NFT mint details confirmation action missing");
 assert.match(css,/body\.guided-mode #download-again\{display:none!important\}/,"Guided Mode must hide duplicate ZIP download action");
 const landingCss=read("01_Landing-Page/public/style.css");
 const nftSingleCss=read("03_NFT-Collection-Terminal/public/style.css");

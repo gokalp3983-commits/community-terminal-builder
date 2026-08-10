@@ -58,7 +58,8 @@
           <a href="#guided-token"><b>2</b><span>TOKEN / NFT<small>Contract &amp; mint</small></span></a>
           <a href="#guided-brand"><b>3</b><span>BRANDING<small>Logo / mascot</small></span></a>
           <a href="#guided-links"><b>4</b><span>LINKS<small>Community routes</small></span></a>
-          <a href="#guided-modules"><b>5</b><span>MODULES<small>Choose terminal tools</small></span></a>
+          <a href="#guided-nft-mint"><b>5</b><span>NFT MINT<small>Launch details</small></span></a>
+          <a href="#guided-modules"><b>6</b><span>MODULES<small>Choose terminal tools</small></span></a>
         </nav>
 
         <section class="deployment-dashboard advanced-only" aria-label="Deployment dashboard">
@@ -144,10 +145,10 @@
             </section>
 
             <section class="panel" data-section="contracts" id="guided-token">
-              <div class="section-heading"><span>02</span><h2>TOKEN &amp; NFT</h2><small>CONTRACTS AND NFT LAUNCH DETAILS</small></div><p class="guided-step-note">Paste the token contract. NFT settings appear only when you enable the NFT Terminal.</p>
+              <div class="section-heading"><span>02</span><h2>TOKEN &amp; NFT</h2><small>PROJECT CONTRACTS</small></div><p class="guided-step-note">Paste the token contract. Add an NFT contract whenever the project also has a collection; a valid NFT CA automatically enables the NFT Terminal.</p>
               <div class="grid">
                 <label class="span-2 contract-field"><span>Token CA * <b class="evm-badge">EVM ONLY</b></span><input name="tokenContract" required placeholder="0x..." autocomplete="off" spellcheck="false"><small class="field-help">Supported: Ethereum and EVM-compatible chains. Paste the token contract, not the liquidity-pool address.</small><output id="contract-check" class="contract-check" aria-live="polite">[ WAIT ] Enter a 42-character 0x contract address.</output></label>
-                <label class="span-2 nft-config"><span>Optional NFT CA</span><input name="nftContract" placeholder="0x..."></label>
+                <label class="span-2 contract-field"><span>NFT Contract Address (optional) <b class="evm-badge">EVM ONLY</b></span><input name="nftContract" placeholder="0x..." autocomplete="off" spellcheck="false"><small class="field-help">Leave blank for token-only projects. Entering a valid NFT contract automatically enables the NFT Terminal module.</small><output id="nft-contract-check" class="contract-check" aria-live="polite">[ OPTIONAL ] No NFT contract entered.</output></label>
                 <label class="advanced-field"><span>DexScreener chain ID</span><input name="dexScreenerChainId" value="robinhood"></label>
                 <label class="advanced-field"><span>Blockscout API base</span><input name="blockscoutApiBase" value="https://robinhoodchain.blockscout.com/api/v2"></label>
               </div>
@@ -177,9 +178,17 @@
                 <label class="advanced-field"><span>DexScreener</span><input name="dexScreener" placeholder="https://dexscreener.com/..."></label>
                 <label class="nft-config"><span>OpenSea</span><input name="openSea" placeholder="Optional"></label>
                 <input type="hidden" name="openSeaSlug" value="">
-                <label class="nft-config"><span>NFT collection name</span><input name="nftCollectionName" placeholder="Optional — defaults to project name + NFT"></label>
-                <label class="nft-config"><span>NFT total supply</span><input name="nftSupply" type="number" min="1" step="1" placeholder="Required for canonical NFT mint tracker"></label>
-                <div class="span-2 nft-mint-schedule nft-config" id="nft-mint-schedule">
+
+              </div>
+            </section>
+
+            <section class="panel nft-config" data-section="nft-mint" id="guided-nft-mint">
+              <div class="section-heading"><span>05</span><h2>NFT MINT DETAILS</h2><small>COLLECTION &amp; LAUNCH CONFIGURATION</small></div>
+              <p class="guided-step-note">Configure the NFT collection and launch schedule, then explicitly confirm the mint details before creating the terminal.</p>
+              <div class="grid">
+                <label><span>NFT collection name</span><input name="nftCollectionName" placeholder="Optional — defaults to project name + NFT"></label>
+                <label><span>NFT total supply</span><input name="nftSupply" type="number" min="1" step="1" placeholder="Required for canonical NFT mint tracker"></label>
+                <div class="span-2 nft-mint-schedule" id="nft-mint-schedule">
                   <div class="nft-mint-heading"><span>NFT mint structure</span><small>Choose the canonical single-phase or multiple-phase NFT launch base.</small></div>
                   <div class="nft-mint-mode-row">
                     <label><span>Mint structure</span><select name="nftMintMode" id="nft-mint-mode" required><option value="" selected disabled>Please select mint structure</option><option value="single">Single Phase</option><option value="multiple">Multiple Phases</option></select></label>
@@ -198,13 +207,17 @@
                     <button class="phase-add-button" id="add-nft-phase" type="button">+ ADD MINT PHASE</button>
                   </div>
                   <input name="nftMintAt" type="hidden">
-                  <output id="nft-mint-check" class="contract-check" aria-live="polite">[ WAIT ] Enable NFT Terminal and complete the mint schedule.</output>
+                  <output id="nft-mint-check" class="contract-check" aria-live="polite">[ WAIT ] Complete the NFT mint schedule.</output>
+                  <div class="nft-mint-explicit-confirm">
+                    <button id="confirm-nft-mint-details" type="button">CONFIRM NFT MINT DETAILS</button>
+                    <output id="nft-mint-confirmed-state" class="contract-check" aria-live="polite">[ WAIT ] NFT mint details have not been confirmed.</output>
+                  </div>
                 </div>
               </div>
             </section>
 
             <section class="panel" data-section="features" id="guided-modules">
-              <div class="section-heading"><span>05</span><h2>MODULES</h2><small>CHOOSE WHAT YOUR TERMINAL INCLUDES</small></div><p class="guided-step-note">Choose the tools your community needs. You can change these later.</p>
+              <div class="section-heading"><span>06</span><h2>MODULES</h2><small>CHOOSE WHAT YOUR TERMINAL INCLUDES</small></div><p class="guided-step-note">Choose the tools your community needs. You can change these later.</p>
               <div class="checks">
                 <label><input name="whaleTracker" type="checkbox" checked><span><strong>WHALE TRACKER</strong><small>Holder and transfer intelligence</small></span></label>
                 <label><input name="memeIntel" type="checkbox" checked><span><strong>MEME INTEL</strong><small>Risk, concentration and market commands</small></span></label>
@@ -225,10 +238,10 @@
         </div>
 
         <div class="action-bar">
-          <div class="action-copy"><span class="ok">[ READY ]</span><p>Exports one unified terminal app for <code>localhost:3000</code>.</p></div>
+          <div class="action-copy"><span class="ok">[ READY ]</span><p>Validates your configuration and creates one unified Community Terminal.</p></div>
           <div class="action-buttons">
             <button class="preview-button" id="open-preview" type="button"><span>&gt;_</span> PREVIEW LANDING PAGE</button>
-            <button type="submit"><span>&gt;_</span> GENERATE TERMINAL ZIP</button>
+            <button type="submit"><span>&gt;_</span> CREATE TERMINAL</button>
           </div>
         </div>
         <p id="status" role="status" aria-live="polite"></p>
@@ -241,19 +254,51 @@
     </footer>
   </main>
 
+    <dialog id="nft-past-warning" class="nft-mint-confirm" aria-labelledby="nft-past-warning-title">
+      <div class="nft-mint-confirm-panel">
+        <div class="nft-mint-confirm-head"><span>[ MINT SCHEDULE WARNING ]</span><button id="nft-past-warning-close" type="button" aria-label="Close">×</button></div>
+        <div class="nft-mint-confirm-body">
+          <strong id="nft-past-warning-title">MINT START TIME IS IN THE PAST</strong>
+          <p>The selected mint start is earlier than your current computer date and time. Keep it only when you are intentionally rebuilding or maintaining an already-started collection.</p>
+          <div class="nft-time-review">
+            <span>Selected mint start</span><b id="nft-past-warning-mint">—</b>
+            <span>Your computer time</span><b id="nft-past-warning-now">—</b>
+          </div>
+        </div>
+        <div class="nft-mint-confirm-actions">
+          <button id="nft-past-warning-edit" type="button">GO BACK AND EDIT</button>
+          <button id="nft-past-warning-keep" type="button">KEEP THIS SCHEDULE</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="nft-disable-warning" class="nft-mint-confirm" aria-labelledby="nft-disable-warning-title">
+      <div class="nft-mint-confirm-panel">
+        <div class="nft-mint-confirm-head"><span>[ DISABLE NFT TERMINAL? ]</span><button id="nft-disable-close" type="button" aria-label="Close">×</button></div>
+        <div class="nft-mint-confirm-body">
+          <strong id="nft-disable-warning-title">NFT CONFIGURATION IS ACTIVE</strong>
+          <p>Disabling the NFT Terminal will remove the NFT module from this generated Community Terminal. Your entered NFT contract and mint configuration will remain saved and can be restored by enabling the module again.</p>
+        </div>
+        <div class="nft-mint-confirm-actions nft-disable-actions">
+          <button id="nft-disable-keep" type="button">KEEP NFT TERMINAL</button>
+          <button id="nft-disable-confirm" type="button">DISABLE NFT TERMINAL</button>
+        </div>
+      </div>
+    </dialog>
+
     <dialog id="nft-mint-confirm" class="nft-mint-confirm" aria-labelledby="nft-mint-confirm-title">
       <div class="nft-mint-confirm-panel">
-        <div class="nft-mint-confirm-head"><span>[ NFT MINT TIME ]</span><button id="nft-mint-confirm-close" type="button" aria-label="Close">×</button></div>
+        <div class="nft-mint-confirm-head"><span>[ NFT MINT DETAILS ]</span><button id="nft-mint-confirm-close" type="button" aria-label="Close">×</button></div>
         <div class="nft-mint-confirm-body">
-          <strong id="nft-mint-confirm-title">CONFIRM NFT MINT TIME</strong>
-          <p>This is the NFT mint time that will control the countdown and launch state. Proceed only if the date, time, and timezone are correct.</p>
+          <strong id="nft-mint-confirm-title">CONFIRM NFT MINT DETAILS</strong>
+          <p>Review the collection mint schedule below. This confirmation is required before the terminal can be created, and any later mint-detail change will require confirmation again.</p>
           <div class="nft-time-review">
             <span>NFT mint time</span><b id="nft-mint-confirm-value">—</b>
             <span>Your computer time</span><b id="nft-local-time-value">—</b>
             <span>Mint countdown</span><b id="nft-mint-countdown-value">—</b>
             <span>Time check</span><b id="nft-mint-confirm-state">—</b>
           </div>
-          <p class="nft-mint-confirm-note">The Builder does not silently change the schedule. Go back to edit it if anything looks wrong.</p>
+          <p class="nft-mint-confirm-note">The Builder will not silently alter these values. Confirm only when the mint details are final.</p>
         </div>
         <div class="nft-mint-confirm-actions">
           <button id="nft-mint-edit" type="button">CHANGE</button>
@@ -264,30 +309,26 @@
 
     <dialog id="build-complete" class="build-complete">
       <div class="build-modal">
-        <div class="build-modal-head"><span>[ BUILD COMPLETE ]</span><button id="close-build-complete" type="button" aria-label="Close">×</button></div>
+        <div class="build-modal-head"><span>[ TERMINAL READY ]</span><button id="close-build-complete" type="button" aria-label="Close">×</button></div>
         <div class="build-summary">
           <strong id="built-project">COMMUNITY TERMINAL</strong>
-          <p id="built-package">Package ready.</p>
+          <p>Your terminal has been created with the modules listed below.</p>
           <div id="built-modules" class="built-modules"></div>
         </div>
-        <div class="deployment-readiness">
-          <div>[ PASS ] Generated ZIP returned</div>
-          <div>[ PASS ] Render Blueprint included</div>
-          <div>[ PASS ] Health and status diagnostics included</div>
-          <div>[ READY ] Run npm test before deployment</div>
+        <div class="terminal-ready-link">
+          <span>LIVE TERMINAL</span>
+          <a id="built-terminal-url" href="#" target="_blank" rel="noopener noreferrer">https://www.terminal.xyz/project-landing-page</a>
         </div>
-        <div class="build-actions">
-          <button id="download-again" type="button">DOWNLOAD ZIP</button>
-          <button id="copy-local-commands" type="button">COPY LOCAL COMMANDS</button>
-          <button id="copy-github-commands" type="button">COPY GITHUB COMMANDS</button>
-          <button id="copy-render-guide" type="button">COPY RENDER GUIDE</button>
+        <div class="build-actions final-product-actions">
+          <button id="open-built-terminal" type="button">OPEN TERMINAL</button>
+          <button id="copy-built-terminal-link" type="button">COPY LINK</button>
+          <button id="close-build-complete-action" type="button">CLOSE</button>
         </div>
-        <pre id="deployment-command-preview">Select an action to copy deployment commands.</pre>
-        <p class="build-note">The builder prepares deployment-ready source code, supports guided public verification, and can optionally publish to GitHub and create or redeploy a Render service using server-side credentials.</p>
+        <p class="build-note">Your terminal link is ready to share with the community.</p>
       </div>
     </dialog>
   <script src="app.js"></script>
-  <div id="auto-save-toast" class="auto-save-toast" role="status" aria-live="polite"><strong>[ SAVED ]</strong> ZIP generated — project auto-saved ✓</div>
+  <div id="auto-save-toast" class="auto-save-toast" role="status" aria-live="polite"><strong>[ SAVED ]</strong> Latest project configuration saved ✓</div>
   <div id="deployment-toast" class="deployment-toast" role="status" aria-live="polite" hidden><strong>[ DEPLOYMENT STARTED ]</strong><span>Your website is being deployed. Please wait until the deployment completes successfully before making further release changes.</span></div>
 
   <dialog id="deployment-success-dialog" class="deployment-success-dialog" aria-labelledby="deployment-success-title">

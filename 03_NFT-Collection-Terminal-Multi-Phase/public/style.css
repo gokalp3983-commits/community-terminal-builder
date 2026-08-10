@@ -1865,7 +1865,7 @@ a:hover,a:focus-visible{
 .footer-version,.terminal-footer .footer-version{color:var(--yellow)!important}
 @media(max-width:560px){.community-title-row{gap:7px;flex-direction:column;margin:10px 0 7px!important}.community-divider{font-size:.72em}.community-subtitle{line-height:1.5}}
 
-/* 888 Society launch polish */
+/* __CTB_PROJECT_NAME__ launch polish */
 .module-title{color:var(--green)!important;font-size:1.3rem!important;font-weight:700!important}.x-credit{color:var(--green);text-decoration:none}.x-credit:hover{text-decoration:underline;text-shadow:0 0 8px rgba(57,255,20,.35)}
 
 
@@ -2215,7 +2215,7 @@ body{
 }
 
 
-/* 888 Society final brand palette: Gold + Bright White + Green */
+/* __CTB_PROJECT_NAME__ final brand palette: Gold + Bright White + Green */
 :root{
   --bg:#020604;
   --panel:#050806;
@@ -2244,7 +2244,7 @@ body{color:#ffffff}
   color:#ffffff!important;
 }
 
-/* Premium gold 888 mascot glow. */
+/* Premium project mascot glow. */
 .mascot,
 .community-mascot{
   object-fit:contain!important;
@@ -2284,7 +2284,7 @@ body{color:#ffffff}
 }
 
 
-/* 888 Society transparent bright-gold logo */
+/* __CTB_PROJECT_NAME__ transparent bright-gold logo */
 .mascot,
 .community-mascot{
   width:min(220px,58vw)!important;
@@ -2333,7 +2333,7 @@ body{color:#ffffff}
 
 
 /* ==========================================================================
-   888 Society — Ice Blue refinement / centered two-window layout
+   __CTB_PROJECT_NAME__ — Ice Blue refinement / centered two-window layout
    ========================================================================== */
 :root{
   --ice-blue:#6FD3FF;
@@ -2410,7 +2410,7 @@ body{color:#ffffff}
   color:var(--yellow)!important;
 }
 
-/* Slightly smaller 888 mark, with a richer soft pulse around the digits only. */
+/* Canonical mascot sizing with restrained soft pulse. */
 .mascot,
 .community-mascot{
   width:min(180px,46vw)!important;
@@ -2540,7 +2540,7 @@ body{color:#ffffff}
 }
 
 
-/* 888 Society acceptance pass — 10% gutters / gold data cards / balanced sales window */
+/* __CTB_PROJECT_NAME__ acceptance pass — 10% gutters / gold data cards / balanced sales window */
 :root{
   --ice-blue:#6FD3FF;
   --yellow:#D4AF37;
@@ -2610,7 +2610,7 @@ body{color:#ffffff}
 
 
 /* ==========================================================================
-   888 Society final polish — preserve existing layout/logic
+   __CTB_PROJECT_NAME__ final polish — preserve existing layout/logic
    ========================================================================== */
 
 /* Footer: structural rule is Ice Blue, redundant title simplified in HTML,
@@ -2839,7 +2839,7 @@ img,svg,canvas,video{max-width:100%}
 .community-header>a{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
 .mascot,.community-mascot{background:transparent!important;border:0!important;box-shadow:none!important;transform:none!important;mix-blend-mode:normal!important}
 
-/* CTB Chapter 16 generic brand parity: do not apply the 888-specific glow to arbitrary uploaded logos. */
+/* CTB Chapter 16 generic brand parity: do not apply the reference-project-specific glow to arbitrary uploaded logos. */
 .community-header>a{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
 .mascot,.community-mascot{background:transparent!important;border:0!important;box-shadow:none!important;filter:none!important;animation:none!important;transform:none!important;mix-blend-mode:normal!important}
 

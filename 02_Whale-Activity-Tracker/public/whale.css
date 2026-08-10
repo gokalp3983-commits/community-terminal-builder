@@ -343,6 +343,25 @@ body.command-panel-open .command-panel-slot{
 }
 
 @media(max-width:720px){
+  /* Mobile-only containment for wide command results. Keep the page frame
+     within the viewport and let data-heavy results scroll internally. */
+  .terminal,
+  .terminal-workspace,
+  #terminal-application,
+  .whale-command-output{
+    min-width:0;
+    max-width:100%;
+  }
+
+  .whale-command-output{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .whale-command-output table{
+    min-width:720px;
+  }
+
   .kv,
   .whales12-summary{
     grid-template-columns:1fr;

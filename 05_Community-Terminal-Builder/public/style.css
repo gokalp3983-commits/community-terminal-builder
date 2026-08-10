@@ -405,3 +405,24 @@ body::before,body::after,.hero::after{content:none!important;display:none!import
 .builder-footer a{color:#6FD3FF!important;border-bottom-color:rgba(111,211,255,.55)!important}
 .builder-footer a span{color:#fff!important;text-shadow:0 0 6px rgba(255,255,255,.5)!important}
 .builder-footer .x-logo{color:#6FD3FF!important;fill:currentColor!important}
+
+/* Chapter 19 acceptance UX — explicit NFT confirmation + final-product terminal link. */
+.nft-mint-explicit-confirm{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:10px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+#confirm-nft-mint-details{background:#04110b;color:var(--green);border-color:var(--green);box-shadow:none;white-space:nowrap}
+#nft-mint-confirmed-state{margin:0}
+.terminal-ready-link{margin:18px;padding:14px;border:1px solid var(--green);background:#010503;display:grid;gap:8px}
+.terminal-ready-link span{color:var(--orange);font-size:.68rem;letter-spacing:.1em;font-weight:800}
+.terminal-ready-link a{color:var(--cyan);text-decoration:none;overflow-wrap:anywhere;font-size:.86rem}
+.terminal-ready-link a:hover{text-decoration:underline}
+.final-product-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+.final-product-actions #open-built-terminal{color:var(--green);border-color:var(--green)}
+.final-product-actions #copy-built-terminal-link{color:var(--cyan);border-color:var(--cyan)}
+@media(max-width:780px){.nft-mint-explicit-confirm{grid-template-columns:1fr}.nft-mint-explicit-confirm button{width:100%}.final-product-actions{grid-template-columns:1fr}}
+
+/* Chapter 19 final acceptance polish — warning actions and safe NFT disable flow. */
+#nft-past-warning .nft-mint-confirm-actions,#nft-disable-warning .nft-mint-confirm-actions{gap:10px;padding:12px 18px 14px}
+#nft-past-warning-edit,#nft-disable-keep{color:var(--green)!important;border-color:var(--green)!important;background:#04110b!important}
+#nft-past-warning-keep,#nft-disable-confirm{color:var(--orange)!important;border-color:var(--orange)!important;background:#0a0803!important}
+#nft-past-warning .nft-mint-confirm-body{padding-bottom:12px}
+#nft-past-warning .nft-time-review{margin-bottom:4px}
+@media(max-width:620px){#nft-past-warning .nft-mint-confirm-actions,#nft-disable-warning .nft-mint-confirm-actions{flex-direction:column}#nft-past-warning .nft-mint-confirm-actions button,#nft-disable-warning .nft-mint-confirm-actions button{width:100%}}

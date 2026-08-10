@@ -1,8 +1,8 @@
 {
-  "name": "888-society-nft-terminal",
+  "name": "ctb-nft-terminal-template",
   "version": "1.0.0",
   "private": true,
-  "description": "888 Society Ethereum NFT mint countdown and OpenSea collection terminal.",
+  "description": "__CTB_PROJECT_NAME__ Ethereum NFT mint countdown and OpenSea collection terminal.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

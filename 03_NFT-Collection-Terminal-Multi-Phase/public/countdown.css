@@ -87,7 +87,7 @@
 }
 
 
-/* 888 Society three-phase mint schedule */
+/* __CTB_PROJECT_NAME__ three-phase mint schedule */
 .phase-countdown-grid{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
@@ -142,7 +142,7 @@
 }
 
 
-/* 888 Society final countdown palette */
+/* __CTB_PROJECT_NAME__ final countdown palette */
 .phase-countdown-card{
   border-color:rgba(212,175,55,.72);
   box-shadow:inset 0 0 14px rgba(212,175,55,.035);
@@ -163,7 +163,7 @@
 }
 
 
-/* 888 Society — ice blue phase structure */
+/* __CTB_PROJECT_NAME__ — ice blue phase structure */
 .launch-workspace{
   width:90vw!important;
   max-width:none!important;
@@ -196,7 +196,7 @@
 }
 
 
-/* 888 Society link rule: clickable text links are ice blue; action buttons retain gold styling. */
+/* __CTB_PROJECT_NAME__ link rule: clickable text links are ice blue; action buttons retain gold styling. */
 .launch-links-line a,
 .x-credit{color:#6FD3FF!important;}
 .launch-links-line a:hover,
@@ -205,7 +205,7 @@
 .x-credit:focus-visible{color:#9BE4FF!important;text-shadow:0 0 8px rgba(111,211,255,.34)!important;}
 
 
-/* 888 Society acceptance pass — 10% landing gutters + footer floor */
+/* __CTB_PROJECT_NAME__ acceptance pass — 10% landing gutters + footer floor */
 .launch-workspace{
   width:80vw!important;
   max-width:none!important;

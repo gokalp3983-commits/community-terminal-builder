@@ -38,7 +38,7 @@ function renderProjectPage(fileName, pagePath, req, res) {
   const origin = requestOrigin(req);
   const requestPath = String(req.originalUrl || req.url || pagePath || "/").split("?")[0] || pagePath || "/";
   const pageUrl = new URL(requestPath, `${origin}/`).toString();
-  const mascotPath = config.branding?.mascot || "/assets/888-society-mark.png";
+  const mascotPath = config.branding?.mascot || "__CTB_MASCOT_PATH__";
   const mountedMascotPath = requestPath.startsWith("/nft") && mascotPath.startsWith("/assets/") ? `/nft${mascotPath}` : mascotPath;
   const socialImageUrl = new URL(mountedMascotPath, `${origin}/`).toString();
   const projectName = config.project?.displayName || config.project?.name || "NFT";
@@ -103,7 +103,7 @@ async function fetchJson(url) {
 app.get("/health", (_req, res) => {
   res.json({
     status: "ok",
-    app: "888 Society NFT Terminal",
+    app: "__CTB_PROJECT_NAME__ NFT Terminal",
     version: config.project.version,
   });
 });

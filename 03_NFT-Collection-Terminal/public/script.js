@@ -550,7 +550,7 @@ function setDisconnectedMintStats(){
   elements.progressPercent.textContent = "—";
   elements.progressFill.style.width = "0%";
 
-  elements.mintedCount.textContent = "— / 420";
+  elements.mintedCount.textContent = "— / __CTB_NFT_SUPPLY__";
   elements.remainingCount.textContent = "—";
   elements.uniqueMinters.textContent = "—";
   elements.mintRate.textContent = "— NFT/min";
@@ -578,7 +578,7 @@ function renderMintStats(stats){
     `${safeProgress}%`;
 
   elements.mintedCount.textContent =
-    `${stats.minted ?? "—"} / ${stats.totalSupply ?? 420}`;
+    `${stats.minted ?? "—"} / ${stats.totalSupply ?? Number("__CTB_NFT_SUPPLY__")}`;
 
   elements.remainingCount.textContent =
     stats.remaining ?? "—";
@@ -636,8 +636,8 @@ async function refreshMintStats(){
     elements.dataConnection.classList.remove("live");
     elements.progressPercent.textContent = "0.00%";
     elements.progressFill.style.width = "0%";
-    elements.mintedCount.textContent = "0 / 420";
-    elements.remainingCount.textContent = "420";
+    elements.mintedCount.textContent = "0 / __CTB_NFT_SUPPLY__";
+    elements.remainingCount.textContent = "__CTB_NFT_SUPPLY__";
     elements.uniqueMinters.textContent = PENDING_MINT_DATA;
     elements.mintRate.textContent = PENDING_MINT_DATA;
     elements.latestMint.textContent = PENDING_MINT_DATA;
@@ -649,7 +649,7 @@ async function refreshMintStats(){
     applyPostMintCompactMode({
       status: "UPCOMING",
       minted: 0,
-      totalSupply: Number(CFG?.nft?.supply) || 420,
+      totalSupply: Number(CFG?.nft?.supply) || Number("__CTB_NFT_SUPPLY__"),
       progressPercent: 0,
     });
     return;
