@@ -1361,3 +1361,12 @@ The second hands-on Chapter 19 acceptance pass tightened NFT state safety and fi
 - Fresh generated single-phase and multi-phase NFT package header spot checks: **PASS**.
 
 **Chapter 19 is ready for the final hands-on NFT acceptance test.**
+
+### Chapter 19 — Final NFT subtitle parity fix (10 Aug 2026)
+
+- Restored the standard `Independent Community Tools • <Ecosystem> Ecosystem` subtitle as a visible line on both NFT pages.
+- The NFT mint/countdown page and NFT terminal page now fully match the canonical Community Terminal header stack: orange `<PROJECT> COMMUNITY TERMINAL • ONLINE`, standard ecosystem subtitle, and green **NFT Collection Terminal** module title.
+- Applied to both canonical single-phase and multi-phase NFT templates; the same display fix is mirrored in the live HOODRAT NFT source.
+- Extended Chapter 19 regression coverage so the NFT subtitle must be present in markup and remain visibly enabled by CSS.
+
+**Chapter 19 is ready for the final full hands-on acceptance test.**

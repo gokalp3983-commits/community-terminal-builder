@@ -70,8 +70,13 @@ const nftMultiLaunchTemplate=read("03_NFT-Collection-Terminal-Multi-Phase/public
 const nftMultiTerminalTemplate=read("03_NFT-Collection-Terminal-Multi-Phase/public/terminal.html");
 for(const [label,source] of [["single launch",nftLaunchTemplate],["single terminal",nftTerminalTemplate],["multi launch",nftMultiLaunchTemplate],["multi terminal",nftMultiTerminalTemplate]]){
   assert.match(source,/COMMUNITY TERMINAL/ ,`${label}: unified Community Terminal main header missing`);
+  assert.match(source,/Independent Community Tools[\s\S]*Ecosystem/,`${label}: standard Community Terminal subtitle missing`);
   assert.match(source,/class="module-title">\s*NFT Collection Terminal\s*<\/div>/s,`${label}: green NFT Collection Terminal module title missing`);
 }
+const nftSingleCss=read("03_NFT-Collection-Terminal/public/style.css");
+const nftMultiCss=read("03_NFT-Collection-Terminal-Multi-Phase/public/style.css");
+assert.match(nftSingleCss,/Chapter 19 final NFT header parity:[\s\S]*\.community-subtitle\{display:block!important\}/,'Single-phase NFT subtitle must remain visible');
+assert.match(nftMultiCss,/Chapter 19 final NFT header parity:[\s\S]*\.community-subtitle\{display:block!important\}/,'Multi-phase NFT subtitle must remain visible');
 assert.throws(()=>generate({projectName:"REQ",ticker:"REQ",tokenContract:"0x1111111111111111111111111111111111111111",nftContract:"0x2222222222222222222222222222222222222222",features:{nftTerminal:true},nft:{mode:"single",mintAt:"2026-09-01T12:00:00Z",mintLimit:"1"}}),/Mint Price is required/,'Generator must reject blank single-phase Mint Price');
 assert.throws(()=>generate({projectName:"REQ",ticker:"REQ",tokenContract:"0x1111111111111111111111111111111111111111",nftContract:"0x2222222222222222222222222222222222222222",features:{nftTerminal:true},nft:{mode:"single",mintAt:"2026-09-01T12:00:00Z",mintPrice:"FREE"}}),/Mint Per Wallet \/ Wallet Limit is required/,'Generator must reject blank single-phase wallet limit');
 console.log("Chapter 19 final hands-on NFT state + inline validation contracts: PASS");

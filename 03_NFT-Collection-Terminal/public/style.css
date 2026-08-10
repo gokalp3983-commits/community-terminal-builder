@@ -2340,3 +2340,5 @@ html,body{background:#000!important}
   .link-copy-mobile{display:inline!important}
 }
 
+/* Chapter 19 final NFT header parity: keep the standard Community Terminal subtitle visible. */
+.community-subtitle{display:block!important}
