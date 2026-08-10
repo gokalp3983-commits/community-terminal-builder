@@ -426,3 +426,7 @@ body::before,body::after,.hero::after{content:none!important;display:none!import
 #nft-past-warning .nft-mint-confirm-body{padding-bottom:12px}
 #nft-past-warning .nft-time-review{margin-bottom:4px}
 @media(max-width:620px){#nft-past-warning .nft-mint-confirm-actions,#nft-disable-warning .nft-mint-confirm-actions{flex-direction:column}#nft-past-warning .nft-mint-confirm-actions button,#nft-disable-warning .nft-mint-confirm-actions button{width:100%}}
+
+/* Chapter 19 final acceptance inline validation/polish */
+.inline-warning{margin:8px 0 0;max-width:100%;color:var(--danger);font-size:.68rem;line-height:1.45;overflow-wrap:anywhere}.field-error{display:block;margin-top:5px;color:var(--danger);font-size:.68rem;line-height:1.4}.field-invalid{border-color:var(--danger)!important;box-shadow:0 0 0 1px rgba(255,90,103,.18)!important}.upload{min-width:0}.upload .inline-warning[hidden]{display:none!important}@media(max-width:780px){.inline-warning,.field-error{font-size:.7rem}}
+.field-error[hidden]{display:none!important}

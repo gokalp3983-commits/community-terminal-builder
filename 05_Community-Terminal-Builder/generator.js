@@ -97,7 +97,11 @@ function normalize(input) {
           if (index && start < Date.parse(phases[index - 1].endsAt)) throw new Error(`NFT phase ${index + 1} starts before the previous phase ends.`);
         }
       }
-      return { collectionName: text(input.nft?.collectionName, `${name} NFT`), openSeaSlug, mode: requestedMode, mintAt: requestedMode === "multiple" ? phases[0]?.startsAt || text(input.nft?.mintAt) : text(input.nft?.mintAt), mintEndAt: text(input.nft?.mintEndAt) || null, mintPhases: requestedMode === "multiple" ? phases : [], timezone: text(input.nft?.timezone, "UTC"), supply: numberOrNull(input.nft?.supply), whaleThreshold: numberOrNull(input.nft?.whaleThreshold) || 10 };
+      const mintPrice=text(input.nft?.mintPrice),mintLimit=text(input.nft?.mintLimit);
+      if(nftEnabled&&requestedMode==="single"&&!mintPrice)throw new Error("NFT Mint Price is required for single-phase mint. Use 0 or FREE for a free mint.");
+      if(nftEnabled&&requestedMode==="single"&&!mintLimit)throw new Error("NFT Mint Per Wallet / Wallet Limit is required for single-phase mint.");
+      if(nftEnabled&&requestedMode==="multiple")for(const [index,phase] of phases.entries()){if(!phase.price||phase.price==="—")throw new Error(`NFT phase ${index+1} Mint Price is required.`);if(!phase.limit||phase.limit==="—")throw new Error(`NFT phase ${index+1} Mint Per Wallet / Wallet Limit is required.`)}
+      return { collectionName: text(input.nft?.collectionName, `${name} NFT`), openSeaSlug, mode: requestedMode, mintAt: requestedMode === "multiple" ? phases[0]?.startsAt || text(input.nft?.mintAt) : text(input.nft?.mintAt), mintEndAt: text(input.nft?.mintEndAt) || null, mintPrice, mintLimit, mintPhases: requestedMode === "multiple" ? phases : [], timezone: text(input.nft?.timezone, "UTC"), supply: numberOrNull(input.nft?.supply), whaleThreshold: numberOrNull(input.nft?.whaleThreshold) || 10 };
     })(),
     features: { landing: true, whaleTracker: bool(input.features?.whaleTracker, true), nftTerminal: nftEnabled, memeIntel: bool(input.features?.memeIntel, true), communityPulse: bool(input.features?.communityPulse, true), timeline: bool(input.features?.timeline, true), liveMarket: bool(input.features?.liveMarket, true) },
     mascot, mascotPath: `/assets/${id}-mascot.${ext}`, mascotExt: ext,
@@ -272,7 +276,7 @@ function transformModuleFile(moduleName, relativeName, data, p) {
       source = source.replace(/<a class="terminal-action" href="(?:#|https:\/\/opensea\.io\/collection\/[^"]+)"([^>]*)>VISIT OPENSEA<\/a>/g, `<a class="terminal-action" href="${openSea}" data-opensea-action$1>VISIT OPENSEA</a>`);
       const mintDisplay = mintDisplayFromIso(p.nftSettings.mintAt);
       source = source
-        .replace(/<h1>[^<]*<\/h1>/, `<h1>${p.name} NFT COLLECTION TERMINAL</h1>`)
+        .replace(/<h1>[^<]*<\/h1>/, `<h1>${p.name} COMMUNITY TERMINAL</h1>`)
         .replace(/<div id="mintReady" class="line"><span class="orange">\[ UPCOMING \]<\/span> Mint begins at [^<]*<\/div>/, `<div id="mintReady" class="line"><span class="orange">[ UPCOMING ]</span> Mint begins on ${mintDisplay || "the configured mint time"}.</div>`)
         .replace(/after the mint begins at [^<]*<\/p>/, `after the mint begins on ${mintDisplay || "the configured mint time"}.</p>`)
         .replaceAll("[ ENTER NFT TERMINAL ]", "[ VISIT NFT TERMINAL ]")

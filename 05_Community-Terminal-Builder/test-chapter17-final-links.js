@@ -5,7 +5,7 @@ const base = {
   projectName:"LINKTEST", ticker:"LINK", tokenContract:"0x7a3f4d8c2b1e6f9054a7c2d9e81b3f6a4c5d7e90",
   nftContract:"0xb6e91c4a7d2f8350e19a6c4f728d3b5e901a7c2d",
   features:{whaleTracker:true,memeIntel:true,nftTerminal:true,liveMarket:true},
-  nft:{collectionName:"LINKTEST NFT",mode:"single",mintAt:"2026-08-10T15:00:00+03:00",mintEndAt:"2026-08-10T16:00:00+03:00",timezone:"Europe/Istanbul",supply:888}
+  nft:{collectionName:"LINKTEST NFT",mode:"single",mintAt:"2026-08-10T15:00:00+03:00",mintPrice:"FREE",mintLimit:"1",mintEndAt:"2026-08-10T16:00:00+03:00",timezone:"Europe/Istanbul",supply:888}
 };
 function files(input){ return Object.fromEntries(generate(input).entries.map(e=>[e.name.replace(/^LINKTEST_Community_Terminal\//,""),e.data.toString()])); }
 function count(haystack, needle){ return haystack.split(needle).length - 1; }

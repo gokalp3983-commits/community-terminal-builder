@@ -42,7 +42,7 @@ const result = generate({
   tokenContract: "0x1111111111111111111111111111111111111111",
   nftContract: "0x2222222222222222222222222222222222222222",
   features: { whaleTracker: true, memeIntel: true, nftTerminal: true, liveMarket: true },
-  nft: { collectionName: "PREVIEWCAT NFT", supply: 420, mintAt: "2026-08-09T12:00:00+03:00" },
+  nft: { collectionName: "PREVIEWCAT NFT", supply: 420, mintAt: "2026-08-09T12:00:00+03:00", mintPrice:"FREE", mintLimit:"1" },
 });
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ctb-ch16-"));
 try {

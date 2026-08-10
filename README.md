@@ -1344,3 +1344,20 @@ The second hands-on Chapter 19 acceptance pass tightened NFT state safety and fi
 - Wide tables/rankings/transaction-style outputs now scroll horizontally inside the command-result area instead of widening the entire page beyond the viewport.
 - Desktop layout remains unchanged.
 - Added Chapter 19 regression coverage for the mobile Whales/Intel containment contract.
+
+### Chapter 19 — Final hands-on NFT state + validation acceptance pass (10 Aug 2026)
+
+- Fixed the NFT module state machine so a valid NFT CA auto-enables NFT only when the contract is entered/edited; a deliberate manual NFT disable is no longer immediately overridden by generic form updates. The explicit **KEEP NFT TERMINAL / DISABLE NFT TERMINAL** confirmation remains authoritative, and disabling preserves the entered NFT configuration.
+- NFT Mint Details confirmation is now treated as one committed state. After a successful explicit confirmation, **CREATE TERMINAL** reuses that confirmation and does not ask again unless the NFT CA, collection/supply data, mint structure, schedule, price, wallet limit, or phase configuration changes.
+- Single-phase mint configuration now includes required **Mint Price** and **Mint Per Wallet** fields. Multiple-phase validation enforces Mint Price and Mint Per Wallet / Wallet Limit for every configured phase. Free mints must be expressed explicitly with a valid value such as `FREE` or `0`, not by leaving price blank.
+- Switching **Single Phase → Multiple Phases** now preserves the single-phase values as Phase 1. Switching back maps equivalent Phase 1 values into the single-phase fields. Structure changes invalidate confirmation but do not silently discard user-entered mint data.
+- OpenSea validation now uses inline field feedback: invalid collection URLs turn the OpenSea input red and display the specific `opensea.io/collection/<slug>` requirement directly below the field. The inline state clears automatically after correction.
+- The Branding section now shows a non-blocking, alignment-safe red warning directly below the mascot/logo uploader when no project logo is selected. It explains that generation can continue without a logo but recommends one for project identity, recognition, and social/link previews; the warning disappears automatically after a logo is selected.
+- Unified the NFT page header hierarchy with every other Community Terminal module. Both the NFT mint/countdown page and NFT terminal page now use the orange `<PROJECT> COMMUNITY TERMINAL • ONLINE` main header, the standard ecosystem subtitle, and the green **NFT Collection Terminal** opened-page title. This is applied to both canonical single-phase and multi-phase NFT templates.
+- Updated superseded historical test fixtures/assertions for the new required single-phase mint fields and unified NFT header contract.
+- Added Chapter 19 acceptance assertions covering inline OpenSea/logo validation, required mint price/wallet limits, phase data preservation, scoped NFT CA auto-enable behavior, persistent mint confirmation state, and single/multi NFT header parity.
+- `validate-master.js`: **PASS**.
+- Complete CTB regression suite through Chapter 19: **PASS**.
+- Fresh generated single-phase and multi-phase NFT package header spot checks: **PASS**.
+
+**Chapter 19 is ready for the final hands-on NFT acceptance test.**

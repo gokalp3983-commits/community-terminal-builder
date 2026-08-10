@@ -26,5 +26,5 @@ assert.match(nftCss,/#terminal-frame\.shell\.terminal-frame\{border:1px solid va
 const gen=read("05_Community-Terminal-Builder/generator.js");
 assert.match(gen,/VISIT NFT TERMINAL/,"NFT launch wording fix missing");
 assert.match(gen,/mintDisplayFromIso/,"NFT configured mint display fix missing");
-assert.match(gen,/NFT COLLECTION TERMINAL/,"NFT title normalization missing");
+assert.match(gen,/COMMUNITY TERMINAL/,"Unified NFT Community Terminal title normalization missing");
 console.log("Chapter 15A acceptance polish contract: PASS");

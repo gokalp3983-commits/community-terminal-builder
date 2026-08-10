@@ -23,7 +23,7 @@ for(const m of ["03_NFT-Collection-Terminal","03_NFT-Collection-Terminal-Multi-P
   assert(!term.includes("[ BLOCKSCOUT ]")&&!term.includes("[ ETHERSCAN ]"),`${m}: provider-specific visible wallet label removed`);
   assert(cd.includes("grid-template-columns:16ch 10ch 1ch minmax(0,1fr)"),`${m}: countdown links use four aligned columns`);
 }
-const input={projectName:"DONE",ticker:"DONE",tokenContract:"0x7a3f4d8c2b1e6f9054a7c2d9e81b3f6a4c5d7e90",nftContract:"0xb6e91c4a7d2f8350e19a6c4f728d3b5e901a7c2d",links:{website:"www.example.xyz",x:"x.com/example"},features:{whaleTracker:true,memeIntel:true,nftTerminal:true,liveMarket:true},nft:{collectionName:"DONE NFT",mode:"single",mintAt:"2026-08-10T15:00:00+03:00",mintEndAt:"2026-08-10T16:00:00+03:00",timezone:"Europe/Istanbul",supply:888}};
+const input={projectName:"DONE",ticker:"DONE",tokenContract:"0x7a3f4d8c2b1e6f9054a7c2d9e81b3f6a4c5d7e90",nftContract:"0xb6e91c4a7d2f8350e19a6c4f728d3b5e901a7c2d",links:{website:"www.example.xyz",x:"x.com/example"},features:{whaleTracker:true,memeIntel:true,nftTerminal:true,liveMarket:true},nft:{collectionName:"DONE NFT",mode:"single",mintAt:"2026-08-10T15:00:00+03:00",mintPrice:"FREE",mintLimit:"1",mintEndAt:"2026-08-10T16:00:00+03:00",timezone:"Europe/Istanbul",supply:888}};
 const files=Object.fromEntries(generate(input).entries.map(e=>[e.name.replace(/^DONE_Community_Terminal\//,""),e.data.toString()]));
 const countdown=files["03_NFT-Collection-Terminal/public/index.html"];
 assert(countdown.includes('class="project-launch-colon"'),"generated countdown has dedicated separator column");

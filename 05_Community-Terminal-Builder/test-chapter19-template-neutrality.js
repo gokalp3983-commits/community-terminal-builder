@@ -48,7 +48,7 @@ const base = {
     openSea: "https://opensea.io/collection/neutral-test/overview",
   },
   features: { whaleTracker:true, memeIntel:true, communityPulse:true, timeline:true, nftTerminal:true, liveMarket:true },
-  nft: { collectionName:"Neutral Test NFT", supply:1234, mintAt:"2026-09-01T12:00:00Z", timezone:"UTC" },
+  nft: { collectionName:"Neutral Test NFT", supply:1234, mintAt:"2026-09-01T12:00:00Z", mintPrice:"FREE", mintLimit:"1", timezone:"UTC" },
 };
 
 function assertNeutralOutput(label, input) {

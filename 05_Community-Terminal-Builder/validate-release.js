@@ -11,7 +11,7 @@ const ADDRESS = {
 };
 const scenarios = [
   { name:"TOKENONLY", ticker:"TOK", features:{whaleTracker:true,memeIntel:true,nftTerminal:false,liveMarket:true} },
-  { name:"NFTFULL", ticker:"NFT", nftContract:ADDRESS.nft, features:{whaleTracker:true,memeIntel:true,nftTerminal:true,liveMarket:true}, nft:{collectionName:"NFTFULL Collection",openSeaSlug:"nftfull",supply:1000,whaleThreshold:10} },
+  { name:"NFTFULL", ticker:"NFT", nftContract:ADDRESS.nft, features:{whaleTracker:true,memeIntel:true,nftTerminal:true,liveMarket:true}, nft:{collectionName:"NFTFULL Collection",openSeaSlug:"nftfull",supply:1000,whaleThreshold:10,mode:"single",mintAt:"2026-08-20T19:00:00+03:00",mintPrice:"FREE",mintLimit:"1",timezone:"Europe/Bucharest"} },
   { name:"MINIMAL", ticker:"MIN", features:{whaleTracker:false,memeIntel:false,nftTerminal:false,liveMarket:false} },
   { name:"CUSTOMNEON", ticker:"NEON", ecosystem:"Custom Chain", promptUser:"root", promptHost:"neon", dexScreenerChainId:"custom", blockscoutApiBase:"https://explorer.example/api/v2", colors:{primary:"#00ffff",accent:"#ff00ff",background:"#010102",panel:"#080812"}, links:{website:"https://example.com",x:"https://x.com/example",telegram:"https://t.me/example",explorer:"https://explorer.example"}, features:{whaleTracker:true,memeIntel:false,nftTerminal:false,liveMarket:true} },
 ];

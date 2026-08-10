@@ -164,6 +164,7 @@
                   <span id="mascot-file-name">No file selected</span>
                 </label>
                 <em>PNG, JPG, WEBP or SVG</em>
+                <p id="mascot-warning" class="inline-warning" role="note">[ WARN ] No project logo selected. You can continue without one, but a logo is strongly recommended for project identity, recognition, and social/link previews.</p>
               </div>
             </section>
 
@@ -176,7 +177,7 @@
                 <label><span>Telegram</span><input name="telegram" placeholder="https://t.me/..."></label>
                 <label class="advanced-field"><span>Explorer</span><input name="explorer" placeholder="https://..."></label>
                 <label class="advanced-field"><span>DexScreener</span><input name="dexScreener" placeholder="https://dexscreener.com/..."></label>
-                <label class="nft-config"><span>OpenSea</span><input name="openSea" placeholder="Optional"></label>
+                <label class="nft-config"><span>OpenSea</span><input name="openSea" placeholder="Optional"><small id="open-sea-error" class="field-error" hidden></small></label>
                 <input type="hidden" name="openSeaSlug" value="">
 
               </div>
@@ -197,6 +198,8 @@
                     <div class="nft-mint-grid">
                       <label><span>Mint date</span><input name="nftMintDate" type="date"></label>
                       <label><span>Mint time</span><input name="nftMintTime" type="time" step="60"></label>
+                      <label><span>Mint Price</span><input name="nftMintPrice" placeholder="FREE or 0.05 ETH"></label>
+                      <label><span>Mint Per Wallet</span><input name="nftMintLimit" placeholder="1"></label>
                       <label class="nft-timezone-field"><span>Timezone</span><input name="nftMintTimezone" list="nft-timezone-options" placeholder="Europe/Bucharest" autocomplete="off"><datalist id="nft-timezone-options"></datalist></label>
                       <button class="timezone-button" id="use-local-timezone" type="button">USE MY TIMEZONE</button>
                     </div>

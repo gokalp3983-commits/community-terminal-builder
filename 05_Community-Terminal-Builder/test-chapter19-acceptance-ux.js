@@ -7,6 +7,7 @@ const read=rel=>fs.readFileSync(path.join(ROOT,rel),"utf8");
 const html=read("05_Community-Terminal-Builder/public/index.html");
 const app=read("05_Community-Terminal-Builder/public/app.js");
 const generator=read("05_Community-Terminal-Builder/generator.js");
+const builderCss=read("05_Community-Terminal-Builder/public/style.css");
 const single=read("03_NFT-Collection-Terminal/public/countdown.js");
 const multi=read("03_NFT-Collection-Terminal-Multi-Phase/public/countdown.js");
 
@@ -20,7 +21,7 @@ assert(!app.includes('mintScheduleBlock.addEventListener("focusout"'),"Mint conf
 assert.match(app,/Confirm NFT Mint Details before creating the terminal/,"Generation must block on unconfirmed NFT mint details");
 assert.match(app,/MINT START TIME IS IN THE PAST|nft-past-warning/,"Past mint warning flow missing");
 assert.match(generator,/function normalizeXUrl/,"Central X URL normalization missing");
-const {normalize}=require("./generator");
+const {normalize,generate}=require("./generator");
 const project=normalize({projectName:"HANDLETEST",ticker:"HND",tokenContract:"0x1111111111111111111111111111111111111111",links:{x:"@CHAPTER19TEST"}});
 assert.equal(project.links.x,"https://x.com/CHAPTER19TEST","X handle normalization is incorrect");
 assert.throws(()=>normalize({projectName:"NFTNOCONTRACT",ticker:"NOC",tokenContract:"0x1111111111111111111111111111111111111111",nftContract:"",features:{nftTerminal:true}}),/NFT contract is required when NFT Terminal is enabled/,"Generator must refuse NFT-enabled output without an NFT contract");
@@ -49,3 +50,28 @@ assert.match(intelCss,/@media\(max-width:720px\)\{[\s\S]*\.intel-command-output\
 assert.match(intelCss,/\.intel-command-output table\{\s*min-width:720px/,'Intel mobile tables must preserve readable width inside the scroll container');
 
 console.log("Chapter 19 consolidated acceptance UX contracts: PASS");
+
+// Final hands-on acceptance fixes: NFT state preservation, inline validation, branding warning, and unified NFT headers.
+assert.match(html,/id="mascot-warning"[^>]*class="inline-warning"/,'Missing-logo inline warning must exist in branding area');
+assert.match(builderCss,/\.inline-warning\{[^}]*color:var\(--danger\)/s,'Missing-logo warning must use visible red/danger text');
+assert.match(html,/id="open-sea-error"[^>]*class="field-error"/,'OpenSea inline field error must exist');
+assert.match(builderCss,/\.field-invalid\{[^}]*border-color:var\(--danger\)/s,'Invalid field state must render red');
+assert.match(html,/name="nftMintPrice"/,'Single-phase Mint Price field missing');
+assert.match(html,/name="nftMintLimit"/,'Single-phase Mint Per Wallet field missing');
+assert.match(app,/Mint Price is required/,'Mint Price required validation missing');
+assert.match(app,/Mint Per Wallet \/ Wallet Limit is required/,'Wallet-limit required validation missing');
+assert.match(app,/Phase 1 values preserved/,'Single/multiple phase data-preservation flow missing');
+assert.match(app,/fromContractInput/,'NFT CA auto-enable must be scoped to NFT-CA entry rather than generic form updates');
+assert.match(app,/NFT Terminal disabled for this build · NFT configuration preserved/,'Explicit NFT disable preservation state missing');
+assert.match(app,/function mintSignature\(schedule\).*nftContract/s,'NFT confirmation signature must include NFT contract/configuration state');
+const nftLaunchTemplate=read("03_NFT-Collection-Terminal/public/index.html");
+const nftTerminalTemplate=read("03_NFT-Collection-Terminal/public/terminal.html");
+const nftMultiLaunchTemplate=read("03_NFT-Collection-Terminal-Multi-Phase/public/index.html");
+const nftMultiTerminalTemplate=read("03_NFT-Collection-Terminal-Multi-Phase/public/terminal.html");
+for(const [label,source] of [["single launch",nftLaunchTemplate],["single terminal",nftTerminalTemplate],["multi launch",nftMultiLaunchTemplate],["multi terminal",nftMultiTerminalTemplate]]){
+  assert.match(source,/COMMUNITY TERMINAL/ ,`${label}: unified Community Terminal main header missing`);
+  assert.match(source,/class="module-title">\s*NFT Collection Terminal\s*<\/div>/s,`${label}: green NFT Collection Terminal module title missing`);
+}
+assert.throws(()=>generate({projectName:"REQ",ticker:"REQ",tokenContract:"0x1111111111111111111111111111111111111111",nftContract:"0x2222222222222222222222222222222222222222",features:{nftTerminal:true},nft:{mode:"single",mintAt:"2026-09-01T12:00:00Z",mintLimit:"1"}}),/Mint Price is required/,'Generator must reject blank single-phase Mint Price');
+assert.throws(()=>generate({projectName:"REQ",ticker:"REQ",tokenContract:"0x1111111111111111111111111111111111111111",nftContract:"0x2222222222222222222222222222222222222222",features:{nftTerminal:true},nft:{mode:"single",mintAt:"2026-09-01T12:00:00Z",mintPrice:"FREE"}}),/Mint Per Wallet \/ Wallet Limit is required/,'Generator must reject blank single-phase wallet limit');
+console.log("Chapter 19 final hands-on NFT state + inline validation contracts: PASS");

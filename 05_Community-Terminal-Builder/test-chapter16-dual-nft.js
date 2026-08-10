@@ -42,7 +42,7 @@ function unpack(result){
   return {dir,root:path.join(dir,"DUALCAT_Community_Terminal")};
 }
 
-const single=unpack(generate({...common,nft:{collectionName:"DUALCAT NFT",supply:420,mode:"single",mintAt:"2026-08-20T19:00:00+03:00",timezone:"Europe/Bucharest"}}));
+const single=unpack(generate({...common,nft:{collectionName:"DUALCAT NFT",supply:420,mode:"single",mintAt:"2026-08-20T19:00:00+03:00",mintPrice:"FREE",mintLimit:"1",timezone:"Europe/Bucharest"}}));
 try{
   const cfg=readFile(single.root,"config/projects/dualcat.js"), launch=readFile(single.root,"03_NFT-Collection-Terminal/public/index.html"), terminal=readFile(single.root,"03_NFT-Collection-Terminal/public/terminal.html");
   assert.match(cfg,/"mode": "single"/,"Single NFT profile mode missing");
