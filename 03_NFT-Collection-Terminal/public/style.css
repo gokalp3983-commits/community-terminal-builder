@@ -2342,3 +2342,23 @@ html,body{background:#000!important}
 
 /* Chapter 19 final NFT header parity: keep the standard Community Terminal subtitle visible. */
 .community-subtitle{display:block!important}
+
+
+/* Chapter 20 — Spritehood QA carry-over, CTB palette preserved. */
+.log-copy-mobile{display:none}
+.mobile-launch-tag{display:none}
+@media(max-width:560px){
+  .log-copy-desktop{display:none!important}
+  .log-copy-mobile{display:inline!important;white-space:nowrap}
+  #boot .line{white-space:nowrap}
+  #terminal-live-panel .market-line{
+    grid-template-columns:11.5ch 12ch 1ch minmax(0,1fr)!important;
+    column-gap:.55ch!important;
+    align-items:baseline!important;
+    font-size:.80em!important;
+    white-space:nowrap!important;
+  }
+  #terminal-live-panel .market-tag,#terminal-live-panel .market-label,#terminal-live-panel .market-colon,#terminal-live-panel .market-value{min-width:0!important;white-space:nowrap!important}
+  #terminal-live-panel .market-tag,#terminal-live-panel .market-value{justify-self:start!important}
+  #terminal-live-panel .market-colon{text-align:center!important}
+}

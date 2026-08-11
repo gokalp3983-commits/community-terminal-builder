@@ -13,6 +13,10 @@ let completeAnnounced = false;
 let mintComplete = false;
 let completionCheckStarted = false;
 
+function responsiveStatusCopy(desktopText, mobileText){
+  return `<span class="log-copy-desktop">${desktopText}</span><span class="log-copy-mobile">${mobileText}</span>`;
+}
+
 function pad(v){ return String(Math.max(0,v)).padStart(2,"0"); }
 function isMintLive(){ return Date.now() >= MINT_AT.getTime(); }
 function scheduledMintComplete(){ return Boolean(MINT_END_AT && Date.now() >= MINT_END_AT.getTime()); }
@@ -44,10 +48,10 @@ function setComplete(){
   showTerminalLine();
 
   if ($("mintCommand")) {
-    $("mintCommand").innerHTML = `<span class="green">[ COMPLETE ]</span> ${PROJECT_NAME} mint schedule has concluded.`;
+    $("mintCommand").innerHTML = `<span class="green">[ COMPLETE ]</span> ${responsiveStatusCopy(`${PROJECT_NAME} mint schedule has concluded.`, "Mint complete.")}`;
   }
   if ($("mintReady")) {
-    $("mintReady").innerHTML = '<span class="green">[ READY ]</span> NFT Terminal is tracking collection activity.';
+    $("mintReady").innerHTML = `<span class="green">[ READY ]</span> ${responsiveStatusCopy("NFT Terminal is tracking collection activity.", "Tracking active.")}`;
   }
 
   // Phased variants can mark their command rows with data-mint-phase-row.
@@ -111,10 +115,10 @@ function setLive(){
   showTerminalLine();
 
   if ($("mintCommand")) {
-    $("mintCommand").innerHTML = `<span class="green">[ LIVE ]</span> ${PROJECT_NAME} mint is active.`;
+    $("mintCommand").innerHTML = `<span class="green">[ LIVE ]</span> ${responsiveStatusCopy(`${PROJECT_NAME} mint is active.`, "Mint active.")}`;
   }
   if ($("mintReady")) {
-    $("mintReady").innerHTML = '<span class="green">[ READY ]</span> NFT Terminal is the live collection dashboard.';
+    $("mintReady").innerHTML = `<span class="green">[ READY ]</span> ${responsiveStatusCopy("NFT Terminal is the live collection dashboard.", "Live dashboard ready.")}`;
   }
 
   if (!liveAnnounced){

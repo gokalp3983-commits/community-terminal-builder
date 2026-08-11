@@ -15,6 +15,10 @@ const phases = (configuredPhases.length ? configuredPhases : fallbackPhases).map
 const MINT_AT = new Date(window.PROJECT_CONFIG?.nft?.mintAt || phases[0]?.startsAt || "2026-08-15T23:08:00+03:00");
 let overallLiveSet = false;
 
+function responsiveStatusCopy(desktopText, mobileText){
+  return `<span class="log-copy-desktop">${desktopText}</span><span class="log-copy-mobile">${mobileText}</span>`;
+}
+
 function pad(v){ return String(Math.max(0,v)).padStart(2,"0"); }
 function isMintLive(){ return Date.now() >= MINT_AT.getTime(); }
 function isMintComplete(now = Date.now()){
@@ -73,9 +77,9 @@ function setOverallComplete(){
   if (terminalLine) terminalLine.hidden = false;
 
   $("mintCommand").innerHTML =
-    '<span class="green">[ COMPLETE ]</span> __CTB_PROJECT_NAME_UPPER__ mint schedule has concluded.';
+    `<span class="green">[ COMPLETE ]</span> ${responsiveStatusCopy("__CTB_PROJECT_NAME_UPPER__ mint schedule has concluded.", "Mint complete.")}`;
   $("mintReady").innerHTML =
-    '<span class="green">[ READY ]</span> NFT Terminal is tracking collection activity.';
+    `<span class="green">[ READY ]</span> ${responsiveStatusCopy("NFT Terminal is tracking collection activity.", "Tracking active.")}`;
 }
 
 function setOverallLive(){
@@ -95,8 +99,8 @@ function setOverallLive(){
 
   const terminalLine = $("postMintTerminalLine");
   if (terminalLine) terminalLine.hidden = false;
-  $("mintCommand").innerHTML = '<span class="green">[ LIVE ]</span> __CTB_PROJECT_NAME_UPPER__ mint schedule is underway.';
-  $("mintReady").innerHTML = '<span class="green">[ READY ]</span> NFT Terminal is the live collection dashboard.';
+  $("mintCommand").innerHTML = `<span class="green">[ LIVE ]</span> ${responsiveStatusCopy("__CTB_PROJECT_NAME_UPPER__ mint schedule is underway.", "Mint active.")}`;
+  $("mintReady").innerHTML = `<span class="green">[ READY ]</span> ${responsiveStatusCopy("NFT Terminal is the live collection dashboard.", "Live dashboard ready.")}`;
 }
 
 function renderPhase(phase, now){

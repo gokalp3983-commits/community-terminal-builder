@@ -1380,3 +1380,20 @@ The second hands-on Chapter 19 acceptance pass tightened NFT state safety and fi
 
 **Chapter 19 is COMPLETE / FINAL ACCEPTED / ARCHIVED.** This archive is the canonical baseline for Chapter 20.
 
+
+
+## Chapter 20 — Spritehood QA carry-over (11 Aug 2026)
+
+Chapter 20 starts from the Chapter 19 FINAL ACCEPTED baseline and carries generic NFT UX improvements proven during the Spritehood pre-mint deployment back into CTB while preserving the accepted CTB palette and Builder-driven project data.
+
+- Preserved the Chapter 19 visual contract: black background, orange structure/headings, terminal green status, bright white primary text, ice-blue links/highlights, red errors/warnings, and bright-green outer page frame.
+- No Spritehood banner, brick background, favicon, project branding, hardcoded links/data, or yellow/purple palette entered CTB.
+- Both canonical single-phase and multi-phase NFT templates now use the cleaner `Pending mint...` pre-mint data wording.
+- NFT Terminal pre-mint `Updated` now shows the actual local refresh time rather than `AWAITING MINT`; all six market status tags update consistently.
+- Mobile-only boot/status copy is shorter while desktop wording remains detailed.
+- Mobile NFT market rows use compact aligned status/label/colon/value columns to prevent collisions such as `Top Sale 24h`.
+- Countdown project/social rows now use compact phone tags (`[WEB]`, `[OPENSEA]`, `[X]`, `[TELEGRAM]`, `[TERMINAL]`) while desktop tags remain unchanged.
+- Countdown action buttons now use the canonical CTB ice-blue clickable-action treatment.
+- NFT CA, social links, mint phases, mint date/time, mint price and wallet limits remain user-entered Builder data and are not replaced by Spritehood-style TBA contract/schedule states.
+
+This is the Chapter 20 NFT UX carry-over pass; deployment-flow integration remains the next Chapter 20 workstream.

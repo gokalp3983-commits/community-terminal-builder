@@ -421,3 +421,15 @@
 @media(max-width:560px){
   .phase-details-kv{font-size:.86rem}
 }
+
+
+/* Chapter 20 — Spritehood QA carry-over, CTB palette preserved. */
+.log-copy-mobile,.mobile-launch-tag{display:none}
+@media(max-width:560px){
+  .log-copy-desktop,.desktop-launch-tag{display:none!important}
+  .log-copy-mobile,.mobile-launch-tag{display:inline!important}
+  .log-copy-mobile{white-space:nowrap}
+  .launch-boot .line{grid-template-columns:max-content minmax(0,1fr)!important;column-gap:.7ch!important}
+}
+.terminal-action{border-color:var(--cyan,#6FD3FF)!important;color:var(--cyan,#6FD3FF)!important;background:transparent!important}
+.terminal-action:hover,.terminal-action:focus-visible{border-color:var(--cyan,#6FD3FF)!important;color:#fff!important;background:rgba(111,211,255,.08)!important;box-shadow:0 0 10px rgba(111,211,255,.20)!important}

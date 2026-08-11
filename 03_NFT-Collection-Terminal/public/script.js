@@ -1,7 +1,7 @@
 const CFG = window.PROJECT_CONFIG;
 const MARKET_REFRESH_MS = 30_000;
 const MINT_AT = new Date("2026-08-07T19:00:00+03:00");
-const PENDING_MINT_DATA = "PENDING MINT DATA";
+const PENDING_MINT_DATA = "Pending mint...";
 const isPreMint = () => Date.now() < MINT_AT.getTime();
 
 function setLiveValueState(nodes, isLive){
@@ -174,6 +174,11 @@ function renderBoot(lines) {
   }
 }
 
+function responsiveBoot(statusHtml, desktopText, mobileText) {
+  return `${statusHtml}<span class="log-copy-desktop">${desktopText}</span><span class="log-copy-mobile">${mobileText}</span>`;
+}
+
+
 async function boot() {
   // Paint the status area immediately so the reserved boot space is never blank
   // while the first live mint-status request is in flight.
@@ -237,6 +242,8 @@ function setMarketStatus(text, state = "") {
     elements.marketPriceStatus,
     elements.marketHoldersStatus,
     elements.marketVolumeStatus,
+    elements.marketLastSaleStatus,
+    elements.marketHighestSaleStatus,
     elements.marketUpdatedStatus,
   ]) {
     element.textContent = `[ ${text} ]`;
@@ -306,7 +313,7 @@ function setPendingMarketPanel() {
   elements.marketVolume.textContent = PENDING_MINT_DATA;
   elements.marketLastSale.textContent = PENDING_MINT_DATA;
   elements.marketHighestSale.textContent = PENDING_MINT_DATA;
-  elements.marketUpdated.textContent = "AWAITING MINT";
+  elements.marketUpdated.textContent = formatMarketTime(new Date());
 }
 
 async function refreshMarketPanel() {
@@ -847,8 +854,8 @@ function setCollectionPending(){
   elements.collectionDataStatus.classList.remove("live");
   elements.floorPrice.textContent = PENDING_MINT_DATA;
   if(elements.salesFloorPrice) elements.salesFloorPrice.textContent = PENDING_MINT_DATA;
-  if(elements.floorTrend) elements.floorTrend.textContent = "● PENDING MINT DATA";
-  if(elements.salesFloorTrend) elements.salesFloorTrend.textContent = "● PENDING MINT DATA";
+  if(elements.floorTrend) elements.floorTrend.textContent = "● Pending mint...";
+  if(elements.salesFloorTrend) elements.salesFloorTrend.textContent = "● Pending mint...";
   elements.totalVolume.textContent = PENDING_MINT_DATA;
   elements.collectionOwners.textContent = PENDING_MINT_DATA;
   elements.collectionSales.textContent = PENDING_MINT_DATA;
@@ -1209,7 +1216,7 @@ async function refreshNftSales(){
   if(isPreMint()){
     setNftSalesStatus("PENDING MINT");
     elements.nftSalesUpdated.textContent = "Updated —";
-    elements.nftSalesRows.innerHTML = '<div class="nft-sale-placeholder pending-data-value">PENDING MINT DATA</div>';
+    elements.nftSalesRows.innerHTML = '<div class="nft-sale-placeholder pending-data-value">Pending mint...</div>';
     if(elements.salesFloorPrice) elements.salesFloorPrice.textContent = PENDING_MINT_DATA;
     if(elements.marketLastSale) elements.marketLastSale.textContent = PENDING_MINT_DATA;
     if(elements.marketHighestSale) elements.marketHighestSale.textContent = PENDING_MINT_DATA;
@@ -1451,8 +1458,8 @@ async function refreshNftWhales(){
     elements.nftWhaleCount.textContent = PENDING_MINT_DATA;
     elements.largestNftHolder.textContent = PENDING_MINT_DATA;
     elements.top10Concentration.textContent = PENDING_MINT_DATA;
-    elements.nftWhaleRows.innerHTML = '<tr><td colspan="4" class="pending-data-value">PENDING MINT DATA</td></tr>';
-    if(elements.nftDistribution) elements.nftDistribution.innerHTML = '<div class="nft-sale-placeholder pending-data-value">PENDING MINT DATA</div>';
+    elements.nftWhaleRows.innerHTML = '<tr><td colspan="4" class="pending-data-value">Pending mint...</td></tr>';
+    if(elements.nftDistribution) elements.nftDistribution.innerHTML = '<div class="nft-sale-placeholder pending-data-value">Pending mint...</div>';
     return;
   }
   try{

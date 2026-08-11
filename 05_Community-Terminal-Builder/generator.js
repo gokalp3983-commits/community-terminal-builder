@@ -174,12 +174,12 @@ function countdownProjectLinkRows(p) {
   // Reuse the countdown page's existing command-link area instead of adding a second social block.
   const openSea = p.links.openSea || (p.nftSettings.openSeaSlug ? `https://opensea.io/collection/${p.nftSettings.openSeaSlug}/overview` : "");
   const rows = [
-    ["LINK", "Website", p.links.website, `Visit ${p.name} Official Website`, "Visit Website"],
-    ["OPENSEA", "OpenSea", openSea, `View ${p.name} NFT Collection on OpenSea`, "View Collection"],
-    ["SOCIALS", "X", p.links.x, `Visit ${p.name} Official X Account`, "Open X"],
-    ["SOCIALS", "Telegram", p.links.telegram, `Join ${p.name} Official Telegram`, "Open Telegram"],
+    ["LINK", "WEB", "Website", p.links.website, `Visit ${p.name} Official Website`, "Visit Website"],
+    ["OPENSEA", "OPENSEA", "OpenSea", openSea, `View ${p.name} NFT Collection on OpenSea`, "View Collection"],
+    ["SOCIALS", "X", "X", p.links.x, `Visit ${p.name} Official X Account`, "Open X"],
+    ["SOCIALS", "TELEGRAM", "Telegram", p.links.telegram, `Join ${p.name} Official Telegram`, "Open Telegram"],
   ];
-  return rows.filter(([, , url]) => url).map(([tag,label,url,copy,mobileCopy]) => `          <div class="launch-links-line project-launch-link"><span class="orange">[ ${tag} ]</span><span class="project-launch-label">${html(label)}</span><span class="project-launch-colon" aria-hidden="true">:</span><a href="${html(url)}" target="_blank" rel="noopener noreferrer">${responsiveLinkCopy(copy,mobileCopy)}</a></div>`).join("\n");
+  return rows.filter(([, , , url]) => url).map(([tag,mobileTag,label,url,copy,mobileCopy]) => `          <div class="launch-links-line project-launch-link"><span class="orange"><span class="desktop-launch-tag">[ ${tag} ]</span><span class="mobile-launch-tag">[${mobileTag}]</span></span><span class="project-launch-label">${html(label)}</span><span class="project-launch-colon" aria-hidden="true">:</span><a href="${html(url)}" target="_blank" rel="noopener noreferrer">${responsiveLinkCopy(copy,mobileCopy)}</a></div>`).join("\n");
 }
 function nftInfoLinkRows(p) {
   // OpenSea already has a canonical collection-info row in the NFT terminal. Do not duplicate it.
@@ -296,7 +296,7 @@ function transformModuleFile(moduleName, relativeName, data, p) {
       const mintDisplay = mintDisplayFromIso(p.nftSettings.mintAt);
       source = source
         .replace(/<h1>[^<]*<\/h1>/, `<h1>${p.name} COMMUNITY TERMINAL</h1>`)
-        .replace(/<div id="mintReady" class="line"><span class="orange">\[ UPCOMING \]<\/span> Mint begins at [^<]*<\/div>/, `<div id="mintReady" class="line"><span class="orange">[ UPCOMING ]</span> Mint begins on ${mintDisplay || "the configured mint time"}.</div>`)
+        .replace(/<div id="mintReady" class="line"><span class="orange">\[ UPCOMING \]<\/span><span class="log-copy-desktop">Mint begins at [^<]*<\/span><span class="log-copy-mobile">[^<]*<\/span><\/div>/, `<div id="mintReady" class="line"><span class="orange">[ UPCOMING ]</span><span class="log-copy-desktop">Mint begins on ${mintDisplay || "the configured mint time"}.</span><span class="log-copy-mobile">Mint scheduled.</span></div>`)
         .replace(/after the mint begins at [^<]*<\/p>/, `after the mint begins on ${mintDisplay || "the configured mint time"}.</p>`)
         .replaceAll("[ ENTER NFT TERMINAL ]", "[ VISIT NFT TERMINAL ]")
         .replaceAll("ENTER NFT TERMINAL", "VISIT NFT TERMINAL");
