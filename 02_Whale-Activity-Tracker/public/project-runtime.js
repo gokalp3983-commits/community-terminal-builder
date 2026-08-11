@@ -42,7 +42,7 @@
       e.textContent = `${c.project.name} Community Terminal`;
     });
     document.querySelectorAll("[data-project-footer]").forEach((e) => {
-      e.innerHTML = `Independent community-built tools.<br>Not affiliated with or endorsed by the official ${c.project.ticker} team.<br>Built for the ${c.project.ecosystem} ${c.project.ticker} ecosystem.`;
+      e.innerHTML = `Independent community-built tools.<br>Not affiliated with or endorsed by the official ${c.project.name} team.<br>Built for the ${c.project.ecosystem} community.`;
     });
 
     document.querySelectorAll("[data-token-contract]").forEach((e) => {

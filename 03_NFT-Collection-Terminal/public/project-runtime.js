@@ -32,14 +32,15 @@
       }
     });
     document.querySelectorAll("[data-project-mascot]").forEach((e) => {
-      e.src = c.branding.mascot;
+      const mascot = String(c.branding.mascot || "");
+      e.src = location.pathname.startsWith("/nft") && mascot.startsWith("/assets/") ? `/nft${mascot}` : mascot;
       e.alt = c.branding.mascotAlt;
     });
     document.querySelectorAll("[data-project-version]").forEach((e) => {
-      e.textContent = `${c.project.name} NFT Terminal`;
+      e.textContent = `${c.project.name} Community Terminal`;
     });
     document.querySelectorAll("[data-project-footer]").forEach((e) => {
-      e.innerHTML = `Independently built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer">𝕏 @Gokalp8339</a><br>Not affiliated with or endorsed by the official ${c.project.ticker} team.<br>Built for the ${c.project.ecosystem} ${c.project.ticker} ecosystem.`;
+      e.innerHTML = `Built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer">𝕏 @Gokalp8339</a><br>Not affiliated with or endorsed by the official ${c.project.name} team.`;
     });
 
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);

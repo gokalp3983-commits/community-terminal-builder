@@ -45,7 +45,7 @@
       e.textContent = `Independent community tools for ${c.project.ecosystem}.`;
     });
     document.querySelectorAll("[data-project-footer]").forEach((e) => {
-      e.innerHTML = `Built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp8339 on X">X @Gokalp8339</a><br>Not affiliated with or endorsed by the official ${c.project.ticker} team.`;
+      e.innerHTML = `Built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp8339 on X">X @Gokalp8339</a><br>Not affiliated with or endorsed by the official ${c.project.name} team.`;
     });
 
     document.querySelectorAll("[data-token-contract]").forEach((e) => {

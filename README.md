@@ -1397,3 +1397,17 @@ Chapter 20 starts from the Chapter 19 FINAL ACCEPTED baseline and carries generi
 - NFT CA, social links, mint phases, mint date/time, mint price and wallet limits remain user-entered Builder data and are not replaced by Spritehood-style TBA contract/schedule states.
 
 This is the Chapter 20 NFT UX carry-over pass; deployment-flow integration remains the next Chapter 20 workstream.
+
+
+## Chapter 20 — Acceptance Candidate (11 Aug 2026)
+
+- Preserved the Chapter 19 final CTB palette and current ZIP-generation workflow; real deployment/live-URL integration remains a later Chapter 20 step.
+- Applied Spritehood-proven generic NFT UX refinements without importing Spritehood branding, artwork, background, favicon, or yellow/purple palette.
+- Fixed NFT countdown boot/status tag-to-message column alignment on desktop and mobile.
+- Single-phase countdown now places Mint Fee and Mint per Wallet directly below the primary countdown with stronger CTB-palette emphasis.
+- Multi-phase phase-card mint detail rows are left-aligned with the countdown column and the unwanted ice-blue divider above them is removed.
+- Restored project mascot/logo rendering on both NFT countdown and NFT terminal pages with mount-aware NFT asset paths.
+- Restored canonical Community Terminal footer styling on NFT pages; NFT pages add the OpenSea API information note and omit the obsolete OpenSea listings sentence.
+- Project identity/disclaimer copy uses the project name rather than a dollar-prefixed ticker.
+- Single-phase mint configuration now includes end date/time and transfers the complete schedule, timezone, fee and wallet limit to Phase 1 when switching to multiple phases; switching back restores the complete Phase 1 values.
+- Builder Landing Preview mascot uses the same 220x86 contain slot as generated Community Terminal headers for closer scale parity.

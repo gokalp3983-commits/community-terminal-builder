@@ -433,3 +433,11 @@
 }
 .terminal-action{border-color:var(--cyan,#6FD3FF)!important;color:var(--cyan,#6FD3FF)!important;background:transparent!important}
 .terminal-action:hover,.terminal-action:focus-visible{border-color:var(--cyan,#6FD3FF)!important;color:#fff!important;background:rgba(111,211,255,.08)!important;box-shadow:0 0 10px rgba(111,211,255,.20)!important}
+
+/* Chapter 20 Acceptance — fixed prompt columns + phase-card detail alignment. */
+.launch-boot .line{grid-template-columns:13ch minmax(0,1fr)!important;column-gap:.8ch!important}
+.launch-boot .line>span:first-child{display:block;width:13ch!important;white-space:nowrap!important}
+.phase-details-kv{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important;padding-top:0!important;border-top:0!important;text-align:left!important}
+.phase-detail-row{grid-template-columns:15ch 1ch minmax(0,1fr)!important;justify-content:start!important}
+.phase-details{border-top:0!important}
+@media(max-width:560px){.launch-boot .line{grid-template-columns:13ch minmax(0,1fr)!important;column-gap:.45ch!important}.phase-details-kv{font-size:.96rem!important}}

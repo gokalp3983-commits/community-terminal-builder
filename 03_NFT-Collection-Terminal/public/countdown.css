@@ -174,3 +174,12 @@
 }
 .terminal-action{border-color:var(--cyan,#6FD3FF)!important;color:var(--cyan,#6FD3FF)!important;background:transparent!important}
 .terminal-action:hover,.terminal-action:focus-visible{border-color:var(--cyan,#6FD3FF)!important;color:#fff!important;background:rgba(111,211,255,.08)!important;box-shadow:0 0 10px rgba(111,211,255,.20)!important}
+
+/* Chapter 20 Acceptance — countdown prompt + single-phase mint detail parity. */
+.launch-boot .line{grid-template-columns:13ch minmax(0,1fr)!important;column-gap:.8ch!important}
+.launch-boot .line>span:first-child{display:block;width:13ch!important;white-space:nowrap!important}
+.single-phase-details{margin:6px auto 10px!important;font-size:1.08rem!important;line-height:1.5!important}
+.single-phase-details .phase-detail-label{color:var(--cyan,#6FD3FF)!important;font-weight:700}
+.single-phase-details .phase-detail-colon{color:var(--cyan,#6FD3FF)!important}
+.single-phase-details .phase-detail-value{color:#fff!important;font-weight:800}
+@media(max-width:560px){.launch-boot .line{grid-template-columns:13ch minmax(0,1fr)!important;column-gap:.45ch!important}.single-phase-details{font-size:.98rem!important}}

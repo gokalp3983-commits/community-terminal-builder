@@ -38,10 +38,10 @@
       e.alt = c.branding.mascotAlt;
     });
     document.querySelectorAll("[data-project-version]").forEach((e) => {
-      e.textContent = `${c.project.name} NFT Terminal`;
+      e.textContent = `${c.project.name} Community Terminal`;
     });
     document.querySelectorAll("[data-project-footer]").forEach((e) => {
-      e.innerHTML = `<span class="footer-line footer-built">Independently built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer">𝕏 @Gokalp8339</a></span><span class="footer-line footer-disclaimer"><span class="footer-mobile-line">Not affiliated with or endorsed by</span><span class="footer-mobile-line">the official ${c.project.ticker} team.</span></span><span class="footer-line footer-ecosystem"><span class="footer-mobile-line">Built for the ${c.project.ecosystem}</span><span class="footer-mobile-line">${c.project.ticker} ecosystem.</span></span>`;
+      e.innerHTML = `Built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer">𝕏 @Gokalp8339</a><br>Not affiliated with or endorsed by the official ${c.project.name} team.`;
     });
 
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);

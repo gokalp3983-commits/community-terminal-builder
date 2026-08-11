@@ -300,7 +300,7 @@ function transformModuleFile(moduleName, relativeName, data, p) {
         .replace(/after the mint begins at [^<]*<\/p>/, `after the mint begins on ${mintDisplay || "the configured mint time"}.</p>`)
         .replaceAll("[ ENTER NFT TERMINAL ]", "[ VISIT NFT TERMINAL ]")
         .replaceAll("ENTER NFT TERMINAL", "VISIT NFT TERMINAL");
-      source = source.replace(/<div class="footer-version">\s*[^<]+\s*<\/div>/, `<div class="footer-version">\n            ${p.name} NFT Terminal\n          </div>`);
+      source = source.replace(/<div class="footer-version">\s*[^<]+\s*<\/div>/, `<div class="footer-version">\n            ${p.name} Community Terminal\n          </div>`);
     }
     if (relativeName === "public/script.js") {
       const mintDisplay = mintDisplayFromIso(p.nftSettings.mintAt);
