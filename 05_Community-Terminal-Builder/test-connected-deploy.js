@@ -5,12 +5,15 @@ const calls=[];let blob=0;
 function response(status,data){return {ok:status>=200&&status<300,status,async text(){return data===null?"":JSON.stringify(data)}}}
 async function fakeFetch(url,opts={}){calls.push({url,method:opts.method||"GET",body:opts.body?JSON.parse(opts.body):null});
  if(url.endsWith("/user"))return response(200,{login:"tester"});
- if(url.includes("/repos/tester/test-community-terminal")&&(opts.method||"GET")==="GET")return response(404,{message:"Not Found"});
- if(url.endsWith("/user/repos"))return response(201,{name:"test-community-terminal",default_branch:"main"});
+ if(url.endsWith("/repos/tester/test-community-terminal")&&(opts.method||"GET")==="GET")return response(404,{message:"Not Found"});
+ if(url.endsWith("/user/repos"))return response(201,{name:"test-community-terminal",default_branch:null});
+ if(url.includes("/contents/")&&(opts.method||"GET")==="PUT")return response(201,{commit:{sha:"seed-commit"}});
+ if(url.endsWith("/git/commits/seed-commit"))return response(200,{sha:"seed-commit",tree:{sha:"seed-tree"}});
  if(url.endsWith("/git/blobs"))return response(201,{sha:`blob-${++blob}`});
  if(url.endsWith("/git/trees"))return response(201,{sha:"tree-1"});
  if(url.endsWith("/git/commits"))return response(201,{sha:"commit-1"});
- if(url.endsWith("/git/refs"))return response(201,{ref:"refs/heads/main"});
+ if(url.endsWith("/git/refs/heads/main")&&(opts.method||"GET")==="PATCH")return response(200,{ref:"refs/heads/main"});
+ if(url.includes("/repos/tester/test-community-terminal")&&(opts.method||"GET")==="PATCH")return response(200,{default_branch:"main"});
  if(url.includes("api.render.com/v1/services?"))return response(200,[]);
  if(url.endsWith("api.render.com/v1/services"))return response(201,{id:"srv-test",name:"test-community-terminal",status:"build_in_progress",serviceDetails:{url:"https://test-community-terminal.onrender.com"}});
  throw new Error(`Unexpected fake request ${opts.method||"GET"} ${url}`);

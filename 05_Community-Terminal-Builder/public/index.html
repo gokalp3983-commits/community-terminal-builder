@@ -87,11 +87,11 @@
           </div>
           <p class="connected-note">GitHub and Render credentials remain on the builder server. They are never returned to or stored by the browser.</p>
           <div class="deployment-grid">
-            <label><span>Repository name</span><input id="connected-repo-name" placeholder="jacket-community-terminal"></label>
-            <label><span>Render service name</span><input id="connected-service-name" placeholder="jacket-community-terminal"></label>
+            <label><span>Repository name</span><input id="connected-repo-name" placeholder="auto-derived from project name"></label>
+            <label><span>Render service name</span><input id="connected-service-name" placeholder="auto-derived from project name"></label>
           </div>
           <div class="deployment-grid">
-            <label><span>Release action</span><select id="connected-release-mode"><option value="update" selected>UPDATE EXISTING RELEASE</option><option value="create">CREATE NEW RELEASE</option></select></label>
+            <label><span>Release action</span><select id="connected-release-mode"><option value="create" selected>CREATE NEW RELEASE</option><option value="update">UPDATE EXISTING RELEASE</option></select></label>
             <label class="connected-private-option"><span>Repository visibility</span><span><input id="connected-private" type="checkbox"> Private GitHub repository</span></label>
           </div>
           <div class="deployment-dashboard-actions">
@@ -134,14 +134,14 @@
             <section class="panel" data-section="identity" id="guided-project">
               <div class="section-heading"><span>01</span><h2>PROJECT</h2><small>NAME, IDENTITY &amp; DESCRIPTION</small></div><p class="guided-step-note">Start with the basics. The Builder handles the terminal identity automatically.</p>
               <div class="grid">
-                <label><span>Project name *</span><input name="projectName" required placeholder="CATCOIN"></label>
-                <label><span>Ticker *</span><input name="ticker" required placeholder="CAT"></label>
+                <label><span>Project name *</span><input name="projectName" required placeholder="Enter project name"></label>
+                <label><span>Ticker *</span><input name="ticker" required placeholder="Enter ticker"></label>
                 <label class="advanced-field"><span>Version</span><input name="version" value="1.0.0"></label>
-                <label class="advanced-field"><span>Terminal user</span><input name="promptUser" placeholder="catcoin"></label>
-                <label class="advanced-field"><span>Terminal host</span><input name="promptHost" value="terminal"></label>
+                <label class="advanced-field"><span>Terminal identity</span><input name="promptUser" placeholder="ticker@robinhood — auto-derived" readonly></label>
+                <label class="advanced-field"><span>Terminal host</span><input name="promptHost" value="robinhood" readonly></label>
                 <label class="advanced-field"><span>Ecosystem</span><input name="ecosystem" value="Robinhood Chain"></label>
               </div>
-              <label class="wide"><span>Description</span><textarea name="description" placeholder="Terminal-style intelligence tools for the community."></textarea></label>
+              <label class="wide"><span>Description</span><textarea name="description" placeholder="Enter a short project description"></textarea></label>
             </section>
 
             <section class="panel" data-section="contracts" id="guided-token">
@@ -171,13 +171,13 @@
             <section class="panel" data-section="links" id="guided-links">
               <div class="section-heading"><span>04</span><h2>LINKS</h2><small>COMMUNITY &amp; MARKET ROUTES</small></div><p class="guided-step-note">Add the community links you actually use. Leave anything else blank.</p>
               <div class="grid">
-                <label class="advanced-field"><span>Home URL</span><input name="home" placeholder="http://localhost:3000"></label>
-                <label><span>Website</span><input name="website" placeholder="https://..."></label>
-                <label><span>X / Twitter</span><input name="x" placeholder="https://x.com/..."></label>
-                <label><span>Telegram</span><input name="telegram" placeholder="https://t.me/..."></label>
-                <label class="advanced-field"><span>Explorer</span><input name="explorer" placeholder="https://..."></label>
-                <label class="advanced-field"><span>DexScreener</span><input name="dexScreener" placeholder="https://dexscreener.com/..."></label>
-                <label class="nft-config"><span>OpenSea</span><input name="openSea" placeholder="Optional"><small id="open-sea-error" class="field-error" hidden></small></label>
+                <label class="advanced-field"><span>Home URL</span><input name="home" placeholder="Optional home URL"></label>
+                <label><span>Website</span><input name="website" placeholder="Paste URL"></label>
+                <label><span>X / Twitter</span><input name="x" placeholder="Paste X / Twitter URL"></label>
+                <label><span>Telegram</span><input name="telegram" placeholder="Paste Telegram URL"></label>
+                <label class="advanced-field"><span>Explorer</span><input name="explorer" placeholder="Paste URL"></label>
+                <label class="advanced-field"><span>DexScreener</span><input name="dexScreener" placeholder="Paste DexScreener URL"></label>
+                <label class="nft-config"><span>OpenSea</span><input name="openSea" placeholder="Optional OpenSea collection URL"><small id="open-sea-error" class="field-error" hidden></small></label>
                 <input type="hidden" name="openSeaSlug" value="">
 
               </div>
@@ -187,12 +187,12 @@
               <div class="section-heading"><span>05</span><h2>NFT MINT DETAILS</h2><small>COLLECTION &amp; LAUNCH CONFIGURATION</small></div>
               <p class="guided-step-note">Configure the NFT collection and launch schedule, then explicitly confirm the mint details before creating the terminal.</p>
               <div class="grid">
-                <label><span>NFT collection name</span><input name="nftCollectionName" placeholder="Optional — defaults to project name + NFT"></label>
-                <label><span>NFT total supply</span><input name="nftSupply" type="number" min="1" step="1" placeholder="Required for canonical NFT mint tracker"></label>
+                <label><span>NFT collection name</span><input name="nftCollectionName" placeholder="Optional — derived from project name"></label>
+                <label><span>NFT total supply</span><input name="nftSupply" type="number" min="1" step="1" placeholder="Enter total supply"></label>
                 <div class="span-2 nft-mint-schedule" id="nft-mint-schedule">
                   <div class="nft-mint-heading"><span>NFT mint structure</span><small>Choose the canonical single-phase or multiple-phase NFT launch base.</small></div>
                   <div class="nft-mint-mode-row">
-                    <label><span>Mint structure</span><select name="nftMintMode" id="nft-mint-mode" required><option value="" selected disabled>Please select mint structure</option><option value="single">Single Phase</option><option value="multiple">Multiple Phases</option></select></label>
+                    <label><span>Mint structure</span><select name="nftMintMode" id="nft-mint-mode"><option value="" selected disabled>Please select mint structure</option><option value="single">Single Phase</option><option value="multiple">Multiple Phases</option></select></label>
                   </div>
                   <div id="nft-single-phase-fields">
                     <div class="nft-mint-grid">
@@ -200,9 +200,9 @@
                       <label><span>Mint start time</span><input name="nftMintTime" type="time" step="60"></label>
                       <label><span>Mint end date</span><input name="nftMintEndDate" type="date"></label>
                       <label><span>Mint end time</span><input name="nftMintEndTime" type="time" step="60"></label>
-                      <label><span>Mint Price</span><input name="nftMintPrice" placeholder="FREE or 0.05 ETH"></label>
-                      <label><span>Mint Per Wallet</span><input name="nftMintLimit" placeholder="1"></label>
-                      <label class="nft-timezone-field"><span>Timezone</span><input name="nftMintTimezone" list="nft-timezone-options" placeholder="Europe/Bucharest" autocomplete="off"><datalist id="nft-timezone-options"></datalist></label>
+                      <label><span>Mint Price</span><input name="nftMintPrice" placeholder="e.g. FREE or 0.05 ETH"></label>
+                      <label><span>Mint Per Wallet</span><input name="nftMintLimit" placeholder="e.g. 1"></label>
+                      <label class="nft-timezone-field"><span>Timezone</span><input name="nftMintTimezone" list="nft-timezone-options" placeholder="e.g. UTC or Europe/Bucharest" autocomplete="off"><datalist id="nft-timezone-options"></datalist></label>
                       <button class="timezone-button" id="use-local-timezone" type="button">USE MY TIMEZONE</button>
                     </div>
                   </div>
@@ -320,27 +320,39 @@
           <p>Your terminal has been created with the modules listed below.</p>
           <div id="built-modules" class="built-modules"></div>
         </div>
-        <div class="terminal-ready-link">
+        <div class="terminal-ready-link" id="built-live-panel">
           <span>LIVE TERMINAL</span>
-          <a id="built-terminal-url" href="#" target="_blank" rel="noopener noreferrer">https://www.terminal.xyz/project-landing-page</a>
+          <a id="built-terminal-url" aria-disabled="true">Not deployed yet</a>
+        </div>
+        <div id="quick-deploy-state" class="quick-deploy-state" aria-live="polite">[ READY ] Generated package is ready for deployment.</div>
+        <div id="quick-deploy-confirmation" class="quick-deploy-confirmation" hidden>
+          <div><span>Confirmation phrase</span><code id="quick-deploy-phrase"></code></div>
+          <label><span>Type the phrase exactly</span><input id="quick-deploy-confirmation-text" autocomplete="off" spellcheck="false"></label>
+          <small>This authorization is one-time and expires after five minutes.</small>
         </div>
         <div class="build-actions final-product-actions">
-          <button id="open-built-terminal" type="button">OPEN TERMINAL</button>
-          <button id="copy-built-terminal-link" type="button">COPY LINK</button>
+          <button id="deploy-built-terminal" type="button">DEPLOY TERMINAL</button>
+          <button id="confirm-deploy-built-terminal" type="button" hidden>CONFIRM &amp; DEPLOY</button>
+          <button id="download-built-terminal" type="button">DOWNLOAD ZIP</button>
+          <a id="open-built-terminal" class="action-link" aria-disabled="true">OPEN TERMINAL</a>
+          <button id="copy-built-terminal-link" type="button" disabled>COPY LINK</button>
           <button id="close-build-complete-action" type="button">CLOSE</button>
         </div>
-        <p class="build-note">Your terminal link is ready to share with the community.</p>
+        <p class="build-note">Deploy directly with the connected GitHub + Render workflow, or download the generated ZIP for manual hosting.</p>
       </div>
     </dialog>
-  <script src="app.js"></script>
+  <script src="app.js?v=20b-fix7"></script>
   <div id="auto-save-toast" class="auto-save-toast" role="status" aria-live="polite"><strong>[ SAVED ]</strong> Latest project configuration saved ✓</div>
   <div id="deployment-toast" class="deployment-toast" role="status" aria-live="polite" hidden><strong>[ DEPLOYMENT STARTED ]</strong><span>Your website is being deployed. Please wait until the deployment completes successfully before making further release changes.</span></div>
 
   <dialog id="deployment-success-dialog" class="deployment-success-dialog" aria-labelledby="deployment-success-title">
     <div class="deployment-success-panel">
-      <header>
-        <span>[ RELEASE COMPLETE ]</span>
-        <strong id="deployment-success-title">Deployment successful</strong>
+      <header class="deployment-success-header">
+        <div>
+          <span>[ RELEASE COMPLETE ]</span>
+          <strong id="deployment-success-title">Deployment successful</strong>
+        </div>
+        <form method="dialog"><button type="submit" class="deployment-success-x" aria-label="Close deployment success dialog">×</button></form>
       </header>
       <div class="deployment-success-body">
         <p>Your website has been deployed successfully and is now live.</p>
@@ -349,8 +361,8 @@
         <p class="deployment-success-note">You can open the live website now, then run Public Acceptance to complete verification.</p>
       </div>
       <div class="deployment-success-actions">
-        <button type="button" id="deployment-success-open">OPEN WEBSITE</button>
-        <button type="button" id="deployment-success-close">OK / CLOSE</button>
+        <a id="deployment-success-open" class="deployment-success-open" aria-disabled="true">OPEN WEBSITE</a>
+        <form method="dialog"><button type="submit" id="deployment-success-close" value="close">OK / CLOSE</button></form>
       </div>
     </div>
   </dialog>

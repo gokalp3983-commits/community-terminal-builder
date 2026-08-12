@@ -61,14 +61,38 @@ async function ensureRepo(fetchImpl,c,owner,repoName,description,visibility,rele
   return {repo:existing,created:false};
 }
 function relativeFiles(result){const prefix=`${result.root}/`;return result.entries.map(entry=>({path:entry.name.startsWith(prefix)?entry.name.slice(prefix.length):entry.name,data:Buffer.isBuffer(entry.data)?entry.data:Buffer.from(entry.data)})).filter(x=>x.path&&!x.path.endsWith("/"));}
+async function initializeEmptyRepo(fetchImpl,c,owner,repoName,files){
+  const seed=files[0];
+  if(!seed)throw new Error("Generated terminal contains no publishable files.");
+  let created=null,lastError=null;
+  for(let attempt=0;attempt<4;attempt++){
+    try{
+      created=await githubRequest(fetchImpl,c,`/repos/${owner}/${repoName}/contents/${seed.path.split("/").map(encodeURIComponent).join("/")}`,{method:"PUT",body:{message:"Initialize repository for CTB deployment",content:seed.data.toString("base64"),branch:"main"}});
+      break;
+    }catch(error){
+      lastError=error;
+      if(error.status!==409)throw error;
+      await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)));
+    }
+  }
+  if(!created)throw lastError||new Error("GitHub repository could not be initialized.");
+  const parentSha=String(created?.commit?.sha||"");
+  if(!parentSha)throw new Error("GitHub repository initialization did not return a commit SHA.");
+  const commit=await githubRequest(fetchImpl,c,`/repos/${owner}/${repoName}/git/commits/${parentSha}`);
+  return {parentSha,baseTree:String(commit?.tree?.sha||"")};
+}
 async function publishGitHub(fetchImpl,c,result,{repoName,visibility="public",releaseMode="update"}){
   const owner=await githubIdentity(fetchImpl,c);const ensured=await ensureRepo(fetchImpl,c,owner,repoName,`Generated ${result.project.name} Community Terminal`,visibility,releaseMode);
+  const files=relativeFiles(result);
   let parentSha=null,baseTree=null;
-  if(!ensured.created){
-    try{const ref=await githubRequest(fetchImpl,c,`/repos/${owner}/${repoName}/git/ref/heads/main`);parentSha=ref.object.sha;const commit=await githubRequest(fetchImpl,c,`/repos/${owner}/${repoName}/git/commits/${parentSha}`);baseTree=commit.tree.sha}catch(error){if(error.status!==404)throw error}
+  if(ensured.created){
+    ({parentSha,baseTree}=await initializeEmptyRepo(fetchImpl,c,owner,repoName,files));
+  }else{
+    try{const ref=await githubRequest(fetchImpl,c,`/repos/${owner}/${repoName}/git/ref/heads/main`);parentSha=ref.object.sha;const commit=await githubRequest(fetchImpl,c,`/repos/${owner}/${repoName}/git/commits/${parentSha}`);baseTree=commit.tree.sha}catch(error){if(error.status!==404&&error.status!==409)throw error}
+    if(!parentSha)({parentSha,baseTree}=await initializeEmptyRepo(fetchImpl,c,owner,repoName,files));
   }
   const tree=[];
-  for(const file of relativeFiles(result)){
+  for(const file of files){
     const blob=await githubRequest(fetchImpl,c,`/repos/${owner}/${repoName}/git/blobs`,{method:"POST",body:{content:file.data.toString("base64"),encoding:"base64"}});
     tree.push({path:file.path,mode:"100644",type:"blob",sha:blob.sha});
   }
@@ -107,11 +131,13 @@ async function getRenderDeploymentStatus(serviceId,{fetchImpl=fetch,env=process.
   const response=await renderRequest(fetchImpl,c,`/services/${encodeURIComponent(id)}/deploys?limit=1`);
   const list=Array.isArray(response)?response:Array.isArray(response?.items)?response.items:[];
   const deploy=list.map(item=>item?.deploy||item).find(Boolean)||null;
-  if(!deploy)return {ok:true,serviceId:id,status:"pending",deployId:null,finished:false,success:false,failed:false};
+  let publicUrl="";
+  try{const service=await renderRequest(fetchImpl,c,`/services/${encodeURIComponent(id)}`);publicUrl=renderUrl(service)||renderUrl(service?.service)||""}catch{}
+  if(!deploy)return {ok:true,serviceId:id,status:"pending",deployId:null,finished:false,success:false,failed:false,publicUrl};
   const status=String(deploy.status||"pending").toLowerCase();
   const success=["live"].includes(status);
   const failed=["build_failed","update_failed","pre_deploy_failed","canceled","cancelled"].includes(status);
-  return {ok:true,serviceId:id,deployId:deploy.id||null,status,finished:success||failed,success,failed,updatedAt:deploy.updatedAt||deploy.finishedAt||new Date().toISOString()};
+  return {ok:true,serviceId:id,deployId:deploy.id||null,status,finished:success||failed,success,failed,publicUrl,updatedAt:deploy.updatedAt||deploy.finishedAt||new Date().toISOString()};
 }
 async function connectedDeploy(input,{fetchImpl=fetch,env=process.env}={}){
   const c=envConfig(env);if(!c.enabled)throw new Error("Connected deployments are disabled on this builder.");

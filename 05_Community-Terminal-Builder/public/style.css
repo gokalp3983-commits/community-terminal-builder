@@ -430,3 +430,31 @@ body::before,body::after,.hero::after{content:none!important;display:none!import
 /* Chapter 19 final acceptance inline validation/polish */
 .inline-warning{margin:8px 0 0;max-width:100%;color:var(--danger);font-size:.68rem;line-height:1.45;overflow-wrap:anywhere}.field-error{display:block;margin-top:5px;color:var(--danger);font-size:.68rem;line-height:1.4}.field-invalid{border-color:var(--danger)!important;box-shadow:0 0 0 1px rgba(255,90,103,.18)!important}.upload{min-width:0}.upload .inline-warning[hidden]{display:none!important}@media(max-width:780px){.inline-warning,.field-error{font-size:.7rem}}
 .field-error[hidden]{display:none!important}
+
+/* Chapter 20B — integrated post-build deployment */
+.quick-deploy-state{margin:14px 0 0;padding:10px 12px;border:1px solid rgba(57,255,20,.35);background:rgba(57,255,20,.035);color:var(--green);font-size:.82rem;line-height:1.5}
+.quick-deploy-confirmation{margin:12px 0 0;padding:12px;border:1px solid rgba(255,138,0,.6);background:rgba(255,138,0,.045)}
+.quick-deploy-confirmation>div{display:grid;gap:5px;margin-bottom:10px}
+.quick-deploy-confirmation span{color:var(--muted);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
+.quick-deploy-confirmation code{color:var(--orange);overflow-wrap:anywhere}
+.quick-deploy-confirmation label{display:grid;gap:5px}
+.quick-deploy-confirmation input{width:100%;border:1px solid var(--orange);background:var(--bg);color:var(--text);padding:9px 10px;font:inherit}
+.quick-deploy-confirmation small{display:block;margin-top:8px;color:var(--muted);font-size:.72rem}
+.final-product-actions #deploy-built-terminal,.final-product-actions #confirm-deploy-built-terminal{color:var(--green);border-color:var(--green)}
+.final-product-actions #download-built-terminal{color:var(--cyan);border-color:var(--cyan)}
+.final-product-actions button:disabled{opacity:.42;cursor:not-allowed}
+.terminal-ready-link a[aria-disabled="true"]{color:var(--muted);pointer-events:none;text-decoration:none}
+
+
+/* Chapter 20B FIX7 — native live-link actions and deterministic success-dialog controls. */
+.action-link,.deployment-success-open{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 10px;border:1px solid var(--line-bright);background:#04110b;color:var(--green);text-decoration:none;font:inherit;font-weight:700;letter-spacing:.04em;cursor:pointer}
+.action-link[aria-disabled="true"],.deployment-success-open[aria-disabled="true"]{opacity:.4;pointer-events:none;cursor:not-allowed}
+.final-product-actions .action-link{width:100%}
+.deployment-success-header{grid-template-columns:minmax(0,1fr) auto!important;align-items:center}
+.deployment-success-header>div{display:grid;gap:5px}
+.deployment-success-header form,.deployment-success-actions form{margin:0}
+.deployment-success-x{min-width:34px!important;width:34px;height:34px;padding:0!important;border-color:var(--danger)!important;background:transparent!important;color:var(--danger)!important;font-size:1.15rem!important;box-shadow:none!important}
+.deployment-success-actions>a,.deployment-success-actions button{min-width:132px}
+.deployment-success-actions form{display:flex}
+.deployment-success-actions form button{width:100%}
+@media(max-width:560px){.deployment-success-actions>a,.deployment-success-actions form,.deployment-success-actions button{width:100%}}

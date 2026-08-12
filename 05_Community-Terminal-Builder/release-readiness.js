@@ -19,14 +19,15 @@ function releaseReadiness(input={}, {env=process.env,providerStatus=null}={}){
   const expectedBuildFingerprint=projectReady?buildFingerprint(project):"";
   const generatedReady=Boolean(projectReady&&input.generatedFingerprint&&input.generatedFingerprint===expectedBuildFingerprint);
   const targetReady=Boolean(repoName&&serviceName);
-  const acceptanceReady=input.publicAcceptance===true;
+  const releaseMode=input.releaseMode==="create"?"create":"update";
+  const acceptanceReady=releaseMode==="create"||input.publicAcceptance===true;
   const checks=[
     check("project","Project configuration",projectReady,projectReady?"Generator validation passed.":projectError||"Project configuration is incomplete."),
     check("build","Generated build",generatedReady,generatedReady?"Saved generated package matches the current project configuration.":input.generatedFingerprint?"Saved generated package is stale because the project changed. Generate again before release.":"Generate the current project before release."),
     check("target","Repository target",targetReady,targetReady?`${repoName} / ${serviceName}`:"Repository and Render service names are required."),
     check("github","GitHub connection",providerStatus?integrations.github.verified:integrations.github.configured,providerStatus?(integrations.github.verified?`Verified as ${integrations.github.login||"GitHub user"}.`:integrations.github.error||"GitHub credential could not be verified."):(integrations.github.configured?"Server credential configured.":"GitHub server credential is not configured.")),
     check("render","Render connection",providerStatus?integrations.render.verified:integrations.render.configured,providerStatus?(integrations.render.verified?`Verified Render workspace${integrations.render.workspaceName?` ${integrations.render.workspaceName}`:""}.`:integrations.render.error||"Render credential/workspace could not be verified."):(integrations.render.configured?"Server credential and workspace configured.":"Render server credential/workspace is not configured.")),
-    check("acceptance","Public acceptance",acceptanceReady,acceptanceReady?"Latest saved public acceptance passed.":"Run and pass public acceptance for this project."),
+    check("acceptance","Public acceptance",acceptanceReady,releaseMode==="create"?"Not required for the first deployment; run public acceptance after the site becomes live.":acceptanceReady?"Latest saved public acceptance passed.":"Run and pass public acceptance for this project before updating the live release."),
     check("secrets","Server credentials protected",integrations.secretsExposed===false,"Credentials remain server-side and are not returned to the browser.")
   ];
   const ready=checks.every(item=>item.ready);
@@ -40,6 +41,7 @@ function releaseReadiness(input={}, {env=process.env,providerStatus=null}={}){
     releaseControlEnabled,
     connectedDeploymentsEnabled:Boolean(c.enabled),
     target:{repoName,serviceName},
+    releaseMode,
     buildFingerprint:expectedBuildFingerprint,
     checks,
     secretsExposed:false,

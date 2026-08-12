@@ -881,3 +881,12 @@ html,body{background:#000!important}
   #terminal-live-panel .contract-value-wrap .contract-value{display:inline!important;width:auto!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important;}
   #terminal-live-panel .contract-value-wrap .copy-contract{display:inline-block!important;vertical-align:baseline!important;margin-left:.35ch!important;white-space:nowrap!important;}
 }
+
+
+/* Chapter 20B FIX7 — final live-market alignment. Keep status, label, colon and value in fixed columns. */
+#terminal-live-panel .market-line{display:grid!important;grid-template-columns:19ch 10ch 1ch minmax(0,1fr)!important;column-gap:1ch!important;align-items:baseline!important;min-height:1.48em!important;line-height:1.48!important}
+#terminal-live-panel .market-tag{display:block!important;min-width:0!important;width:auto!important;white-space:nowrap!important;overflow:visible!important}
+#terminal-live-panel .market-label{display:block!important;min-width:0!important;white-space:nowrap!important}
+#terminal-live-panel .market-colon{display:block!important;text-align:center!important}
+#terminal-live-panel .market-value{display:block!important;min-width:0!important;margin:0!important;text-align:left!important;overflow-wrap:anywhere!important}
+@media(max-width:560px){#terminal-live-panel .market-line{grid-template-columns:18ch 10ch 1ch minmax(0,1fr)!important;column-gap:.6ch!important}}

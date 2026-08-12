@@ -43,6 +43,9 @@ function openSeaConfigurationValid(){return !val("openSea")||Boolean(syncOpenSea
 function syncOpenSeaValidation(){const input=form.elements.openSea,err=document.querySelector("#open-sea-error");if(!input||!err)return true;const raw=val("openSea"),ok=!raw||Boolean(syncOpenSeaSlug());input.classList.toggle("field-invalid",!ok);err.hidden=ok;err.textContent=ok?"":"[ ERROR ] OpenSea URL must be a valid collection link: opensea.io/collection/<slug>";return ok}
 function line(state,text){const tag=state==="ok"?" OK ":state==="skip"?"SKIP":state==="warn"?"WARN":"WAIT";return `[${tag}] ${text}`}
 function slugify(value){return String(value||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
+function terminalUserFromTicker(value){return String(value||"").toLowerCase().replace(/[^a-z0-9]+/g,"").slice(0,32)}
+function terminalIdentityFromTicker(value){const user=terminalUserFromTicker(value);return user?`${user}@robinhood`:""}
+function syncTerminalIdentity(){const user=form.elements.promptUser,host=form.elements.promptHost;if(user)user.value=terminalIdentityFromTicker(val("ticker"));if(host)host.value="robinhood"}
 function normalizeXUrl(value){
   const raw=String(value||"").trim();if(!raw)return "";
   if(/^@?[A-Za-z0-9_]{1,15}$/.test(raw))return `https://x.com/${raw.replace(/^@/,"")}`;
@@ -68,6 +71,8 @@ function setBuilderExperience(mode,persist=true){
 function syncNftConfigVisibility(){
   const enabled=checked("nftTerminal");
   document.querySelectorAll(".nft-config").forEach(el=>{el.hidden=!enabled});
+  const mintMode=document.querySelector("#nft-mint-mode");
+  if(mintMode)mintMode.required=enabled;
 }
 function initializeBuilderExperience(){
   const saved=localStorage.getItem(UX_MODE_KEY);
@@ -148,7 +153,7 @@ function renderNftPhaseEditor(phases){
   values.forEach((phase,index)=>{
     const card=document.createElement("div");card.className="nft-phase-card";card.dataset.phaseIndex=String(index);
     const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
-    card.innerHTML=`<div class="nft-phase-card-head"><strong>PHASE ${index+1}</strong><div><button class="timezone-button phase-local-timezone" type="button">USE MY TIMEZONE</button> ${index>=2?'<button class="nft-phase-remove" type="button">REMOVE</button>':""}</div></div><div class="nft-phase-grid"><label><span>Phase label</span><input data-phase-field="label" value="${esc(phase.label)}" placeholder="ALLOWLIST 1"></label><label><span>Public phase name</span><input data-phase-field="name" value="${esc(phase.name)}" placeholder="Optional display name"></label><label><span>Start date</span><input data-phase-field="startDate" type="date" value="${esc(phase.startDate)}"></label><label><span>Start time</span><input data-phase-field="startTime" type="time" step="60" value="${esc(phase.startTime)}"></label><label><span>End date</span><input data-phase-field="endDate" data-date-autofill="${phase.endDate&&phase.endDate!==phase.startDate?"manual":"start"}" type="date" value="${esc(phase.endDate)}"></label><label><span>End time</span><input data-phase-field="endTime" type="time" step="60" value="${esc(phase.endTime)}"></label><label class="phase-timezone"><span>Timezone</span><input data-phase-field="timezone" list="nft-timezone-options" value="${esc(phase.timezone||browserTimeZone())}" placeholder="Europe/Bucharest"></label><label><span>Mint price</span><input data-phase-field="price" value="${esc(phase.price)}" placeholder="FREE or 0.05 ETH"></label><label><span>Wallet limit</span><input data-phase-field="limit" value="${esc(phase.limit)}" placeholder="1 PER WALLET"></label></div>`;
+    card.innerHTML=`<div class="nft-phase-card-head"><strong>PHASE ${index+1}</strong><div><button class="timezone-button phase-local-timezone" type="button">USE MY TIMEZONE</button> ${index>=2?'<button class="nft-phase-remove" type="button">REMOVE</button>':""}</div></div><div class="nft-phase-grid"><label><span>Phase label</span><input data-phase-field="label" value="${esc(phase.label)}" placeholder="e.g. PHASE 1"></label><label><span>Public phase name</span><input data-phase-field="name" value="${esc(phase.name)}" placeholder="Optional display name"></label><label><span>Start date</span><input data-phase-field="startDate" type="date" value="${esc(phase.startDate)}"></label><label><span>Start time</span><input data-phase-field="startTime" type="time" step="60" value="${esc(phase.startTime)}"></label><label><span>End date</span><input data-phase-field="endDate" data-date-autofill="${phase.endDate&&phase.endDate!==phase.startDate?"manual":"start"}" type="date" value="${esc(phase.endDate)}"></label><label><span>End time</span><input data-phase-field="endTime" type="time" step="60" value="${esc(phase.endTime)}"></label><label class="phase-timezone"><span>Timezone</span><input data-phase-field="timezone" list="nft-timezone-options" value="${esc(phase.timezone||browserTimeZone())}" placeholder="e.g. UTC or Europe/Bucharest"></label><label><span>Mint price</span><input data-phase-field="price" value="${esc(phase.price)}" placeholder="e.g. FREE or 0.05 ETH"></label><label><span>Wallet limit</span><input data-phase-field="limit" value="${esc(phase.limit)}" placeholder="e.g. 1 PER WALLET"></label></div>`;
     card.querySelector(".phase-local-timezone")?.addEventListener("click",()=>{card.querySelector('[data-phase-field="timezone"]').value=browserTimeZone();confirmedMintSignature="";syncNftMintSchedule();update()});
     card.querySelector(".nft-phase-remove")?.addEventListener("click",()=>{card.remove();renumberPhaseCards();confirmedMintSignature="";syncNftMintSchedule();update()});
     list.append(card);
@@ -226,7 +231,7 @@ async function refreshBuilderMascotPreview(){
 }
 
 async function payload(){const mint=syncNftMintSchedule();return {
-  projectName:val("projectName"),ticker:val("ticker"),version:val("version"),description:val("description"),promptUser:val("promptUser"),promptHost:val("promptHost"),ecosystem:val("ecosystem"),tokenContract:val("tokenContract"),nftContract:val("nftContract"),dexScreenerChainId:val("dexScreenerChainId"),blockscoutApiBase:val("blockscoutApiBase"),
+  projectName:val("projectName"),ticker:val("ticker"),version:val("version"),description:val("description"),promptUser:terminalUserFromTicker(val("ticker")),promptHost:"robinhood",ecosystem:val("ecosystem"),tokenContract:val("tokenContract"),nftContract:val("nftContract"),dexScreenerChainId:val("dexScreenerChainId"),blockscoutApiBase:val("blockscoutApiBase"),
   links:{home:val("home"),website:val("website"),x:normalizeXUrl(val("x")),telegram:val("telegram"),explorer:val("explorer"),dexScreener:val("dexScreener"),openSea:val("openSea")},
   nft:{openSeaSlug:syncOpenSeaSlug(),collectionName:val("nftCollectionName"),supply:val("nftSupply"),mode:mint.mode||nftMintMode(),mintAt:mint.ok&&!mint.disabled?mint.iso:"",mintEndAt:mint.ok&&!mint.disabled&&mint.mode==="single"?mint.endIso:"",mintPrice:mint.ok&&!mint.disabled&&mint.mode==="single"?mint.price:"",mintLimit:mint.ok&&!mint.disabled&&mint.mode==="single"?mint.limit:"",mintPhases:mint.ok&&!mint.disabled&&mint.mode==="multiple"?mint.phases.map(({id,label,name,startsAt,endsAt,price,limit,timezone})=>({id,label,name,startsAt,endsAt,price,limit,timezone})):[],timezone:mint.timeZone||val("nftMintTimezone")||browserTimeZone()},
   features:{whaleTracker:checked("whaleTracker"),memeIntel:checked("memeIntel"),communityPulse:checked("communityPulse"),timeline:checked("timeline"),nftTerminal:checked("nftTerminal"),liveMarket:checked("liveMarket")},
@@ -328,12 +333,12 @@ mascotInput.addEventListener("change",()=>{persistedMascot=null;syncMascotFileNa
 function setValue(name,value){const el=form.elements[name];if(!el)return;if(el.type==="checkbox")el.checked=Boolean(value);else el.value=value??""}
 function applyPayload(p){
   confirmedMintSignature="";pastScheduleWarningSignature="";nftExplicitlyDisabled=Boolean(p.nftContract&&!p.features?.nftTerminal);lastNftContractValue=String(p.nftContract||"").trim();
-  setValue("projectName",p.projectName);setValue("ticker",p.ticker);setValue("version",p.version||"1.0.0");setValue("description",p.description);setValue("promptUser",p.promptUser);setValue("promptHost",p.promptHost||"terminal");setValue("ecosystem",p.ecosystem||"Robinhood Chain");setValue("tokenContract",p.tokenContract);setValue("nftContract",p.nftContract);setValue("dexScreenerChainId",p.dexScreenerChainId||"robinhood");setValue("blockscoutApiBase",p.blockscoutApiBase||"https://robinhoodchain.blockscout.com/api/v2");
+  setValue("projectName",p.projectName);setValue("ticker",p.ticker);setValue("version",p.version||"1.0.0");setValue("description",p.description);setValue("promptUser",terminalIdentityFromTicker(p.ticker));setValue("promptHost","robinhood");setValue("ecosystem",p.ecosystem||"Robinhood Chain");setValue("tokenContract",p.tokenContract);setValue("nftContract",p.nftContract);setValue("dexScreenerChainId",p.dexScreenerChainId||"robinhood");setValue("blockscoutApiBase",p.blockscoutApiBase||"https://robinhoodchain.blockscout.com/api/v2");
   for(const k of ["home","website","x","telegram","explorer","dexScreener","openSea"])setValue(k,p.links?.[k]);
   setValue("openSeaSlug",p.nft?.openSeaSlug);setValue("nftCollectionName",p.nft?.collectionName);setValue("nftSupply",p.nft?.supply);setValue("nftMintPrice",p.nft?.mintPrice||"");setValue("nftMintLimit",p.nft?.mintLimit||"");for(const k of ["whaleTracker","memeIntel","communityPulse","timeline","nftTerminal","liveMarket"])setValue(k,p.features?.[k] ?? (["communityPulse","timeline"].includes(k)?true:undefined));setNftMintConfiguration(p.nft||{});
   persistedMascot=p.mascot||null; mascotInput.value=""; syncMascotFileName(); refreshBuilderMascotPreview(); update();
 }
-function resetForm(){form.reset();confirmedMintSignature="";pastScheduleWarningSignature="";nftExplicitlyDisabled=false;lastNftContractValue="";setValue("version","1.0.0");setValue("promptHost","terminal");setValue("ecosystem","Robinhood Chain");setValue("dexScreenerChainId","robinhood");setValue("blockscoutApiBase","https://robinhoodchain.blockscout.com/api/v2");setValue("nftMintMode","");setValue("nftMintTimezone",browserTimeZone());renderNftPhaseEditor();syncNftMintModeUI();setValue("whaleTracker",true);setValue("memeIntel",true);setValue("communityPulse",true);setValue("timeline",true);setValue("liveMarket",true);activeProjectId="";persistedMascot=null;mascotInput.value="";syncMascotFileName();refreshBuilderMascotPreview();localStorage.removeItem(SETTINGS_KEY);update();status.textContent="[ NEW ] Blank project workspace ready.";loadDeployment()}
+function resetForm(){form.reset();confirmedMintSignature="";pastScheduleWarningSignature="";nftExplicitlyDisabled=false;lastNftContractValue="";setValue("promptUser","");setValue("version","1.0.0");setValue("promptHost","robinhood");setValue("ecosystem","Robinhood Chain");setValue("dexScreenerChainId","robinhood");setValue("blockscoutApiBase","https://robinhoodchain.blockscout.com/api/v2");setValue("nftMintMode","");setValue("nftMintTimezone",browserTimeZone());renderNftPhaseEditor();syncNftMintModeUI();setValue("whaleTracker",true);setValue("memeIntel",true);setValue("communityPulse",true);setValue("timeline",true);setValue("liveMarket",true);activeProjectId="";persistedMascot=null;mascotInput.value="";syncMascotFileName();refreshBuilderMascotPreview();localStorage.removeItem(SETTINGS_KEY);update();status.textContent="[ NEW ] Blank project workspace ready.";loadDeployment()}
 function refreshProjectList(){
   const projects=readProjects(); const current=savedProjectsSelect.value; savedProjectsSelect.innerHTML='<option value="">LOAD SAVED PROJECT...</option>';
   Object.values(projects).sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).forEach(item=>{const option=document.createElement("option");option.value=item.id;option.textContent=`${item.name} // ${item.state} // ${new Date(item.updatedAt).toLocaleDateString()}`;savedProjectsSelect.append(option)});
@@ -362,6 +367,8 @@ function noteGenerated(project,fingerprint){
   writeProjects(projects);activeProjectId=id;localStorage.setItem(SETTINGS_KEY,JSON.stringify({activeProjectId:id}));refreshProjectList();savedProjectsSelect.value=id;updateWorkspaceStatus();return true;
 }
 
+form.elements.projectName?.addEventListener("input",()=>update());
+form.elements.ticker?.addEventListener("input",()=>{syncTerminalIdentity();update()});
 form.addEventListener("input",update);form.addEventListener("change",update);
 form.elements.nftContract.addEventListener("input",()=>{confirmedMintSignature="";nftExplicitlyDisabled=false;syncNftContractState({fromContractInput:true});syncNftConfigVisibility();syncMintConfirmationState();update()});
 function closeNftDisableDialog(disable){
@@ -433,8 +440,8 @@ async function mascotDataUrl(){
 async function openLandingPreview(){
   const project=(val("projectName")||"YOUR PROJECT").toUpperCase();
   const ecosystem=val("ecosystem")||"Robinhood Chain";
-  const promptUser=(val("promptUser")||project.toLowerCase().replace(/[^a-z0-9]+/g,"" )||"project");
-  const promptHost=val("promptHost")||"terminal";
+  const promptUser=terminalUserFromTicker(val("ticker"))||"token";
+  const promptHost="robinhood";
   const primary="#39ff14";
   const accent="#ff8a00";
   const background="#020806";
@@ -474,8 +481,24 @@ function downloadBuild(){if(!lastBuild.url)return;const a=document.createElement
 function enabledModuleNames(project){const names=["LANDING"];if(project.features?.whaleTracker)names.push("WHALES");if(project.features?.memeIntel)names.push("INTEL");if(project.features?.nftTerminal&&project.nftContract)names.push("NFT");if(project.features?.communityPulse)names.push("PULSE");if(project.features?.timeline)names.push("TIMELINE");return names}
 function deploymentCommands(kind){const p=lastBuild.project||{};const folder=(String(p.projectName||"PROJECT").toUpperCase().replace(/[^A-Z0-9]+/g,"_")+"_Community_Terminal");const repo=(String(p.projectName||"project").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+"-community-terminal");if(kind==="local")return `cd ${folder}\nnpm install\nnpm test\nnpm start`;if(kind==="github")return `git init\ngit add .\ngit commit -m "Initial ${p.projectName||"Community"} Community Terminal"\ngit branch -M main\ngit remote add origin https://github.com/YOUR-USERNAME/${repo}.git\ngit push -u origin main`;return `1. Push the generated root folder to GitHub.\n2. In Render choose New → Blueprint.\n3. Select the repository and main branch.\n4. Keep Blueprint Path as render.yaml.\n5. Confirm the Free plan before deployment.\n6. After it is Live, run:\n\nnpm run test:deployed -- https://YOUR-TERMINAL.onrender.com`; }
 async function copyDeployment(kind){const text=deploymentCommands(kind);document.querySelector("#deployment-command-preview").textContent=text;try{await navigator.clipboard.writeText(text);status.textContent="[ COPIED ] Deployment commands copied."}catch{status.textContent="[ READY ] Commands shown below; copy them manually."}}
-function mockTerminalUrl(project){const slug=String(project?.projectName||"project").trim().replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"")||"project";return `https://www.terminal.xyz/${slug}-landing-page`}
-function showBuildComplete(project){const url=mockTerminalUrl(project);document.querySelector("#built-project").textContent=`${String(project.projectName||"COMMUNITY").toUpperCase()} COMMUNITY TERMINAL`;document.querySelector("#built-modules").innerHTML=enabledModuleNames(project).map(x=>`<span>${x}</span>`).join("");const link=document.querySelector("#built-terminal-url");link.textContent=url;link.href=url;document.querySelector("#open-built-terminal").dataset.url=url;document.querySelector("#copy-built-terminal-link").dataset.url=url;document.querySelector("#build-complete").showModal()}
+function setBuiltLiveUrl(value){
+  const url=String(value||"").trim();
+  const link=document.querySelector("#built-terminal-url"),open=document.querySelector("#open-built-terminal"),copy=document.querySelector("#copy-built-terminal-link");
+  if(url){
+    link.textContent=url;link.href=url;link.target="_blank";link.rel="noopener noreferrer";link.removeAttribute("aria-disabled");
+    open.href=url;open.target="_blank";open.rel="noopener noreferrer";open.removeAttribute("aria-disabled");
+    copy.disabled=false;copy.dataset.url=url;
+  }else{
+    link.textContent="Not deployed yet";link.removeAttribute("href");link.removeAttribute("target");link.setAttribute("aria-disabled","true");
+    open.removeAttribute("href");open.removeAttribute("target");open.setAttribute("aria-disabled","true");
+    copy.disabled=true;delete copy.dataset.url;
+  }
+}
+function resetQuickDeployUi(){
+  const box=document.querySelector("#quick-deploy-confirmation"),input=document.querySelector("#quick-deploy-confirmation-text"),confirm=document.querySelector("#confirm-deploy-built-terminal"),deploy=document.querySelector("#deploy-built-terminal");
+  box.hidden=true;input.value="";document.querySelector("#quick-deploy-phrase").textContent="";confirm.hidden=true;confirm.disabled=true;deploy.hidden=false;deploy.disabled=false;
+}
+function showBuildComplete(project){const prior=readDeployments()[deploymentId()]||{};const mode=document.querySelector("#connected-release-mode");mode.value=(prior.connected?.serviceId||prior.publicUrl)?"update":"create";document.querySelector("#built-project").textContent=`${String(project.projectName||"COMMUNITY").toUpperCase()} COMMUNITY TERMINAL`;document.querySelector("#built-modules").innerHTML=enabledModuleNames(project).map(x=>`<span>${x}</span>`).join("");setBuiltLiveUrl(prior.publicUrl||"");resetQuickDeployUi();document.querySelector("#quick-deploy-state").textContent=integrationReady?`[ READY ] Generated package is ready. ${mode.value==="create"?"First deployment":"Existing deployment update"} path selected.`:"[ READY ] Generated package is ready. Connected deployment is unavailable; ZIP download remains available.";document.querySelector("#build-complete").showModal()}
 
 function mintSignature(schedule){return schedule&&schedule.ok?`${val("nftContract")}|${val("nftCollectionName")}|${val("nftSupply")}|${schedule.mode||"single"}|${schedule.iso}|${schedule.endIso||""}|${schedule.timeZone}|${schedule.price||""}|${schedule.limit||""}|${JSON.stringify((schedule.phases||[]).map(x=>[x.label,x.name,x.startsAt,x.endsAt,x.price,x.limit,x.timezone]))}`:""}
 function closeNftMintConfirmation(result){const dialog=document.querySelector("#nft-mint-confirm");if(dialog.open)dialog.close();const resolve=nftMintConfirmResolver;nftMintConfirmResolver=null;if(resolve)resolve(result)}
@@ -517,12 +540,12 @@ form.addEventListener("submit",async e=>{
     const response=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(project)});
     if(!response.ok){const x=await response.json();throw new Error(x.error||"Generation failed")}
     const blob=await response.blob(); const disposition=response.headers.get("content-disposition")||""; const filename=/filename="([^"]+)"/.exec(disposition)?.[1]||"Community_Terminal.zip"; const fingerprint=response.headers.get("x-ctb-build-fingerprint")||"";
-    if(lastBuild.url)URL.revokeObjectURL(lastBuild.url);lastBuild={url:URL.createObjectURL(blob),filename,project,fingerprint};downloadBuild();const autoSaved=noteGenerated(project,fingerprint);status.textContent=`[ DONE ] Community Terminal created${autoSaved?" · project auto-saved":""}`;if(autoSaved)showAutoSaveToast();showBuildComplete(project);
+    if(lastBuild.url)URL.revokeObjectURL(lastBuild.url);lastBuild={url:URL.createObjectURL(blob),filename,project,fingerprint};const autoSaved=noteGenerated(project,fingerprint);status.textContent=`[ DONE ] Community Terminal created${autoSaved?" · project auto-saved":""} · ready to deploy`;if(autoSaved)showAutoSaveToast();showBuildComplete(project);
   }catch(err){status.textContent=`[ ERROR ] ${err.message}`}finally{button.disabled=false}
 });
 document.querySelector("#close-build-complete").addEventListener("click",()=>document.querySelector("#build-complete").close());
 document.querySelector("#close-build-complete-action").addEventListener("click",()=>document.querySelector("#build-complete").close());
-document.querySelector("#open-built-terminal").addEventListener("click",event=>{const url=event.currentTarget.dataset.url;if(url)window.open(url,"_blank","noopener,noreferrer")});
+document.querySelector("#download-built-terminal").addEventListener("click",()=>{downloadBuild();status.textContent="[ DOWNLOAD ] Generated terminal ZIP downloaded."});
 document.querySelector("#copy-built-terminal-link").addEventListener("click",async event=>{const url=event.currentTarget.dataset.url;if(!url)return;try{await navigator.clipboard.writeText(url);status.textContent="[ COPIED ] Terminal link copied."}catch{status.textContent=`[ READY ] Terminal link: ${url}`}});
 
 async function syncBuilderRuntime(){
@@ -553,12 +576,13 @@ function clearReleaseAuthorization(message=""){
   if(message)document.querySelector("#connected-result").textContent=message;
 }
 async function protectedReleaseInput(){const project=await payload(),names=connectedNames();return {project,repoName:names.repo,serviceName:names.service,visibility:document.querySelector("#connected-private").checked?"private":"public",releaseMode:releaseMode(),generatedFingerprint:currentBuildFingerprint(project),publicAcceptance:currentAcceptance()}}
+function quickDeployInput(){const project=lastBuild.project||{};const base=slugify(project.projectName);if(!base)throw new Error("Generated project name is missing; generate the terminal again before deployment.");const target=`${base}-community-terminal`;const prior=readDeployments()[deploymentId()]||{};const mode=releaseMode();return {project,repoName:target,serviceName:target,visibility:document.querySelector("#connected-private").checked?"private":"public",releaseMode:mode,generatedFingerprint:String(lastBuild.fingerprint||""),publicAcceptance:prior.acceptance?.ok===true}}
 function updateProtectedButtons(){
   const prepare=document.querySelector("#prepare-release"),deploy=document.querySelector("#connected-deploy"),typed=document.querySelector("#release-confirmation-text").value;
   prepare.disabled=!(integrationReady&&releaseCanDeploy);
   deploy.disabled=!(integrationReady&&releaseCanDeploy&&releaseAuthorization&&typed===releaseAuthorization.confirmation);
 }
-async function refreshIntegrations(manual=false){const label=document.querySelector("#integration-state"),out=document.querySelector("#connected-result"),checkButton=document.querySelector("#refresh-integrations");label.textContent="CHECKING";label.classList.remove("live");clearReleaseAuthorization();checkButton.disabled=true;checkButton.textContent="CHECKING...";if(manual)out.textContent="[ CHECKING ] Testing GitHub and Render server configuration...";try{const response=await fetch("/api/integrations",{cache:"no-store"});const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||`Connection check returned HTTP ${response.status}`);integrationReady=Boolean(data.enabled&&data.github?.verified&&data.render?.verified);label.textContent=integrationReady?"CONNECTED":data.enabled?"INCOMPLETE":"DISABLED";label.classList.toggle("live",integrationReady);releaseCanDeploy=false;const checkedAt=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});out.textContent=[`[ CHECKED ] Connection check completed at ${checkedAt}`,`[ ${data.enabled?"OK":"OFF"} ] Connected deployments ${data.enabled?"enabled":"disabled"}`,`[ ${data.releaseActionsEnabled?"PASS":"LOCKED"} ] Protected release policy`,`[ ${data.github?.verified?"PASS":data.github?.configured?"FAIL":"WAIT"} ] GitHub credential${data.github?.verified&&data.github?.login?` · ${data.github.login}`:""}${data.github?.error?` · ${data.github.error}`:""}`,`[ ${data.render?.verified?"PASS":data.render?.configured?"FAIL":"WAIT"} ] Render credential + workspace${data.render?.verified&&data.render?.workspaceName?` · ${data.render.workspaceName}`:""}${data.render?.error?` · ${data.render.error}`:""}`,`[ SAFE ] Secrets exposed to browser: ${data.secretsExposed?"YES":"NO"}`].join("\n");updateProtectedButtons();}catch(error){integrationReady=false;label.textContent="UNAVAILABLE";clearReleaseAuthorization();out.textContent=`[ FAIL ] ${error.message}`}finally{checkButton.disabled=false;checkButton.textContent="CHECK CONNECTIONS"}}
+async function refreshIntegrations(manual=false){const label=document.querySelector("#integration-state"),out=document.querySelector("#connected-result"),checkButton=document.querySelector("#refresh-integrations");label.textContent="CHECKING";label.classList.remove("live");clearReleaseAuthorization();checkButton.disabled=true;checkButton.textContent="CHECKING...";if(manual)out.textContent="[ CHECKING ] Testing GitHub and Render server configuration...";try{const response=await fetch("/api/integrations",{cache:"no-store"});const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||`Connection check returned HTTP ${response.status}`);integrationReady=Boolean(data.enabled&&data.github?.verified&&data.render?.verified);label.textContent=integrationReady?"CONNECTED":data.enabled?"INCOMPLETE":"DISABLED";label.classList.toggle("live",integrationReady);releaseCanDeploy=false;const checkedAt=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});out.textContent=[`[ CHECKED ] Connection check completed at ${checkedAt}`,`[ ${data.enabled?"OK":"OFF"} ] Connected deployments ${data.enabled?"enabled":"disabled"}`,`[ ${data.releaseActionsEnabled?"PASS":"LOCKED"} ] Protected release policy`,`[ ${data.github?.verified?"PASS":data.github?.configured?"FAIL":"WAIT"} ] GitHub credential${data.github?.verified&&data.github?.login?` · ${data.github.login}`:""}${data.github?.error?` · ${data.github.error}`:""}`,`[ ${data.render?.verified?"PASS":data.render?.configured?"FAIL":"WAIT"} ] Render credential + workspace${data.render?.verified&&data.render?.workspaceName?` · ${data.render.workspaceName}`:""}${data.render?.error?` · ${data.render.error}`:""}`,`[ SAFE ] Secrets exposed to browser: ${data.secretsExposed?"YES":"NO"}`].join("\n");updateProtectedButtons();}catch(error){integrationReady=false;label.textContent="UNAVAILABLE";clearReleaseAuthorization();out.textContent=`[ FAIL ] ${error.message}`}finally{checkButton.disabled=false;checkButton.textContent="CHECK CONNECTIONS"}return integrationReady}
 function renderReleaseReadiness(data){
   const state=document.querySelector("#release-state"),out=document.querySelector("#release-result"),checks=document.querySelector("#release-checks");
   clearReleaseAuthorization();
@@ -616,11 +640,16 @@ function showDeploymentToast(message,{state="pending",duration=5200}={}){
 
 function showDeploymentSuccessDialog(publicUrl){
   const dialog=document.querySelector("#deployment-success-dialog");if(!dialog)return;
-  const link=document.querySelector("#deployment-success-url"),openButton=document.querySelector("#deployment-success-open");
+  const link=document.querySelector("#deployment-success-url"),openLink=document.querySelector("#deployment-success-open");
   const url=String(publicUrl||"").trim();
   link.textContent=url||"Public URL unavailable";
-  if(url){link.href=url;link.removeAttribute("aria-disabled");openButton.disabled=false;openButton.dataset.url=url}
-  else{link.removeAttribute("href");link.setAttribute("aria-disabled","true");openButton.disabled=true;delete openButton.dataset.url}
+  if(url){
+    link.href=url;link.target="_blank";link.rel="noopener noreferrer";link.removeAttribute("aria-disabled");
+    openLink.href=url;openLink.target="_blank";openLink.rel="noopener noreferrer";openLink.removeAttribute("aria-disabled");
+  }else{
+    link.removeAttribute("href");link.removeAttribute("target");link.setAttribute("aria-disabled","true");
+    openLink.removeAttribute("href");openLink.removeAttribute("target");openLink.setAttribute("aria-disabled","true");
+  }
   if(!dialog.open)dialog.showModal();
 }
 
@@ -640,7 +669,7 @@ function renderProtectedRelease(out,data,statusText){
   out.textContent="";out.classList.add("release-progress");
   for(const row of rows){const line=document.createElement("span");line.className=`release-line${row.start?" release-start":""}`;if(row.start){line.textContent=row.start}else{const key=document.createElement("span"),value=document.createElement("span");key.className="release-key";key.textContent=`[ ${row.key} ] `;value.className=`release-value ${row.cls||""}`.trim();value.textContent=row.value;line.append(key,value)}out.append(line)}
 }
-async function pollRenderDeployment(data,out){
+async function pollRenderDeployment(data,out,{onLive}={}){
   const serviceId=data.render.serviceId;if(!serviceId)return;
   const started=Date.now(),timeoutMs=10*60*1000,intervalMs=5000;
   while(Date.now()-started<timeoutMs){
@@ -648,28 +677,60 @@ async function pollRenderDeployment(data,out){
     try{
       const response=await fetch(`/api/render-deploy-status?serviceId=${encodeURIComponent(serviceId)}`,{cache:"no-store"});
       const state=await response.json();if(!response.ok||!state.ok)throw new Error(state.error||"Render deployment status unavailable");
-      if(state.success){renderProtectedRelease(out,data,"live");status.textContent="[ LIVE ] Deployment successful. Run Public Acceptance to verify the public terminal.";showDeploymentSuccessDialog(data.render.publicUrl||"");return}
-      if(state.failed){renderProtectedRelease(out,data,state.status||"failed");status.textContent="[ FAIL ] Render deployment failed. Review the Render deployment logs before trying again.";showDeploymentToast("The deployment did not complete successfully. Review the Render logs before trying again.",{state:"fail",duration:8000});return}
+      if(state.success){const liveUrl=state.publicUrl||data.render.publicUrl||"";if(liveUrl)data.render.publicUrl=liveUrl;renderProtectedRelease(out,data,"live");status.textContent="[ LIVE ] Deployment successful. Run Public Acceptance to verify the public terminal.";if(onLive)onLive(liveUrl);showDeploymentSuccessDialog(liveUrl);return {success:true,publicUrl:liveUrl}}
+      if(state.failed){renderProtectedRelease(out,data,state.status||"failed");status.textContent="[ FAIL ] Render deployment failed. Review the Render deployment logs before trying again.";showDeploymentToast("The deployment did not complete successfully. Review the Render logs before trying again.",{state:"fail",duration:8000});return {success:false,failed:true}}
       renderProtectedRelease(out,data,"Deploying the website...");
     }catch(error){console.warn("Render deployment status check failed:",error.message)}
   }
-  renderProtectedRelease(out,data,"status unknown");status.textContent="[ WAIT ] Deployment status could not be confirmed automatically. Check Render before making another release.";showDeploymentToast("Deployment status could not be confirmed automatically. Check Render before making another release.",{state:"fail",duration:8000});
+  renderProtectedRelease(out,data,"status unknown");status.textContent="[ WAIT ] Deployment status could not be confirmed automatically. Check Render before making another release.";showDeploymentToast("Deployment status could not be confirmed automatically. Check Render before making another release.",{state:"fail",duration:8000});return {success:false,unknown:true};
 }
+
+async function prepareQuickDeploy(){
+  const state=document.querySelector("#quick-deploy-state"),deploy=document.querySelector("#deploy-built-terminal");
+  if(!lastBuild.project||!lastBuild.fingerprint){state.textContent="[ BLOCKED ] Generate the current terminal before deployment.";return}
+  deploy.disabled=true;state.textContent="[ CHECKING ] Verifying GitHub, Render, build fingerprint, and release policy...";
+  try{
+    if(!integrationReady)await refreshIntegrations(false);
+    if(!integrationReady)throw new Error("Connected deployment is not configured on this builder. Download the ZIP or configure GitHub + Render server credentials.");
+    const input=quickDeployInput();
+    const response=await fetch("/api/release-readiness",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(input)});
+    const readiness=await response.json();if(!response.ok||!readiness.ok)throw new Error(readiness.error||"Release readiness check failed");renderReleaseReadiness(readiness);
+    if(!readiness.canRelease){const blocked=(readiness.checks||[]).filter(x=>!x.ready).map(x=>x.label).join(", ");throw new Error(`Release is blocked${blocked?`: ${blocked}`:""}.`)}
+    const prepared=await fetch("/api/release-prepare",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(input)});
+    const data=await prepared.json();if(!prepared.ok||!data.ok)throw new Error(data.error||"Release authorization failed");
+    releaseAuthorization=data;document.querySelector("#quick-deploy-phrase").textContent=data.confirmation;document.querySelector("#quick-deploy-confirmation").hidden=false;document.querySelector("#confirm-deploy-built-terminal").hidden=false;deploy.hidden=true;state.textContent=`[ ARMED ] ${String(data.releaseMode||"").toUpperCase()} release prepared. Type the confirmation phrase to deploy.`;document.querySelector("#quick-deploy-confirmation-text").focus();
+  }catch(error){state.textContent=`[ BLOCKED ] ${error.message}`;deploy.disabled=false}
+}
+async function confirmQuickDeploy(){
+  const state=document.querySelector("#quick-deploy-state"),confirm=document.querySelector("#confirm-deploy-built-terminal"),out=document.querySelector("#connected-result"),typed=document.querySelector("#quick-deploy-confirmation-text").value;
+  if(!releaseAuthorization||typed!==releaseAuthorization.confirmation)return;
+  confirm.disabled=true;state.textContent="[ DEPLOYING ] Publishing GitHub tree and starting Render deployment...";
+  try{
+    const input=quickDeployInput();
+    const response=await fetch("/api/deploy-connected",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...input,releaseAuthorization:releaseAuthorization.authorizationId,confirmation:typed})});
+    const data=await response.json();if(!response.ok)throw new Error(data.error||"Protected release failed");
+    renderProtectedRelease(out,data,"Deploying the website...");showDeploymentToast("Your terminal is being deployed. CTB will return the live URL when Render reports it live.",{duration:5000});
+    const all=readDeployments(),id=deploymentId(),prior=all[id]||{};all[id]={...prior,githubUrl:data.github.repoUrl,publicUrl:data.render.publicUrl||prior.publicUrl||"",connected:{serviceId:data.render.serviceId,deployId:data.render.deployId||null,commitSha:data.github.commitSha,startedAt:data.generatedAt,releaseMode:data.releaseMode},updatedAt:nowIso()};localStorage.setItem(DEPLOYMENT_KEY,JSON.stringify(all));renderDeploymentRecord(all[id]);
+    if(data.render.publicUrl)setBuiltLiveUrl(data.render.publicUrl);state.textContent=`[ DEPLOYING ] ${data.render.publicUrl||"Render is assigning the public URL"}`;
+    const finalState=await pollRenderDeployment(data,out,{onLive:url=>{setBuiltLiveUrl(url);state.textContent=`[ LIVE ] ${url}`;const saved=readDeployments();const rec=saved[id]||{};saved[id]={...rec,publicUrl:url,updatedAt:nowIso()};localStorage.setItem(DEPLOYMENT_KEY,JSON.stringify(saved));renderDeploymentRecord(saved[id])}});
+    if(finalState?.success)state.textContent=`[ LIVE ] ${finalState.publicUrl||data.render.publicUrl||"Deployment successful"}`;
+  }catch(error){state.textContent=`[ FAIL ] ${error.message}`;showDeploymentToast(error.message,{state:"fail",duration:8000})}finally{clearReleaseAuthorization();document.querySelector("#quick-deploy-confirmation").hidden=true;confirm.hidden=true;document.querySelector("#deploy-built-terminal").hidden=false;document.querySelector("#deploy-built-terminal").disabled=false}
+}
+function updateQuickDeployConfirmation(){const input=document.querySelector("#quick-deploy-confirmation-text"),confirm=document.querySelector("#confirm-deploy-built-terminal");confirm.disabled=!(releaseAuthorization&&input.value===releaseAuthorization.confirmation)}
 
 function invalidateProtectedRelease(){if(releaseAuthorization)clearReleaseAuthorization("[ LOCKED ] Release target changed. Run CHECK RELEASE READINESS and PREPARE RELEASE again.");releaseCanDeploy=false;updateProtectedButtons()}
 document.querySelector("#refresh-integrations").addEventListener("click",()=>refreshIntegrations(true));
 document.querySelector("#check-release-readiness").addEventListener("click",checkReleaseReadiness);
 document.querySelector("#prepare-release").addEventListener("click",prepareProtectedRelease);
 document.querySelector("#connected-deploy").addEventListener("click",connectedDeployProject);
+document.querySelector("#deploy-built-terminal").addEventListener("click",prepareQuickDeploy);
+document.querySelector("#confirm-deploy-built-terminal").addEventListener("click",confirmQuickDeploy);
+document.querySelector("#quick-deploy-confirmation-text").addEventListener("input",updateQuickDeployConfirmation);
 document.querySelector("#release-confirmation-text").addEventListener("input",updateProtectedButtons);
 document.querySelector("#release-confirmation-text").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();event.stopPropagation();verifyConfirmationAttempt();}});
 for(const id of ["connected-repo-name","connected-service-name","connected-release-mode","connected-private"]){document.querySelector(`#${id}`).addEventListener("change",invalidateProtectedRelease)}
 document.querySelector("#connected-repo-name").addEventListener("focus",()=>{const n=connectedNames();if(!document.querySelector("#connected-repo-name").value)document.querySelector("#connected-repo-name").value=n.repo});
 document.querySelector("#connected-service-name").addEventListener("focus",()=>{const n=connectedNames();if(!document.querySelector("#connected-service-name").value)document.querySelector("#connected-service-name").value=n.service});
 
-document.querySelector("#deployment-success-close").addEventListener("click",()=>document.querySelector("#deployment-success-dialog").close());
-document.querySelector("#deployment-success-open").addEventListener("click",event=>{
-  const url=event.currentTarget.dataset.url;if(url)window.open(url,"_blank","noopener,noreferrer");
-});
 
 refreshIntegrations(false);

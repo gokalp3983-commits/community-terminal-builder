@@ -70,7 +70,7 @@ function normalize(input) {
     id, name, ticker: `$${tickerRaw}`, version: text(input.version, "1.0.0"),
     description: text(input.description, `Terminal-style tools for the ${name} community.`),
     ecosystem: text(input.ecosystem, "Robinhood Chain"),
-    promptUser: text(input.promptUser, id), promptHost: text(input.promptHost, "terminal"),
+    promptUser: tickerRaw.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 32), promptHost: "robinhood",
     token, nft, dexChain: text(input.dexScreenerChainId, "robinhood"),
     blockscout: text(input.blockscoutApiBase, "https://robinhoodchain.blockscout.com/api/v2").replace(/\/$/, ""),
     colors: { ...DEFAULT_TERMINAL_THEME },

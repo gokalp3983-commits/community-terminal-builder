@@ -32,7 +32,7 @@ assert.match(app,/\[ QUICK ACCESS TO TERMINALS \]/,"Landing Preview must use cur
 assert.match(app,/\[ AVAILABLE TERMINALS \]/,"Landing Preview must use current Available Terminals area");
 assert.match(html,/\[ TERMINAL READY \]/,"Final-product terminal-ready popup missing");
 assert.match(html,/id="built-terminal-url"/,"Terminal-ready popup must expose the generated website link");
-assert.match(app,/https:\/\/www\.terminal\.xyz\/\$\{slug\}-landing-page/,"Acceptance mock terminal URL missing");
+assert(!app.includes("https://www.terminal.xyz/"),"Legacy mock terminal URL must not be presented as a live deployment URL");
 assert.match(app,/resetForm\(\);\nrefreshProjectList\(\);/,"Builder must start with a clean project-neutral workspace");
 assert.match(app,/NFT Contract Address is required before confirming NFT mint details/,"NFT mint confirmation must require a valid NFT contract first");
 assert.match(app,/NFT Contract Address is required while NFT Terminal is enabled/,"Generation must validate NFT CA before mint confirmation state");

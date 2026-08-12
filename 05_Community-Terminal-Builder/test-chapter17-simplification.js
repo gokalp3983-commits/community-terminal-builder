@@ -27,7 +27,7 @@ const guidedFresh = normalize({
   promptUser:"", promptHost:""
 });
 assert.equal(guidedFresh.promptUser,"trial","Fresh Guided project must derive terminal user from project id");
-assert.equal(guidedFresh.promptHost,"terminal","Fresh Guided project must default terminal host");
+assert.equal(guidedFresh.promptHost,"robinhood","Fresh Guided project must use the canonical Robinhood terminal host");
 
 assert.match(html,/class="guided-overview"/,"Guided setup overview missing");
 assert.match(css,/body\.guided-mode \.console-panel\{display:none\}/,"Guided Mode should hide developer console");

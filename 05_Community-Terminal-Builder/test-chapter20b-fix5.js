@@ -1,0 +1,16 @@
+"use strict";
+const fs=require("fs"),path=require("path"),assert=require("assert");
+const {generate}=require("./generator");
+const root=__dirname;
+const app=fs.readFileSync(path.join(root,"public","app.js"),"utf8");
+const html=fs.readFileSync(path.join(root,"public","index.html"),"utf8");
+assert(app.includes('terminalUserFromTicker(val("ticker"))'),"Terminal identity must derive from ticker in builder");
+assert(app.includes('setValue("promptUser",terminalIdentityFromTicker(p.ticker))'),"Loaded projects must re-derive visible terminal identity from ticker");
+assert(app.includes('form.elements.ticker?.addEventListener("input",()=>{syncTerminalIdentity();update()})'),"Ticker edits must immediately sync terminal identity");
+assert(html.includes('name="promptUser" placeholder="ticker@robinhood — auto-derived" readonly'),"Terminal identity placeholder must describe ticker derivation");
+assert(/app\.js\?v=20b-fix(?:5|6|7)/.test(html),"Builder JS must remain cache-busted after FIX5");
+assert(app.includes('const target=`${base}-community-terminal`'),"Quick deploy must derive target from generated project name");
+const built=generate({projectName:"CTB Deployment Test 2",ticker:"CTBTWO",tokenContract:"0x1111111111111111111111111111111111111111",features:{whaleTracker:true,memeIntel:true,nftTerminal:false,communityPulse:true,timeline:true,liveMarket:true}});
+assert.strictEqual(built.project.promptUser,"ctbtwo","Generated terminal user must be lower-case ticker");
+assert.strictEqual(built.project.promptHost,"robinhood","Generated terminal host must be robinhood");
+console.log("Chapter 20B FIX5 regression PASS");

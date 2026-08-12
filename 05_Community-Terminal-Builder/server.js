@@ -146,7 +146,7 @@ const server = http.createServer((req,res) => {
   fs.readFile(file,(error,data)=>{
     if(error)return send(res,404,"Not found","text/plain; charset=utf-8");
     const type=types[path.extname(file)]||"application/octet-stream";
-    const headers=type.startsWith("text/html")?{}:{"Cache-Control":"public, max-age=3600"};
+    const headers={"Cache-Control":"no-store, max-age=0"};
     if(req.method==="HEAD"){res.writeHead(200,{...securityHeaders(type),...headers});return res.end();}
     send(res,200,data,type,headers);
   });
