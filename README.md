@@ -1411,3 +1411,19 @@ This is the Chapter 20 NFT UX carry-over pass; deployment-flow integration remai
 - Project identity/disclaimer copy uses the project name rather than a dollar-prefixed ticker.
 - Single-phase mint configuration now includes end date/time and transfers the complete schedule, timezone, fee and wallet limit to Phase 1 when switching to multiple phases; switching back restores the complete Phase 1 values.
 - Builder Landing Preview mascot uses the same 220x86 contain slot as generated Community Terminal headers for closer scale parity.
+
+## Chapter 20 — Final cleanup / canonical-source freeze (12 Aug 2026)
+
+Chapter 20 closes with a source-of-truth cleanup prompted by direct NFT-only generation testing.
+
+- The latest accepted CTB archive now **supersedes all previous standalone base codes and derived templates**. This includes prior NFT-only single-phase bases, NFT-only multi-phase bases, token-only bases, and project-specific derivative templates. Future generation starts from the latest accepted CTB archive.
+- NFT-only generation is now a CTB extraction/configuration workflow: select the appropriate CTB NFT module, inject the user-supplied project/mint data and logo/assets, strip unrelated Community Terminal hierarchy where required, validate, and package.
+- The canonical multi-phase NFT runtime is now **strictly configuration-driven**. Visible phase labels, phase names, start/end schedule, mint fee, wallet limit, countdown state, and phase command rows are derived from `PROJECT_CONFIG.nft.mintPhases`.
+- Removed historical project-specific fallback phase names, dates, prices, and limits from the canonical multi-phase runtime/template. Missing phase configuration produces a neutral `NOT CONFIGURED` state instead of another project's sample data.
+- Added Chapter 20 regression coverage to reject historical/sample phase leakage and verify that generated multi-phase projects contain the values supplied in configuration.
+- The CTB20 accepted NFT layout, responsive behavior, OpenSea/holder/sales/wallet logic, footer contract, palette, and Chapter 19/20 accepted UX remain unchanged by this cleanup.
+- Deployment integration is intentionally deferred to the next workstream.
+
+**Chapter 20 is COMPLETE / CLEANED / CANONICAL.**  
+The next workstream is **CTB Chapter-20B — Deployment Integration**.
+

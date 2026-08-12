@@ -1,18 +1,15 @@
 "use strict";
 
 const $ = (id) => document.getElementById(id);
-const configuredPhases = window.PROJECT_CONFIG?.nft?.mintPhases || [];
-const fallbackPhases = [
-  { id: "allowlist1", label: "ALLOWLIST 1", name: "I know a guy", startsAt: "2026-08-15T23:08:00+03:00", endsAt: "2026-08-16T00:03:00+03:00", price: "FREE", limit: "1 PER WALLET" },
-  { id: "allowlist2", label: "ALLOWLIST 2", name: "don't embarrASS us.", startsAt: "2026-08-16T00:03:00+03:00", endsAt: "2026-08-16T03:36:00+03:00", price: "FREE", limit: "1 PER WALLET" },
-  { id: "public", label: "PUBLIC", name: "the public humiliation", startsAt: "2026-08-16T03:36:00+03:00", endsAt: "2026-08-16T09:36:00+03:00", price: "$5.13", limit: "1 PER WALLET" },
-];
-const phases = (configuredPhases.length ? configuredPhases : fallbackPhases).map((phase) => ({
+const configuredPhases = Array.isArray(window.PROJECT_CONFIG?.nft?.mintPhases)
+  ? window.PROJECT_CONFIG.nft.mintPhases
+  : [];
+const phases = configuredPhases.map((phase) => ({
   ...phase,
   startMs: new Date(phase.startsAt).getTime(),
   endMs: phase.endsAt ? new Date(phase.endsAt).getTime() : null,
 }));
-const MINT_AT = new Date(window.PROJECT_CONFIG?.nft?.mintAt || phases[0]?.startsAt || "2026-08-15T23:08:00+03:00");
+const MINT_AT = new Date(window.PROJECT_CONFIG?.nft?.mintAt || phases[0]?.startsAt || "1970-01-01T00:00:00Z");
 let overallLiveSet = false;
 
 function responsiveStatusCopy(desktopText, mobileText){
@@ -20,7 +17,7 @@ function responsiveStatusCopy(desktopText, mobileText){
 }
 
 function pad(v){ return String(Math.max(0,v)).padStart(2,"0"); }
-function isMintLive(){ return Date.now() >= MINT_AT.getTime(); }
+function isMintLive(){ return phases.length > 0 && Date.now() >= MINT_AT.getTime(); }
 function isMintComplete(now = Date.now()){
   const finalPhase = phases[phases.length - 1];
   return Boolean(finalPhase?.endMs && now >= finalPhase.endMs);
@@ -43,6 +40,82 @@ function shortDurationText(ms){
   const mins = Math.floor((total % 3600) / 60);
   const secs = total % 60;
   return days > 0 ? `${pad(days)}D:${pad(hours)}:${pad(mins)}:${pad(secs)}` : `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
+}
+
+
+function escapeHtml(value){
+  return String(value ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;");
+}
+
+function phaseTimeText(iso){
+  const raw = String(iso || "");
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::\d{2})?(Z|[+-]\d{2}:\d{2})$/);
+  if (!match) return "Not configured";
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const hour24 = Number(match[4]);
+  const minute = match[5];
+  const hour12 = hour24 % 12 || 12;
+  const ampm = hour24 < 12 ? "AM" : "PM";
+  const zone = match[6] === "Z" ? "UTC" : `GMT${match[6].replace(":00","").replace(/^\+0/,"+").replace(/^-0/,"-")}`;
+  return `${months[Number(match[2]) - 1]} ${Number(match[3])} · ${hour12}:${minute} ${ampm} ${zone}`;
+}
+
+function phaseCardMarkup(phase, index){
+  const label = phase.label || `PHASE-${index + 1}`;
+  const name = phase.name || "Not configured";
+  const price = phase.price || "—";
+  const limit = phase.limit || "—";
+  const schedule = phase.endsAt
+    ? `Starts ${phaseTimeText(phase.startsAt)} <span aria-hidden="true">·</span> Ends ${phaseTimeText(phase.endsAt)}`
+    : `Starts ${phaseTimeText(phase.startsAt)}`;
+  return `<section id="phaseCard-${escapeHtml(phase.id)}" class="phase-countdown-card" data-phase="${escapeHtml(phase.id)}">
+              <div class="phase-card-topline"><span class="phase-kind">[ ${escapeHtml(label)} ]</span><span id="phaseStatus-${escapeHtml(phase.id)}" class="phase-status">[ UPCOMING ]</span></div>
+              <h2>“${escapeHtml(name)}”</h2>
+              <div class="phase-details phase-details-kv">
+                <div class="phase-detail-row"><span class="phase-detail-label">Mint Fee</span><span class="phase-detail-colon" aria-hidden="true">:</span><span class="phase-detail-value">${escapeHtml(price)}</span></div>
+                <div class="phase-detail-row"><span class="phase-detail-label">Mint per Wallet</span><span class="phase-detail-colon" aria-hidden="true">:</span><span class="phase-detail-value">${escapeHtml(limit)}</span></div>
+              </div>
+              <div id="phaseCountdown-${escapeHtml(phase.id)}" class="phase-countdown-value">--D --H --M --S</div>
+              <div class="phase-time">${schedule}</div>
+            </section>`;
+}
+
+function phaseCommandMarkup(phase, index){
+  return `<div id="phaseCommand-${escapeHtml(phase.id)}" class="market-line market-countdown-line phase-command-line"><span class="market-tag countdown-tag">[ MINT ]</span><span class="market-label">Phase-${index + 1}</span><span class="market-colon">:</span><strong id="phaseCommandValue-${escapeHtml(phase.id)}" class="market-value">--:--:--</strong></div>`;
+}
+
+function hydrateConfiguredPhases(){
+  const grid = document.querySelector(".phase-countdown-grid");
+  const marketPanel = document.querySelector("#launchLivePanel .market-panel");
+  if (grid) {
+    if (phases.length) {
+      grid.innerHTML = phases.map(phaseCardMarkup).join("");
+      grid.setAttribute("aria-label", `${window.PROJECT_CONFIG?.project?.name || "NFT"} mint phase schedule`);
+      grid.style.gridTemplateColumns = `repeat(${Math.min(3, Math.max(1, phases.length))},minmax(0,1fr))`;
+    } else {
+      grid.innerHTML = `<section class="phase-countdown-card is-not-configured">
+        <div class="phase-card-topline"><span class="phase-kind">[ PHASES ]</span><span class="phase-status">[ NOT CONFIGURED ]</span></div>
+        <h2>“Mint phases not configured”</h2>
+        <div class="phase-details phase-details-kv">
+          <div class="phase-detail-row"><span class="phase-detail-label">Mint Fee</span><span class="phase-detail-colon" aria-hidden="true">:</span><span class="phase-detail-value">—</span></div>
+          <div class="phase-detail-row"><span class="phase-detail-label">Mint per Wallet</span><span class="phase-detail-colon" aria-hidden="true">:</span><span class="phase-detail-value">—</span></div>
+        </div>
+        <div class="phase-countdown-value">NOT CONFIGURED</div>
+        <div class="phase-time">Schedule not configured.</div>
+      </section>`;
+    }
+  }
+
+  if (marketPanel) {
+    marketPanel.querySelectorAll(".phase-command-line").forEach((row) => row.remove());
+    if (phases.length) {
+      marketPanel.insertAdjacentHTML("beforeend", phases.map(phaseCommandMarkup).join(""));
+    }
+  }
 }
 
 function showPhaseModal(phase){
@@ -238,5 +311,6 @@ for (const control of [$("terminalLink"), $("terminalCommandLink")]){
 $("preMintCancel").addEventListener("click",()=>{ $("preMintModal").hidden = true; });
 $("phaseLiveStay").addEventListener("click",()=>{ $("phaseLiveModal").hidden = true; });
 
+hydrateConfiguredPhases();
 tick();
 setInterval(tick,1000);
