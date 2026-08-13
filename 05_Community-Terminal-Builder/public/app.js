@@ -241,6 +241,7 @@ async function payload(){const mint=syncNftMintSchedule();return {
 };}
 
 function nftOnlyProfile(){return checked("nftTerminal")&&!checked("whaleTracker")&&!checked("memeIntel")&&!checked("communityPulse")&&!checked("timeline")&&!checked("liveMarket")}
+function syncTokenRequirement(){const input=form.elements.tokenContract;if(!input)return;const required=!nftOnlyProfile();input.required=required;const address=val("tokenContract");if(!required&&!address)showContractCheck("pass","[ SKIP ] Token CA is not required for an NFT-only terminal.");else if(required&&!address)showContractCheck("","[ WAIT ] Enter a 42-character 0x contract address.")}
 function configurationReady(){const mint=syncNftMintSchedule();const nftEnabled=checked("nftTerminal");const tokenRequired=!nftOnlyProfile();const tokenReady=!tokenRequired||isEvmAddress(val("tokenContract"));const openSeaOk=!nftEnabled||openSeaConfigurationValid();const mintConfirmed=!nftEnabled||(mint.ok&&!mint.disabled&&(mint.mode==="terminal"||confirmedMintSignature===mintSignature(mint)));return Boolean(val("projectName")&&val("ticker")&&tokenReady&&openSeaOk&&(!nftEnabled||(isEvmAddress(val("nftContract"))&&mint.ok&&!mint.disabled&&mintConfirmed)))}
 function updateWorkspaceStatus(){
   const name=val("projectName");
@@ -311,6 +312,7 @@ function update(){
   syncOpenSeaValidation();
   syncMascotWarning();
   syncNftConfigVisibility();
+  syncTokenRequirement();
   const project=val("projectName"); const ticker=val("ticker"); const contract=val("tokenContract");
   const nftEnabled=checked("nftTerminal"); const nftContract=val("nftContract"); const openSeaSlug=syncOpenSeaSlug(); const requiredReady=configurationReady();
   const modules=[checked("whaleTracker")?"/whales":null,checked("memeIntel")?"/intel":null,nftEnabled?"/nft":null,checked("communityPulse")?"/pulse":null,checked("timeline")?"/timeline":null].filter(Boolean);
@@ -345,7 +347,7 @@ async function validateContractField(){
   const address=val("tokenContract");
   const chain=val("dexScreenerChainId");
   const sequence=++contractCheckSequence;
-  if(!address)return showContractCheck("","[ WAIT ] Enter a 42-character 0x contract address.");
+  if(!address){if(nftOnlyProfile())return showContractCheck("pass","[ SKIP ] Token CA is not required for an NFT-only terminal.");return showContractCheck("","[ WAIT ] Enter a 42-character 0x contract address.");}
   if(looksLikeNonEvmAddress(address))return showContractCheck("fail","[ UNSUPPORTED ] This appears to be a non-EVM address. The current terminal engine supports 0x EVM contracts only.");
   if(!isEvmAddress(address))return showContractCheck("fail","[ FAIL ] Invalid EVM contract format. Expected 0x followed by exactly 40 hexadecimal characters.");
   showContractCheck("","[ CHECKING ] Valid EVM format. Looking for DexScreener markets...");

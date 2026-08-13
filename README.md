@@ -1696,3 +1696,12 @@ The Chapter 21 data providers, analytics, generation architecture, configuration
 - Native browser date/time picker affordances were restored for NFT mint schedule fields, including multi-phase schedule inputs.
 - Multi-phase active phase command rows now show the phase remaining time when an end time is configured instead of only `MINT IS LIVE`.
 - Token-enabled Community Terminal behavior remains unchanged.
+
+
+### Chapter 22 — NFT-only browser validation correction (13 Aug 2026)
+
+- Fixed a remaining browser-native validation regression that still forced **Token CA** on a fresh NFT-only project even though the generator already supported NFT-only output.
+- Removed the hard-coded HTML `required` attribute from Token CA and made the native requirement follow the selected module profile dynamically.
+- Token CA remains required for token-based terminals, but is explicitly skipped when **NFT Terminal is the only enabled terminal profile**.
+- The Builder contract status now reports that Token CA is not required for a true NFT-only terminal instead of blocking creation.
+- Strengthened Chapter 22 NFT-only regression coverage so a hard-coded Token CA requirement cannot return unnoticed.
