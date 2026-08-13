@@ -17,7 +17,8 @@ const {releaseReadiness}=require("./release-readiness");
 const {buildFingerprint}=require("./build-fingerprint");
 
 assert.match(html,/id="deploy-built-terminal"[^>]*>DEPLOY TERMINAL</,"20B primary deploy action missing");
-assert.match(html,/id="download-built-terminal"[^>]*>DOWNLOAD ZIP</,"20B ZIP fallback missing");
+assert(!html.includes('id="download-built-terminal"'),"Post-creation popup must not expose Download ZIP in final end-user flow");
+assert.match(html,/id="export-project"[^>]*>EXPORT</,"Advanced project export fallback remains available");
 assert.match(html,/id="quick-deploy-confirmation"/,"20B protected confirmation UI missing");
 assert(!/downloadBuild\(\);const autoSaved=noteGenerated/.test(app),"20B generation must not auto-download ZIP");
 assert.match(app,/ready to deploy/,"20B post-generation deployment state missing");

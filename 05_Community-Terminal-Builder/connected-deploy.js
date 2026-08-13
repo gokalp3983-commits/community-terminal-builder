@@ -113,6 +113,8 @@ async function syncRenderRuntimeSecrets(fetchImpl,c,serviceId){
   if(!serviceId)return;
   if(c.openSeaApiKey){
     await renderRequest(fetchImpl,c,`/services/${serviceId}/env-vars/OPENSEA_API_KEY`,{method:"PUT",body:{value:c.openSeaApiKey}});
+    const check=await renderRequest(fetchImpl,c,`/services/${serviceId}/env-vars/OPENSEA_API_KEY`);
+    if(!check) throw new Error("Render did not confirm OPENSEA_API_KEY after synchronization.");
   }
 }
 async function deployRender(fetchImpl,c,{repoUrl,serviceName,releaseMode="update"}){

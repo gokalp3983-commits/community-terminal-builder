@@ -588,7 +588,7 @@ form.addEventListener("submit",async e=>{
 });
 document.querySelector("#close-build-complete").addEventListener("click",()=>document.querySelector("#build-complete").close());
 document.querySelector("#close-build-complete-action").addEventListener("click",()=>document.querySelector("#build-complete").close());
-document.querySelector("#download-built-terminal").addEventListener("click",()=>{downloadBuild();status.textContent="[ DOWNLOAD ] Generated terminal ZIP downloaded."});
+document.querySelector("#download-built-terminal")?.addEventListener("click",()=>{downloadBuild();status.textContent="[ DOWNLOAD ] Generated terminal ZIP downloaded."});
 document.querySelector("#copy-built-terminal-link").addEventListener("click",async event=>{const url=event.currentTarget.dataset.url;if(!url)return;try{await navigator.clipboard.writeText(url);status.textContent="[ COPIED ] Terminal link copied."}catch{status.textContent=`[ READY ] Terminal link: ${url}`}});
 
 async function syncBuilderRuntime(){

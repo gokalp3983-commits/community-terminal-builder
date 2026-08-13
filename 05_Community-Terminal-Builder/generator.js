@@ -240,6 +240,7 @@ function prefixBrowserRoutes(source, base) {
     .replace(/(["'`])\/countdown\.js(?:\?[^"'`]*)?\1/g, `$1${base}/countdown.js$1`)
     .replace(/(["'`])\/binary-background\.js(?:\?[^"'`]*)?\1/g, `$1${base}/binary-background.js$1`)
     .replace(/(["'`])\/assets\//g, `$1${base}/assets/`)
+    .replace(/(["'`])assets\//g, `$1${base}/assets/`)
     .replace(/(["'`])\/api\//g, `$1${base}/api/`);
 }
 
@@ -460,6 +461,15 @@ function defaultMascot(name) {
   return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" rx="72" fill="#03100b"/><circle cx="256" cy="256" r="170" fill="#39ff14" opacity=".15"/><text x="256" y="292" text-anchor="middle" font-family="monospace" font-size="130" font-weight="700" fill="#39ff14">${initials}</text></svg>`);
 }
 
+function canonicalFooterRuntime(p, moduleName) {
+  const ticker = String(p.ticker || "").replace(/^\$/, "");
+  const displayTicker = ticker || p.name;
+  const base = moduleName === "01_Landing-Page" ? "" : ({"02_Whale-Activity-Tracker":"/whales","03_NFT-Collection-Terminal":"/nft","04_Meme-Intel":"/intel","06_Community-Pulse":"/pulse","07_Timeline":"/timeline"}[moduleName] || "");
+  const openSeaLine = moduleName === "03_NFT-Collection-Terminal" ? '<span class="ctb-footer-opensea">NFT Collection statistics powered by OpenSea API.</span>' : "";
+  const html = `<footer class="footer ctb-canonical-footer"><span class="ctb-footer-title">${displayTicker} Community Terminal</span><span class="ctb-footer-version">ver ${p.version}</span>${openSeaLine}<div class="builder-signature" aria-label="Built by Gokalp @Gokalp8339"><img class="builder-signature-avatar" src="${base}/assets/gokalp-hoodrat-signature.png" alt="Gokalp Hoodrat NFT avatar"><div class="builder-signature-copy"><span class="builder-signature-label">Built by</span><span class="builder-signature-name">Gokalp</span><a class="x-credit builder-signature-handle" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer">𝕏 @Gokalp8339</a></div></div><div class="builder-signature-disclaimer">Not affiliated with or endorsed by the official $${ticker} team.</div></footer>`;
+  return `(function(){function render(){var host=document.getElementById("terminal-footer");if(!host)return;host.innerHTML=${JSON.stringify(html)};host.style.borderTop="2px solid #ff2d2d";host.style.marginTop="18px";host.style.paddingTop="12px";host.style.textAlign="center";var title=host.querySelector(".ctb-footer-title"),version=host.querySelector(".ctb-footer-version"),sea=host.querySelector(".ctb-footer-opensea");if(title){title.style.display="block";title.style.textAlign="center"}if(version){version.style.display="block";version.style.textAlign="center";version.style.marginBottom="9px"}if(sea){sea.style.display="block";sea.style.textAlign="center";sea.style.marginBottom="10px"}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render);else render();setTimeout(render,0);})();\n`;
+}
+
 function generatedValidator(p) {
   return [
     '"use strict";',
@@ -599,6 +609,17 @@ function generate(input) {
   for (const moduleName of MODULES) {
     const sourceName = moduleName === "03_NFT-Collection-Terminal" && p.nftSettings.mode === "multiple" ? NFT_MULTI_TEMPLATE : moduleName;
     walkModule(path.join(MASTER_ROOT, sourceName), `${root}/${moduleName}`, moduleName, entries, p);
+  }
+  for (const moduleName of MODULES) {
+    const base = moduleName === "01_Landing-Page" ? "" : ({"02_Whale-Activity-Tracker":"/whales","03_NFT-Collection-Terminal":"/nft","04_Meme-Intel":"/intel","06_Community-Pulse":"/pulse","07_Timeline":"/timeline"}[moduleName] || "");
+    entries.push({name:`${root}/${moduleName}/public/canonical-footer.js`,data:canonicalFooterRuntime(p,moduleName)});
+    for (const entry of entries) {
+      if (entry.name.startsWith(`${root}/${moduleName}/public/`) && entry.name.endsWith(".html")) {
+        let html=entry.data.toString("utf8");
+        if(!html.includes("canonical-footer.js")) html=html.replace("</body>",`  <script src="${base}/canonical-footer.js"></script>\n</body>`);
+        entry.data=Buffer.from(html);
+      }
+    }
   }
   if (p.nftSettings.mode === "terminal") {
     for (let i = entries.length - 1; i >= 0; i--) {

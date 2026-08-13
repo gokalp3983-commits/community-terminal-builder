@@ -457,7 +457,7 @@ async function loadMintHistoryAnalytics(){
     await new Promise(resolve=>setTimeout(resolve,120));
   }
   const counts=[...byWallet.values()]; const largestMint=counts.length?Math.max(...counts):0; const repeatMinters=counts.filter(x=>x>1).length;
-  const data={connected:true,uniqueMinters:byWallet.size,totalMintEvents,repeatMinters,largestMint,averageNftsPerMinter:byWallet.size?Number((totalMintEvents/byWallet.size).toFixed(2)):0,firstMintAt:firstMintAt?new Date(firstMintAt).toISOString():null,lastMintAt:lastMintAt?new Date(lastMintAt).toISOString():null,mintDurationMinutes:firstMintAt&&lastMintAt?Number(((lastMintAt-firstMintAt)/60000).toFixed(1)):null,updatedAt:new Date().toISOString()};
+  const data={connected:true,uniqueMinters:byWallet.size,totalMintEvents,repeatMinters,largestMint,averageNftsPerMinter:byWallet.size?Number((totalMintEvents/byWallet.size).toFixed(2)):0,firstMintAt:firstMintAt?new Date(firstMintAt).toISOString():null,lastMintAt:lastMintAt?new Date(lastMintAt).toISOString():null,mintDurationMinutes:firstMintAt&&lastMintAt?Number(((lastMintAt-firstMintAt)/60000).toFixed(1)):null,minterAddresses:[...byWallet.keys()],updatedAt:new Date().toISOString()};
   mintHistoryCache={fetchedAt:Date.now(),data};return data;
 }
 app.get("/api/mint-intelligence",async(_req,res)=>{try{res.json(await loadMintHistoryAnalytics())}catch(error){console.error("[mint-intelligence] failed:",error);res.status(502).json({connected:false,error:"Mint history analytics unavailable."})}});
@@ -469,6 +469,28 @@ async function loadNftActivity(){
   const data={connected:true,transfers1h,transfers24h,mints1h,mints24h,uniqueWallets24h:wallets24.size,recent,updatedAt:new Date().toISOString()};nftActivityCache={fetchedAt:Date.now(),data};return data;
 }
 app.get("/api/nft-activity",async(_req,res)=>{try{res.json(await loadNftActivity())}catch(error){console.error("[nft-activity] failed:",error);res.status(502).json({connected:false,error:"NFT activity unavailable."})}});
+
+let nftPostMintCache = null;
+async function loadPostMintAnalytics(){
+  if(nftPostMintCache && Date.now()-nftPostMintCache.fetchedAt < 60000) return nftPostMintCache.data;
+  const holders=await getNftHolderAnalytics();
+  const current=new Map(holders.holders.map(h=>[h.address,Number(h.count)||0]));
+  const deltas=new Map(); const cutoff=Date.now()-86400000; let nextPageParams=null, scanned=0;
+  for(let page=0;page<20;page+=1){
+    const payload=await fetchBlockscoutJson(buildTransfersPath(nextPageParams)); const items=Array.isArray(payload?.items)?payload.items:[]; let reachedOld=false;
+    for(const item of items){const ts=getTransferTimestamp(item);const ms=ts?.getTime()||0;if(ms && ms<cutoff){reachedOld=true;continue;}if(!ms)continue;scanned+=1;const from=getAddressHash(item?.from),to=getAddressHash(item?.to);if(/^0x[a-f0-9]{40}$/.test(from)&&from!==ZERO_ADDRESS)deltas.set(from,(deltas.get(from)||0)-1);if(/^0x[a-f0-9]{40}$/.test(to))deltas.set(to,(deltas.get(to)||0)+1);}
+    nextPageParams=payload?.next_page_params??null;if(reachedOld||!nextPageParams||items.length===0)break;
+  }
+  const changes=[...deltas.entries()].map(([address,delta])=>{const now=current.get(address)||0;return {address,delta,current:now,previous:Math.max(0,now-delta)};});
+  const entrants=changes.filter(x=>x.delta>0&&x.current>0&&x.previous===0).sort((a,b)=>b.delta-a.delta);
+  const exits=changes.filter(x=>x.delta<0&&x.current===0).sort((a,b)=>a.delta-b.delta);
+  const movers=changes.filter(x=>x.delta!==0).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)).slice(0,20);
+  let retention={available:false};
+  try{const mint=await loadMintHistoryAnalytics();const minters=Array.isArray(mint.minterAddresses)?mint.minterAddresses:[];if(minters.length){const retained=minters.filter(a=>(current.get(a)||0)>0).length;retention={available:true,originalMinters:minters.length,stillHolding:retained,exited:minters.length-retained,retentionPercent:Number((retained/minters.length*100).toFixed(2))};}}catch{}
+  const data={connected:true,windowHours:24,transfersScanned:scanned,entrants:entrants.slice(0,20),exits:exits.slice(0,20),movers,retention,updatedAt:new Date().toISOString()};nftPostMintCache={fetchedAt:Date.now(),data};return data;
+}
+app.get("/api/nft-postmint",async(_req,res)=>{try{res.json(await loadPostMintAnalytics())}catch(error){console.error("[nft-postmint] failed:",error);res.status(502).json({connected:false,error:"Post-mint analytics unavailable."})}});
+
 
 app.get("/api/mint-stats", async (_req, res) => {
   try {
