@@ -10,11 +10,10 @@ for(const mod of mods){
   const html=text(`${mod}/public/terminal.html`);
   const js=text(`${mod}/public/script.js`);
   const css=text(`${mod}/public/style.css`);
-  for(const command of ["whales","movers","activity","pulse"]){
+  for(const command of ["whales","movers","activity","sales","pulse"]){
     ok(html.includes(`data-nft-quick-command="${command}"`),`${mod}: ${command.toUpperCase()} primary button present`);
   }
-  ok(html.includes('data-nft-quick-command="wallet " data-command-prefill="true"'),`${mod}: WALLET primary button prefills address command`);
-  for(const command of ["whales","entrants","movers","retention","activity","sales","pulse","refresh","clear"]){
+  for(const command of ["whales","entrants","movers","retention","activity","sales","pulse","wallet ","clear"]){
     ok(html.includes(`data-nft-guide-command="${command}"`),`${mod}: ${command} guide command present`);
   }
   ok(!html.includes('data-nft-guide-command="help"')&&!html.includes('data-nft-quick-command="help"'),`${mod}: no help command in UI`);
@@ -22,7 +21,7 @@ for(const mod of mods){
   ok(html.includes('id="nftCommandInput"')&&html.includes('data-project-prompt'),`${mod}: project-derived command prompt present`);
   ok(js.includes('async function nftExecuteCommand')&&js.includes('async function nftCmdWallet')&&js.includes('async function nftCmdMovers')&&js.includes('async function nftCmdRetention'),`${mod}: post-mint command dispatcher and intelligence commands present`);
   ok(!html.includes('data-nft-guide-command="mint"')&&!html.includes('data-nft-guide-command="minters"')&&!html.includes('data-nft-guide-command="velocity"'),`${mod}: mint-related commands removed from post-mint command surface`);
-  ok(!html.includes('data-nft-guide-command="floor"')&&!html.includes('data-nft-guide-command="collection"')&&!html.includes('data-nft-guide-command="contract"'),`${mod}: redundant page-data commands removed`);
+  ok(!html.includes('data-nft-guide-command="floor"')&&!html.includes('data-nft-guide-command="collection"')&&!html.includes('data-nft-guide-command="contract"')&&!html.includes('data-nft-guide-command="refresh"'),`${mod}: redundant page-data/refresh commands removed`);
   ok(js.includes('data-copy-wallet')&&js.includes('↗'),`${mod}: whale wallet copy + Blockscout actions present`);
   ok(js.includes('data-nft-back')&&js.includes('Back to commands'),`${mod}: back-to-commands control present`);
   ok(css.includes('CTB Chapter 21A — NFT Terminal command interface'),`${mod}: NFT command styles present`);
@@ -34,7 +33,7 @@ function entry(gen,suffix){const e=gen.entries.find(x=>x.name.endsWith(suffix));
 for(const [label,gen] of [["single",single],["multi",multi]]){
   const html=entry(gen,"/03_NFT-Collection-Terminal/public/terminal.html");
   const js=entry(gen,"/03_NFT-Collection-Terminal/public/script.js");
-  ok(html.includes('data-nft-quick-command="movers"')&&html.includes('data-nft-quick-command="pulse"')&&html.includes('data-nft-quick-command="wallet "'),`${label}: generated NFT terminal keeps post-mint command UI`);
+  ok(html.includes('data-nft-quick-command="whales"')&&html.includes('data-nft-quick-command="movers"')&&html.includes('data-nft-quick-command="activity"')&&html.includes('data-nft-quick-command="sales"')&&html.includes('data-nft-quick-command="pulse"')&&!html.includes('data-nft-quick-command="wallet "'),`${label}: generated NFT terminal keeps exact five post-mint quick commands`);
   ok(js.includes('async function nftExecuteCommand'),`${label}: generated NFT terminal keeps command engine`);
   ok(!html.includes('data-nft-guide-command="help"')&&!js.includes('lower==="help"'),`${label}: generated NFT terminal remains help-free`);
 }

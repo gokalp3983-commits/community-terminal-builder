@@ -1712,19 +1712,11 @@ async function nftCmdMint(){
 }
 
 async function nftCmdWhales(){
-  const [holders,postmint]=await Promise.all([
-    nftCommandJson("/api/nft-whales"),
-    nftCommandJson("/api/nft-postmint",true).catch(()=>({connected:false}))
-  ]);
-  const threshold=Number(holders.whaleThreshold||10);
-  if(!postmint.connected){nftCommandBlock("WHALE MOVEMENT — 24H",[["Status","Recent whale-movement analytics unavailable"]],`Current whale threshold: ${nftFormatNumber(threshold)} NFTs`);return;}
-  const relevant=(postmint.movers||[]).filter(x=>Number(x.current)>=threshold||Number(x.previous)>=threshold).slice(0,10);
-  const rows=relevant.map((x,i)=>[`#${i+1}`,`<span class="nft-command-wallet">${nftEsc(shortWallet(x.address))}</span> ${Number(x.delta)>0?"+":""}${nftFormatNumber(x.delta)} → ${nftFormatNumber(x.current)} NFTs ${nftWalletActions(x.address)}`]);
-  const entered=(postmint.movers||[]).filter(x=>Number(x.previous)<threshold&&Number(x.current)>=threshold).length;
-  const left=(postmint.movers||[]).filter(x=>Number(x.previous)>=threshold&&Number(x.current)<threshold).length;
-  rows.push(["Whale Entrants",nftFormatNumber(entered)]);
-  rows.push(["Below Threshold",nftFormatNumber(left)]);
-  nftCommandBlock("WHALE MOVEMENT — 24H",rows.length?rows:[["Status","No whale position changes detected in the observed window."]],`Threshold: ${nftFormatNumber(threshold)} NFTs${postmint.partial?" · partial transfer window":""}`);
+  const d=await nftCommandJson("/api/nft-postmint");
+  if(d.warming){nftCommandBlock("WHALE MOVEMENT",[["Status","Holder snapshot is still loading — retry shortly."]]);return;}
+  if(!d.observationReady){nftCommandBlock("WHALE MOVEMENT",[["Status","Baseline established"],["Whales",nftFormatNumber(d.currentWhaleCount)],["Threshold",`${nftFormatNumber(d.whaleThreshold)}+ NFTs`]],"Whale movement will appear after the next holder observation.");return;}
+  const rows=(d.whaleMovers||[]).slice(0,10).map((x,i)=>[`#${i+1}`,`<span class="nft-command-wallet">${nftEsc(shortWallet(x.address))}</span> ${x.delta>0?"+":""}${nftFormatNumber(x.delta)} → ${nftFormatNumber(x.current)} NFTs ${nftWalletActions(x.address)}`]);
+  nftCommandBlock("WHALE MOVEMENT",[["Whales Entered",nftFormatNumber(d.whalesEntered)],["Whales Exited",nftFormatNumber(d.whalesExited)],...rows],rows.length?`Changes since ${d.previousAt?new Date(d.previousAt).toLocaleString():"previous observation"}.`:"No whale position changes since the previous observation.");
 }
 
 async function nftCmdMinters(){
@@ -1755,14 +1747,18 @@ async function nftCmdWallet(address){
 }
 
 async function nftCmdEntrants(){
-  const d=await nftCommandJson("/api/nft-postmint",true);if(!d.connected){nftCommandBlock("NEW ENTRANTS",[["Status","Post-mint analytics unavailable"]]);return;}
+  const d=await nftCommandJson("/api/nft-postmint");
+  if(d.warming){nftCommandBlock("NEW ENTRANTS",[["Status","Holder snapshot is still loading — retry shortly."]]);return;}
+  if(!d.observationReady){nftCommandBlock("NEW ENTRANTS",[["Status","Baseline established"]],"New entrants will appear after the next holder observation.");return;}
   const rows=(d.entrants||[]).slice(0,10).map((x,i)=>[`#${i+1}`,`<span class="nft-command-wallet">${nftEsc(shortWallet(x.address))}</span> +${nftFormatNumber(x.delta)} NFTs ${nftWalletActions(x.address)}`]);
-  nftCommandBlock("NEW ENTRANTS — 24H",rows.length?rows:[["Status","No new holder entrants detected in the observed 24h window."]],`Transfers scanned: ${nftFormatNumber(d.transfersScanned)}`);
+  nftCommandBlock("NEW ENTRANTS",rows.length?rows:[["Status","No new holders since the previous observation."]],d.previousAt?`Compared with ${new Date(d.previousAt).toLocaleString()}.`:"");
 }
 async function nftCmdMovers(){
-  const d=await nftCommandJson("/api/nft-postmint",true);if(!d.connected){nftCommandBlock("NFT MOVERS",[["Status","Post-mint analytics unavailable"]]);return;}
+  const d=await nftCommandJson("/api/nft-postmint");
+  if(d.warming){nftCommandBlock("HOLDER MOVERS",[["Status","Holder snapshot is still loading — retry shortly."]]);return;}
+  if(!d.observationReady){nftCommandBlock("HOLDER MOVERS",[["Status","Baseline established"]],"Holder movement will appear after the next observation.");return;}
   const rows=(d.movers||[]).slice(0,10).map((x,i)=>[`#${i+1}`,`<span class="nft-command-wallet">${nftEsc(shortWallet(x.address))}</span> ${x.delta>0?"+":""}${nftFormatNumber(x.delta)} → ${nftFormatNumber(x.current)} NFTs ${nftWalletActions(x.address)}`]);
-  nftCommandBlock("NFT MOVERS — 24H",rows.length?rows:[["Status","No holder position changes detected in the observed 24h window."]]);
+  nftCommandBlock("HOLDER MOVERS",rows.length?rows:[["Status","No holder position changes since the previous observation."]],d.previousAt?`Compared with ${new Date(d.previousAt).toLocaleString()}.`:"");
 }
 async function nftCmdRetention(){
   const d=await nftCommandJson("/api/nft-postmint",true);
@@ -1819,7 +1815,7 @@ async function nftCmdRefresh(){await Promise.allSettled([refreshMarketPanel(),re
 async function nftExecuteCommand(command){
   const text=String(command||"").trim();const lower=text.toLowerCase();
   if(lower==="clear"){nftCommandHistory.innerHTML="";return;}
-  if(lower==="whales")return nftCmdWhales();if(lower==="entrants")return nftCmdEntrants();if(lower==="movers")return nftCmdMovers();if(lower==="retention")return nftCmdRetention();if(lower==="activity")return nftCmdActivity();if(lower==="sales")return nftCmdSales();if(lower==="pulse")return nftCmdPulse();if(lower==="refresh")return nftCmdRefresh();if(lower.startsWith("wallet "))return nftCmdWallet(text.slice(7).trim());if(/^0x[a-fA-F0-9]{40}$/.test(text))return nftCmdWallet(text);throw new Error("Unknown command. Use the clickable commands above.");
+  if(lower==="whales")return nftCmdWhales();if(lower==="entrants")return nftCmdEntrants();if(lower==="movers")return nftCmdMovers();if(lower==="retention")return nftCmdRetention();if(lower==="activity")return nftCmdActivity();if(lower==="sales")return nftCmdSales();if(lower==="pulse")return nftCmdPulse();if(lower.startsWith("wallet "))return nftCmdWallet(text.slice(7).trim());if(/^0x[a-fA-F0-9]{40}$/.test(text))return nftCmdWallet(text);throw new Error("Unknown command. Use the clickable commands above.");
 }
 
 function nftCommandEcho(command){

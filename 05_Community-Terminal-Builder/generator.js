@@ -412,7 +412,6 @@ function rootServer() {
     'const healthHandler=(_req,res)=>res.status(200).json({ok:true,status:"healthy",project:config.project.name,version:config.project.version,uptimeSeconds:Math.floor(process.uptime()),timestamp:new Date().toISOString()});',
     'app.get("/health",healthHandler);',
     'app.get("/healthz",healthHandler);',
-    'app.get("/api/config",(_req,res)=>res.json({project:config.project,branding:config.branding,links:config.links,features:config.features,moduleOrder:Array.isArray(config.moduleOrder)?config.moduleOrder:["whales","intel","nft","pulse","timeline"],modules:config.modules,contracts:config.contracts,market:{refreshMs:config.market.refreshMs,dexScreenerChainId:config.market.dexScreenerChainId,blockscoutApiBase:config.market.blockscoutApiBase}}));',
     'app.get("/status",(req,res)=>res.status(200).json({',
     '  ok:true,',
     '  project:{id:config.project.id,name:config.project.name,ticker:config.project.ticker,version:config.project.version},',
@@ -511,7 +510,6 @@ function generatedValidator(p) {
     'pass("deployment verifier",fs.existsSync("verify-deployment.js"));',
     'pass("release metadata",fs.existsSync("terminal-release.json"));',
     'pass("landing favicon",fs.existsSync(path.join("01_Landing-Page","public","favicon.png"))||fs.readFileSync(path.join("01_Landing-Page","public","index.html"),"utf8").includes("assets/"));',
-    'pass("landing static config",fs.existsSync(path.join("01_Landing-Page","public","project-config.json")));',
     'const source=fs.readFileSync("server.js","utf8");',
     `pass("health route",source.includes('app.get("/health"'));`,
     `pass("healthz route",source.includes('app.get("/healthz"'));`,
@@ -647,7 +645,6 @@ function generate(input) {
       }
     }
   }
-  entries.push({name:`${root}/01_Landing-Page/public/project-config.json`,data:JSON.stringify(landingPublicConfig(p), null, 2)+"\n"});
   if (p.nftSettings.mode === "terminal") {
     for (let i = entries.length - 1; i >= 0; i--) {
       if (/\/03_NFT-Collection-Terminal\/public\/(?:index\.html|countdown\.js|countdown\.css)$/.test(entries[i].name)) entries.splice(i, 1);
