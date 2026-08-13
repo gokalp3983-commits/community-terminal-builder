@@ -373,12 +373,14 @@ function rootServer() {
   return [
     '"use strict";',
     'const express=require("express");',
+    'const path=require("path");',
     'const config=require("./config");',
     'const app=express();',
     'const port=Number(process.env.PORT||3000);',
     'const startedAt=new Date();',
     'app.disable("x-powered-by");',
     'app.set("trust proxy",1);',
+    'app.use("/ctb-shared",express.static(path.join(__dirname,"ctb-shared"),{maxAge:0}));',
     'app.use((req,res,next)=>{',
     '  res.setHeader("X-Content-Type-Options","nosniff");',
     '  res.setHeader("X-Frame-Options","SAMEORIGIN");',
@@ -390,6 +392,7 @@ function rootServer() {
     'const healthHandler=(_req,res)=>res.status(200).json({ok:true,status:"healthy",project:config.project.name,version:config.project.version,uptimeSeconds:Math.floor(process.uptime()),timestamp:new Date().toISOString()});',
     'app.get("/health",healthHandler);',
     'app.get("/healthz",healthHandler);',
+    'app.get("/api/config",(_req,res)=>res.json({project:config.project,branding:config.branding,links:config.links,features:config.features,moduleOrder:Array.isArray(config.moduleOrder)?config.moduleOrder:["whales","intel","nft","pulse","timeline"],modules:config.modules,contracts:config.contracts,market:{refreshMs:config.market.refreshMs,dexScreenerChainId:config.market.dexScreenerChainId,blockscoutApiBase:config.market.blockscoutApiBase}}));',
     'app.get("/status",(req,res)=>res.status(200).json({',
     '  ok:true,',
     '  project:{id:config.project.id,name:config.project.name,ticker:config.project.ticker,version:config.project.version},',
@@ -462,12 +465,14 @@ function defaultMascot(name) {
 }
 
 function canonicalFooterRuntime(p, moduleName) {
-  const ticker = String(p.ticker || "").replace(/^\$/, "");
-  const displayTicker = ticker || p.name;
-  const base = moduleName === "01_Landing-Page" ? "" : ({"02_Whale-Activity-Tracker":"/whales","03_NFT-Collection-Terminal":"/nft","04_Meme-Intel":"/intel","06_Community-Pulse":"/pulse","07_Timeline":"/timeline"}[moduleName] || "");
-  const openSeaLine = moduleName === "03_NFT-Collection-Terminal" ? '<span class="ctb-footer-opensea">NFT Collection statistics powered by OpenSea API.</span>' : "";
-  const html = `<footer class="footer ctb-canonical-footer"><span class="ctb-footer-title">${displayTicker} Community Terminal</span><span class="ctb-footer-version">ver ${p.version}</span>${openSeaLine}<div class="builder-signature" aria-label="Built by Gokalp @Gokalp8339"><img class="builder-signature-avatar" src="${base}/assets/gokalp-hoodrat-signature.png" alt="Gokalp Hoodrat NFT avatar"><div class="builder-signature-copy"><span class="builder-signature-label">Built by</span><span class="builder-signature-name">Gokalp</span><a class="x-credit builder-signature-handle" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer">𝕏 @Gokalp8339</a></div></div><div class="builder-signature-disclaimer">Not affiliated with or endorsed by the official $${ticker} team.</div></footer>`;
-  return `(function(){function render(){var host=document.getElementById("terminal-footer");if(!host)return;host.innerHTML=${JSON.stringify(html)};host.style.borderTop="2px solid #ff2d2d";host.style.marginTop="18px";host.style.paddingTop="12px";host.style.textAlign="center";var title=host.querySelector(".ctb-footer-title"),version=host.querySelector(".ctb-footer-version"),sea=host.querySelector(".ctb-footer-opensea");if(title){title.style.display="block";title.style.textAlign="center"}if(version){version.style.display="block";version.style.textAlign="center";version.style.marginBottom="9px"}if(sea){sea.style.display="block";sea.style.textAlign="center";sea.style.marginBottom="10px"}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render);else render();setTimeout(render,0);})();\n`;
+  const ticker = String(p.ticker || "").replace(/^\$/, "") || p.name;
+  const isNft = moduleName === "03_NFT-Collection-Terminal";
+  const versionParts = String(p.version || "1.0").split(".");
+  const footerVersion = versionParts.slice(0, 2).join(".") || "1.0";
+  const openSeaLine = isNft ? '<div class="ctb-shared-footer-opensea">NFT Collection statistics powered by OpenSea API.</div>' : "";
+  const html = `<div class="ctb-shared-footer-title">${ticker} Community Terminal</div><div class="ctb-shared-footer-version">ver ${footerVersion}</div>${openSeaLine}<div class="ctb-shared-footer-signature" aria-label="Built by Gokalp @Gokalp8339"><img class="ctb-shared-footer-avatar" src="/ctb-shared/gokalp-hoodrat-signature.png" alt="Gokalp Hoodrat NFT avatar"><div class="ctb-shared-footer-copy"><span>Built by</span> <strong>Gokalp</strong> <a href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer">𝕏 @Gokalp8339</a></div></div><div class="ctb-shared-footer-disclaimer">Not affiliated with or endorsed by the official $${ticker} team.</div>`;
+  const css = `.ctb-shared-footer-host{margin-top:18px!important;padding:14px 4px 4px!important;border-top:1px solid #ff2d2d!important;display:grid!important;justify-items:center!important;gap:4px!important;text-align:center!important;background:transparent!important}.ctb-shared-footer-title{color:#68c8ff!important;font-size:.72rem!important;font-weight:700!important;letter-spacing:.08em!important}.ctb-shared-footer-version{color:#68c8ff!important;font-size:.64rem!important;margin:0 0 7px!important}.ctb-shared-footer-opensea{color:#d8e0dc!important;font-size:.66rem!important;margin:0 0 7px!important}.ctb-shared-footer-signature{display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important}.ctb-shared-footer-avatar{width:30px!important;height:30px!important;border-radius:50%!important;object-fit:cover!important;display:block!important;border:0!important;box-shadow:none!important;background:transparent!important}.ctb-shared-footer-copy{font-size:.72rem!important;line-height:1.2!important;color:#d8e0dc!important}.ctb-shared-footer-copy strong{color:#fff!important}.ctb-shared-footer-copy a{color:#bfff00!important;text-decoration:none!important;border:0!important}.ctb-shared-footer-disclaimer{color:#d8e0dc!important;font-size:.58rem!important;line-height:1.35!important;margin-top:2px!important}@media(max-width:520px){.ctb-shared-footer-title{font-size:.68rem!important}.ctb-shared-footer-copy{font-size:.68rem!important}.ctb-shared-footer-avatar{width:28px!important;height:28px!important}.ctb-shared-footer-disclaimer{font-size:.56rem!important}}`;
+  return `(function(){function render(){document.querySelectorAll("#terminal-footer").forEach(function(oldHost){oldHost.remove();});var host=document.getElementById("ctb-shared-footer-host");if(!host){host=document.createElement("footer");host.id="ctb-shared-footer-host";host.className="ctb-shared-footer-host";(document.querySelector("main")||document.body).appendChild(host);}host.innerHTML=${JSON.stringify(html)};if(!document.getElementById("ctb-shared-footer-style")){var style=document.createElement("style");style.id="ctb-shared-footer-style";style.textContent=${JSON.stringify(css)};document.head.appendChild(style);}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render);else render();})();\n`;
 }
 
 function generatedValidator(p) {
@@ -642,6 +647,8 @@ function generate(input) {
   entries.push({name:`${root}/.env.example`,data:envExample()});
   const mascotData = p.mascot ? Buffer.from(p.mascot.dataBase64, "base64") : defaultMascot(p.name);
   const defaultFavicon = fs.readFileSync(path.join(__dirname, "public", "favicon.png"));
+  const builderSignature = fs.readFileSync(path.join(__dirname, "public", "assets", "gokalp-hoodrat-signature.png"));
+  entries.push({name:`${root}/ctb-shared/gokalp-hoodrat-signature.png`,data:builderSignature});
   for (const moduleName of MODULES) {
     entries.push({name:`${root}/${moduleName}/public${p.mascotPath}`,data:mascotData});
     if (!p.mascot) entries.push({name:`${root}/${moduleName}/public/favicon.png`,data:defaultFavicon});

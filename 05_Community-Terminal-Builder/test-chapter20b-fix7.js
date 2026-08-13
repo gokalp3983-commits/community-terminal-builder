@@ -18,7 +18,7 @@ for(const stale of ["jacket-community-terminal","CATCOIN","catcoin","SPRITEHOOD"
 
 assert(html.includes('<a id="open-built-terminal" class="action-link" aria-disabled="true">OPEN TERMINAL</a>'),"Build-complete Open Terminal must be a native link action");
 assert(html.includes('<a id="deployment-success-open" class="deployment-success-open" aria-disabled="true">OPEN WEBSITE</a>'),"Success Open Website must be a native link action");
-assert(html.includes('<form method="dialog"><button type="submit" id="deployment-success-close" value="close">OK / CLOSE</button></form>'),"Success close must use native dialog submission");
+assert(html.includes('<form method="dialog"><button type="submit" id="deployment-success-close" value="close">CLOSE</button></form>'),"Success close must use native dialog submission and CLOSE label");
 assert(html.includes('deployment-success-x'),"Success dialog must expose an X close control");
 assert(!app.includes('window.open(url,"_blank","noopener,noreferrer")'),"Post-deploy links must not depend on popup-prone window.open handlers");
 assert(style.includes('.action-link[aria-disabled="true"]'),"Native action links must preserve disabled semantics before live URL exists");

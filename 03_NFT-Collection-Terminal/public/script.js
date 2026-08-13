@@ -1709,10 +1709,19 @@ async function nftCmdMint(){
 }
 
 async function nftCmdWhales(){
-  const d=await nftCommandJson("/api/nft-whales");
-  const whales=Array.isArray(d.topHolders)?d.topHolders.filter(x=>Number(x.count)>=Number(d.whaleThreshold||0)).slice(0,10):[];
-  const rows=whales.map(holder=>[`#${holder.rank}`,`<span class="nft-command-wallet">${nftEsc(shortWallet(holder.address))}</span> — ${nftFormatNumber(holder.count)} NFTs (${Number(holder.sharePercent||0).toFixed(2)}%) ${nftWalletActions(holder.address)}`]);
-  nftCommandBlock("NFT WHALES",rows.length?rows:[["Status","No wallets currently meet the configured whale threshold."]],`Threshold: ${nftFormatNumber(d.whaleThreshold)} NFTs`);
+  const [holders,postmint]=await Promise.all([
+    nftCommandJson("/api/nft-whales"),
+    nftCommandJson("/api/nft-postmint",true).catch(()=>({connected:false}))
+  ]);
+  const threshold=Number(holders.whaleThreshold||10);
+  if(!postmint.connected){nftCommandBlock("WHALE MOVEMENT — 24H",[["Status","Recent whale-movement analytics unavailable"]],`Current whale threshold: ${nftFormatNumber(threshold)} NFTs`);return;}
+  const relevant=(postmint.movers||[]).filter(x=>Number(x.current)>=threshold||Number(x.previous)>=threshold).slice(0,10);
+  const rows=relevant.map((x,i)=>[`#${i+1}`,`<span class="nft-command-wallet">${nftEsc(shortWallet(x.address))}</span> ${Number(x.delta)>0?"+":""}${nftFormatNumber(x.delta)} → ${nftFormatNumber(x.current)} NFTs ${nftWalletActions(x.address)}`]);
+  const entered=(postmint.movers||[]).filter(x=>Number(x.previous)<threshold&&Number(x.current)>=threshold).length;
+  const left=(postmint.movers||[]).filter(x=>Number(x.previous)>=threshold&&Number(x.current)<threshold).length;
+  rows.push(["Whale Entrants",nftFormatNumber(entered)]);
+  rows.push(["Below Threshold",nftFormatNumber(left)]);
+  nftCommandBlock("WHALE MOVEMENT — 24H",rows.length?rows:[["Status","No whale position changes detected in the observed window."]],`Threshold: ${nftFormatNumber(threshold)} NFTs${postmint.partial?" · partial transfer window":""}`);
 }
 
 async function nftCmdMinters(){
@@ -1758,9 +1767,24 @@ async function nftCmdRetention(){
 }
 
 async function nftCmdSales(){
-  const d=await nftCommandJson("/api/nft-sales",true);if(!d.connected){nftCommandBlock("RECENT SALES",[["Status",d.requiresApiKey?"OpenSea API key required":"UNAVAILABLE"]]);return;}
-  const sales=Array.isArray(d.sales)?d.sales.slice(0,8):[];
-  nftCommandBlock("RECENT SALES",sales.length?sales.map(sale=>[sale.tokenId!=null?`NFT #${sale.tokenId}`:"NFT",`${nftEsc(sale.priceDisplay||"Price unavailable")}${sale.buyer?` → <span class="nft-command-wallet">${nftEsc(shortWallet(sale.buyer))}</span> ${nftWalletActions(sale.buyer)}`:""}`]):[["Status","No recent sales returned."]],"Source: OpenSea");
+  const d=await nftCommandJson("/api/nft-sales",true);if(!d.connected){nftCommandBlock("SALES ANALYTICS",[["Status",d.requiresApiKey?"OpenSea API key required":"UNAVAILABLE"]]);return;}
+  const sales=Array.isArray(d.sales)?d.sales:[];
+  const prices=sales.map(s=>Number(s.priceEth ?? s.price ?? s.priceValue)).filter(Number.isFinite).filter(x=>x>0).sort((a,b)=>a-b);
+  const buyers=new Set(sales.map(s=>String(s.buyer||"").toLowerCase()).filter(x=>/^0x[a-f0-9]{40}$/.test(x)));
+  const sellers=new Set(sales.map(s=>String(s.seller||"").toLowerCase()).filter(x=>/^0x[a-f0-9]{40}$/.test(x)));
+  const volume=prices.reduce((sum,x)=>sum+x,0);
+  const avg=prices.length?volume/prices.length:null;
+  const median=prices.length?(prices.length%2?prices[(prices.length-1)/2]:(prices[prices.length/2-1]+prices[prices.length/2])/2):null;
+  const high=prices.length?prices[prices.length-1]:null;
+  nftCommandBlock("SALES ANALYTICS",[
+    ["Recent Sales",nftFormatNumber(sales.length)],
+    ["Unique Buyers",nftFormatNumber(buyers.size)],
+    ["Unique Sellers",nftFormatNumber(sellers.size)],
+    ["Observed Volume",Number.isFinite(volume)&&volume>0?`${volume.toFixed(4)} ETH`:"UNAVAILABLE"],
+    ["Average Sale",Number.isFinite(avg)?`${avg.toFixed(4)} ETH`:"UNAVAILABLE"],
+    ["Median Sale",Number.isFinite(median)?`${median.toFixed(4)} ETH`:"UNAVAILABLE"],
+    ["Highest Sale",Number.isFinite(high)?`${high.toFixed(4)} ETH`:"UNAVAILABLE"]
+  ],"Source: OpenSea recent-sales window; observed feed only.");
 }
 
 async function nftCmdPulse(){
@@ -1789,16 +1813,30 @@ async function nftExecuteCommand(command){
   if(lower==="whales")return nftCmdWhales();if(lower==="entrants")return nftCmdEntrants();if(lower==="movers")return nftCmdMovers();if(lower==="retention")return nftCmdRetention();if(lower==="activity")return nftCmdActivity();if(lower==="sales")return nftCmdSales();if(lower==="pulse")return nftCmdPulse();if(lower==="refresh")return nftCmdRefresh();if(lower.startsWith("wallet "))return nftCmdWallet(text.slice(7).trim());if(/^0x[a-fA-F0-9]{40}$/.test(text))return nftCmdWallet(text);throw new Error("Unknown command. Use the clickable commands above.");
 }
 
+function nftCommandEcho(command){
+  if(!nftCommandHistory) return null;
+  const block=document.createElement("div");
+  block.className="nft-command-echo";
+  const prompt=(document.querySelector("[data-project-prompt]")?.textContent||"nft@robinhood:~$").trim();
+  block.innerHTML=`<div class="nft-command-echo-line"><span class="nft-command-echo-prompt">${nftEsc(prompt)}</span> <strong>${nftEsc(command)}</strong></div><div class="nft-command-loading">[ CONNECTING ] Loading command data...</div>`;
+  nftCommandHistory.append(block);
+  return block;
+}
+
 async function nftRunCommand(command){
   const text = String(command||"").trim();
   if(!text || !nftCommandInput || !nftCommandHistory) return;
+  if(text.toLowerCase()==="clear"){nftCommandHistory.innerHTML="";nftCommandInput.value="";nftCommandInput.focus();return;}
   nftCommandInput.value="";
   nftCommandInput.disabled=true;
   nftSetCommandControlsDisabled(true);
   nftHighlightCommand(text);
+  const echo=nftCommandEcho(text);
   try{
     await nftExecuteCommand(text);
+    echo?.querySelector(".nft-command-loading")?.remove();
   }catch(error){
+    echo?.querySelector(".nft-command-loading")?.remove();
     nftCommandError(error.message || "Command failed.");
   }finally{
     nftCommandInput.disabled=false;

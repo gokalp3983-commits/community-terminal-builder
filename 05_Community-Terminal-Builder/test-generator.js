@@ -35,6 +35,9 @@ if (!fs.existsSync(path.join(generatedRoot, "render.yaml"))) throw new Error("re
 if (!fs.existsSync(path.join(generatedRoot, ".env.example"))) throw new Error(".env.example missing");
 const rootServerSource = fs.readFileSync(path.join(generatedRoot, "server.js"), "utf8");
 if (!rootServerSource.includes('app.get("/health"') || !rootServerSource.includes('app.get("/healthz"') || !rootServerSource.includes('app.get("/status"')) throw new Error("Diagnostic routes missing");
+if (!rootServerSource.includes('app.get("/api/config"')) throw new Error("Root landing config route missing");
+if (!rootServerSource.includes('app.use("/ctb-shared"')) throw new Error("Shared footer asset route missing");
+if (!fs.existsSync(path.join(generatedRoot,"ctb-shared","gokalp-hoodrat-signature.png"))) throw new Error("Shared creator avatar missing from generated project");
 const renderYaml = fs.readFileSync(path.join(generatedRoot, "render.yaml"), "utf8");
 if (!renderYaml.includes("healthCheckPath: /healthz")) throw new Error("Render health check missing");
 execFileSync(process.execPath, ["--check", path.join(generatedRoot, "server.js")]);

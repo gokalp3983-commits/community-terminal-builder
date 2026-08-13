@@ -2427,3 +2427,8 @@ html,body{background:#000!important}
 #terminal-footer .ctb-footer-opensea{display:block;margin:0 0 10px;text-align:center}
 #terminal-footer .builder-signature{margin-top:0}
 #terminal-footer .builder-signature-disclaimer{margin-top:4px}
+
+/* Chapter 21 command feedback: echo clicked/typed commands immediately. */
+.nft-command-echo{margin:0 0 8px;padding:7px 9px;border-left:1px solid var(--green);background:rgba(0,24,14,.34)}
+.nft-command-echo-line{color:#d8e0dc;font-size:.82em}.nft-command-echo-line strong{color:var(--cyan);font-weight:700}.nft-command-echo-prompt{color:var(--green)}
+.nft-command-loading{margin-top:5px;color:var(--orange);font-size:.76em}
