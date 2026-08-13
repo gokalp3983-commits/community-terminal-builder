@@ -1713,3 +1713,18 @@ The Chapter 21 data providers, analytics, generation architecture, configuration
 - Builder-created multi-phase projects now use stable position-based internal IDs (`phase-1`, `phase-2`, etc.) that are independent from user-visible phase labels.
 - Generator normalization now also enforces unique internal phase IDs for imported/custom project data, preserving compatibility with previously saved projects and duplicate labels.
 - Added a Chapter 22 regression test covering a three-phase schedule with duplicate `ALLOWLIST` labels and requiring a unique countdown binding for every phase.
+
+### Chapter 22 — NFT-only deployment handoff parity (13 Aug 2026)
+
+- Fixed the Terminal Ready / connected-deployment summary for true NFT-only projects so it lists **NFT** only instead of the misleading **LANDING + NFT** combination.
+- NFT-only public links shown by CTB now point to the actual generated entry route: `/nft` for countdown/mint builds and `/nft/terminal` for Terminal Only builds. The stored Render service root URL remains unchanged for deployment bookkeeping and public acceptance checks.
+- The same NFT-aware public entry URL is used by the final deployment-success dialog.
+- Added Chapter 22 regression coverage to prevent LANDING from reappearing in NFT-only deployment handoff UI.
+
+### Chapter 22 — Final mascot persistence + plain footer ticker polish (13 Aug 2026)
+
+- Fixed an NFT header mascot hydration regression where the server-rendered mascot initially appeared correctly and was then replaced by a broken image after client runtime initialization. NFT runtime now preserves a valid server-rendered mascot source and only resolves a config-derived source when the image has no source yet.
+- Applied the mascot persistence rule to both canonical single-phase and multi-phase NFT templates.
+- Removed CTB's automatic `$` prefix from the canonical generated disclaimer footer. Token and NFT terminals now always render the plain normalized ticker/name form, for example `Not affiliated with or endorsed by the official HOODBIRDS team.`
+- Updated module runtime footer fallbacks so a saved ticker that already contains a leading `$` is normalized before disclaimer rendering.
+- Added Chapter 22 regression coverage for both mascot persistence and the global no-`$` disclaimer rule.

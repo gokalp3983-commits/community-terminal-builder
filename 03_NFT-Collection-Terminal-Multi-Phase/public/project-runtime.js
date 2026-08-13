@@ -32,16 +32,24 @@
       }
     });
     document.querySelectorAll("[data-project-mascot]").forEach((e) => {
-      const mascot = String(c.branding.mascot || "");
-      const assetRoot = ["/", "assets/"].join("");
-      e.src = mascot.startsWith(assetRoot) ? `/nft${mascot}` : mascot;
+      const configuredMascot = String(c.branding.mascot || "");
+      const currentSrc = String(e.getAttribute("src") || "");
+      if (!currentSrc) {
+        const assetRoot = ["/", "assets/"].join("");
+        const mountedAssetRoot = ["/nft", assetRoot].join("");
+        if (configuredMascot.startsWith(mountedAssetRoot)) e.src = configuredMascot;
+        else if (configuredMascot.startsWith(assetRoot)) e.src = `/nft${configuredMascot}`;
+        else if (configuredMascot.startsWith("assets/")) e.src = `/nft/${configuredMascot}`;
+        else if (configuredMascot) e.src = configuredMascot;
+      }
       e.alt = c.branding.mascotAlt;
     });
     document.querySelectorAll("[data-project-version]").forEach((e) => {
       e.textContent = `${c.project.name} Community Terminal`;
     });
     document.querySelectorAll("[data-project-footer]").forEach((e) => {
-      e.innerHTML = `<div class="builder-signature" aria-label="Built by Gokalp @Gokalp8339"><img class="builder-signature-avatar" src="assets/gokalp-hoodrat-signature.png" alt="Gokalp Hoodrat NFT avatar"><div class="builder-signature-copy"><span class="builder-signature-label">Built by</span><span class="builder-signature-name">Gokalp</span><a class="x-credit builder-signature-handle" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp8339 on X">𝕏 @Gokalp8339</a></div></div><div class="builder-signature-disclaimer">Not affiliated with or endorsed by the official ${c.project.name} team.</div>`;
+      const ticker = String(c.project.ticker || c.project.name || "").replace(/^\$/, "");
+      e.innerHTML = `<div class="builder-signature" aria-label="Built by Gokalp @Gokalp8339"><img class="builder-signature-avatar" src="assets/gokalp-hoodrat-signature.png" alt="Gokalp Hoodrat NFT avatar"><div class="builder-signature-copy"><span class="builder-signature-label">Built by</span><span class="builder-signature-name">Gokalp</span><a class="x-credit builder-signature-handle" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp8339 on X">𝕏 @Gokalp8339</a></div></div><div class="builder-signature-disclaimer">Not affiliated with or endorsed by the official ${ticker} team.</div>`;
     });
 
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);

@@ -36,7 +36,7 @@ for(const [label,gen] of [["single",single],["multi",multi]]){
   const terminal=entry(gen,"/03_NFT-Collection-Terminal/public/terminal.html");
   ok(countdown.includes('/nft/assets/test20-mascot.png'),`${label}: generated countdown mascot uses mounted NFT asset path`);
   ok(terminal.includes('/nft/assets/test20-mascot.png'),`${label}: generated terminal mascot has mounted NFT asset path`);
-  ok(countdown.includes('official $TEST20 team')&&terminal.includes('official $TEST20 team'),`${label}: ticker-derived project disclaimer retained`);
+  ok(countdown.includes('official TEST20 team')&&terminal.includes('official TEST20 team'),`${label}: ticker-derived project disclaimer retained`);
   ok(countdown.includes('TEST20 Community Terminal'),`${label}: canonical Community Terminal footer title`);
 }
 ok(single.project.nftSettings.mintEndAt==="2026-08-15T22:00:00+03:00","single generation preserves mint end timestamp");

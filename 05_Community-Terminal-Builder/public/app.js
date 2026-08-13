@@ -527,11 +527,13 @@ function showAutoSaveToast(){
 
 let lastBuild={url:"",filename:"",project:null,fingerprint:""};
 function downloadBuild(){if(!lastBuild.url)return;const a=document.createElement("a");a.href=lastBuild.url;a.download=lastBuild.filename;a.click()}
-function enabledModuleNames(project){const names=["LANDING"];if(project.features?.whaleTracker)names.push("WHALES");if(project.features?.memeIntel)names.push("INTEL");if(project.features?.nftTerminal&&project.nftContract)names.push("NFT");if(project.features?.communityPulse)names.push("PULSE");if(project.features?.timeline)names.push("TIMELINE");return names}
+function projectNftOnlyProfile(project){const f=project?.features||{};return Boolean(f.nftTerminal&&project?.nftContract&&!f.whaleTracker&&!f.memeIntel&&!f.communityPulse&&!f.timeline&&!f.liveMarket)}
+function enabledModuleNames(project){if(projectNftOnlyProfile(project))return ["NFT"];const names=["LANDING"];if(project.features?.whaleTracker)names.push("WHALES");if(project.features?.memeIntel)names.push("INTEL");if(project.features?.nftTerminal&&project.nftContract)names.push("NFT");if(project.features?.communityPulse)names.push("PULSE");if(project.features?.timeline)names.push("TIMELINE");return names}
+function projectPublicEntryUrl(value,project=lastBuild.project){const url=String(value||"").trim();if(!url||!projectNftOnlyProfile(project))return url;try{const parsed=new URL(url);parsed.pathname=project?.nft?.mode==="terminal"?"/nft/terminal":"/nft";parsed.search="";parsed.hash="";return parsed.href.replace(/\/$/,"")}catch{return url}}
 function deploymentCommands(kind){const p=lastBuild.project||{};const folder=(String(p.projectName||"PROJECT").toUpperCase().replace(/[^A-Z0-9]+/g,"_")+"_Community_Terminal");const repo=(String(p.projectName||"project").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+"-community-terminal");if(kind==="local")return `cd ${folder}\nnpm install\nnpm test\nnpm start`;if(kind==="github")return `git init\ngit add .\ngit commit -m "Initial ${p.projectName||"Community"} Community Terminal"\ngit branch -M main\ngit remote add origin https://github.com/YOUR-USERNAME/${repo}.git\ngit push -u origin main`;return `1. Push the generated root folder to GitHub.\n2. In Render choose New → Blueprint.\n3. Select the repository and main branch.\n4. Keep Blueprint Path as render.yaml.\n5. Confirm the Free plan before deployment.\n6. After it is Live, run:\n\nnpm run test:deployed -- https://YOUR-TERMINAL.onrender.com`; }
 async function copyDeployment(kind){const text=deploymentCommands(kind);document.querySelector("#deployment-command-preview").textContent=text;try{await navigator.clipboard.writeText(text);status.textContent="[ COPIED ] Deployment commands copied."}catch{status.textContent="[ READY ] Commands shown below; copy them manually."}}
 function setBuiltLiveUrl(value){
-  const url=String(value||"").trim();
+  const url=projectPublicEntryUrl(value);
   const link=document.querySelector("#built-terminal-url");
   if(url){
     link.textContent=url;link.href=url;link.target="_blank";link.rel="noopener noreferrer";link.removeAttribute("aria-disabled");
@@ -686,7 +688,7 @@ function showDeploymentToast(message,{state="pending",duration=5200}={}){
 function showDeploymentSuccessDialog(publicUrl){
   const dialog=document.querySelector("#deployment-success-dialog");if(!dialog)return;
   const link=document.querySelector("#deployment-success-url"),openLink=document.querySelector("#deployment-success-open");
-  const url=String(publicUrl||"").trim();
+  const url=projectPublicEntryUrl(publicUrl);
   link.textContent=url||"Public URL unavailable";
   if(url){
     link.href=url;link.target="_blank";link.rel="noopener noreferrer";link.removeAttribute("aria-disabled");
