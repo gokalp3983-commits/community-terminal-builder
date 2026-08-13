@@ -77,7 +77,7 @@ try{
   assert.match(css,/\.nft-sales-window \.sales-floor-price\{[\s\S]*?overflow-wrap:anywhere;/,"Long floor values must not overflow the sales summary");
   assert.match(css,/generic brand parity: do not apply the reference-project-specific glow/,"Multiple-phase generic logo parity override missing");
   assert.match(css,/filter:none!important;animation:none!important/,"Generic multi-phase logo must not inherit square-revealing template glow");
-  assert.match(runtime,/const assetRoot = \["\/", "assets\/"\]\.join\(""\)/,"Mounted NFT mascot path resolver missing");
+  assert.match(runtime,/const assetRoot = \["\/", "\/nft\/assets\/"\]\.join\(""\)/,"Mounted NFT mascot path resolver missing");
   assert.doesNotMatch(launch,/888 SOCIETY|888 Society|605141138/,"888 project branding leaked into generic multiple-phase output");
   execFileSync(process.execPath,["--check",path.join(multi.root,"03_NFT-Collection-Terminal/server.js")]);
 }finally{fs.rmSync(multi.dir,{recursive:true,force:true})}

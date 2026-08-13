@@ -688,7 +688,12 @@ async function refreshMarketPanel(){
 }
 
 async function start(){
-  const lines=[
+  const mobileBoot=window.matchMedia("(max-width: 760px)").matches;
+  const lines=mobileBoot ? [
+    `[ <span class="green">OK</span> ] Whale Terminal ready.`,
+    `[ <span class="green">OK</span> ] Chain services connected.`,
+    `[ <span class="green">OK</span> ] Holder rankings loaded.`
+  ] : [
     `[ <span class="green">OK</span> ] Initializing ${CFG.project.ecosystem}, ${CFG.project.name} Whale Terminal`,
     `[ <span class="green">OK</span> ] Connecting to ${CFG.project.ecosystem} services`,
     `[ <span class="green">OK</span> ] Loading current holder rankings`
@@ -699,7 +704,7 @@ async function start(){
     requestAnimationFrame(()=>line.classList.add("visible"));await sleep(180);
   }
   const ready=document.createElement("div");ready.className="line";
-  ready.innerHTML=`[ <span class="green">READY</span> ] Whale database synchronized`;
+  ready.innerHTML=mobileBoot ? `[ <span class="green">READY</span> ] Whale tracking active.` : `[ <span class="green">READY</span> ] Whale database synchronized`;
   boot.append(ready);
   promptRow.classList.add("visible");
   setCommandControlsDisabled(false);

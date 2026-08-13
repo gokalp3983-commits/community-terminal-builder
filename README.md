@@ -1592,3 +1592,15 @@ Latest manual-test fixes before complete Hoodrat acceptance:
 - NFT post-mint commands support explicit cancellation, automatic cancellation when a new command starts, and an 18-second interactive timeout.
 - Entrants/movers post-mint transfer scans are bounded to a smaller recent-page window for interactive responsiveness.
 - Canonical generated footer remains shared across every generated module and uses the single `/ctb-shared/gokalp-hoodrat-signature.png` creator-avatar route.
+
+
+## Chapter 21 — FINAL ACCEPTANCE — 13 Aug 2026
+
+Chapter 21 Final Acceptance incorporates the live HOODRAT validation fixes.
+
+- NFT `activity` and NFT Pulse 24h activity metrics use the bounded background activity cache instead of interactive Blockscout pagination; the last successful snapshot survives upstream timeout/rate-limit events.
+- On mobile only, the Chapter 21 NFT command suite is placed below the NFT Buy/Sell tracker; desktop layout remains unchanged.
+- On mobile only, NFT, Whale and Intel boot/status prompt copy is shortened to fit the terminal width cleanly; desktop wording remains unchanged.
+- Existing accepted Landing, footer, deployment, configuration-driven generation, and working Chapter 21 command behavior remain unchanged.
+
+Final acceptance archive: `Community_Terminal_Builder_CHAPTER21_FINAL_ACCEPTANCE_13AUG2026.zip`.

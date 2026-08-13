@@ -329,7 +329,10 @@ document.addEventListener("click", async (event) => {
   await runTerminalCommand(guideButton.dataset.guideCommand || "");
 });
 
-boot.innerHTML = `<div class="boot-line visible">[ <span class="green">OK</span> ] Initializing ${CFG.project.name} Meme Intelligence Terminal</div><div class="boot-line visible">[ <span class="green">OK</span> ] Connecting to market intelligence services</div><div class="boot-line visible">[ <span class="green">OK</span> ] Loading current intelligence signals</div><div class="boot-line visible">[ <span class="green">READY</span> ] Intelligence terminal synchronized</div>`;
+const mobileBoot=window.matchMedia("(max-width: 760px)").matches;
+boot.innerHTML = mobileBoot
+  ? `<div class="boot-line visible">[ <span class="green">OK</span> ] Intel Terminal ready.</div><div class="boot-line visible">[ <span class="green">OK</span> ] Market services connected.</div><div class="boot-line visible">[ <span class="green">OK</span> ] Signals loaded.</div><div class="boot-line visible">[ <span class="green">READY</span> ] Intel synchronized.</div>`
+  : `<div class="boot-line visible">[ <span class="green">OK</span> ] Initializing ${CFG.project.name} Meme Intelligence Terminal</div><div class="boot-line visible">[ <span class="green">OK</span> ] Connecting to market intelligence services</div><div class="boot-line visible">[ <span class="green">OK</span> ] Loading current intelligence signals</div><div class="boot-line visible">[ <span class="green">READY</span> ] Intelligence terminal synchronized</div>`;
 promptRow.classList.add("visible");
 setCommandControlsDisabled(false);
 marketHeader();

@@ -215,23 +215,24 @@ async function boot() {
   }
 
   const liveMint = mintState === "LIVE" || mintState === "COMPLETE";
+  const mobileBoot = window.matchMedia("(max-width: 760px)").matches;
 
   renderBoot([
     '[ <span class="green">OK</span> ] ' +
-      `${CFG.project.name} NFT Terminal initialized.`,
-    '[ <span class="green">OK</span> ] NFT terminal module loaded.',
-    '[ <span class="green">OK</span> ] NFT contract reference loaded.',
+      (mobileBoot ? 'NFT Terminal ready.' : `${CFG.project.name} NFT Terminal initialized.`),
+    mobileBoot ? '[ <span class="green">OK</span> ] NFT module ready.' : '[ <span class="green">OK</span> ] NFT terminal module loaded.',
+    mobileBoot ? '[ <span class="green">OK</span> ] Contract ready.' : '[ <span class="green">OK</span> ] NFT contract reference loaded.',
     mintState === "COMPLETE"
-      ? '[ <span class="green">COMPLETE</span> ] Mint is complete. Final on-chain mint record loaded.'
+      ? (mobileBoot ? '[ <span class="green">COMPLETE</span> ] Mint complete.' : '[ <span class="green">COMPLETE</span> ] Mint is complete. Final on-chain mint record loaded.')
       : liveMint
-        ? '[ <span class="green">LIVE</span> ] Mint is active · on-chain mint tracking enabled.'
-        : '[ <span class="orange">WAITING</span> ] Mint has not started yet.',
+        ? (mobileBoot ? '[ <span class="green">LIVE</span> ] Mint live.' : '[ <span class="green">LIVE</span> ] Mint is active · on-chain mint tracking enabled.')
+        : (mobileBoot ? '[ <span class="orange">WAITING</span> ] Mint pending.' : '[ <span class="orange">WAITING</span> ] Mint has not started yet.'),
     '',
     mintState === "COMPLETE"
-      ? '[ <span class="green">READY</span> ] Collection tracking active after mint completion.'
+      ? (mobileBoot ? '[ <span class="green">READY</span> ] Collection tracking active.' : '[ <span class="green">READY</span> ] Collection tracking active after mint completion.')
       : liveMint
-        ? '[ <span class="green">READY</span> ] Live NFT mint and collection data active.'
-        : '[ <span class="orange">UPCOMING</span> ] Mint begins at 19:00 GMT+3.',
+        ? (mobileBoot ? '[ <span class="green">READY</span> ] NFT tracking active.' : '[ <span class="green">READY</span> ] Live NFT mint and collection data active.')
+        : (mobileBoot ? '[ <span class="orange">UPCOMING</span> ] Mint upcoming.' : '[ <span class="orange">UPCOMING</span> ] Mint begins at 19:00 GMT+3.'),
   ]);
 }
 
@@ -1876,3 +1877,25 @@ if(nftCommandInput && nftCommandHistory){
     await nftRunCommand(command);
   });
 }
+
+
+// Chapter 21 Final Acceptance — on mobile, commands follow the Buy/Sell tracker.
+(function setupMobileNftCommandPlacement(){
+  const suite=document.getElementById("nftCommandSuite");
+  const salesWindow=document.querySelector(".nft-sales-window");
+  if(!suite||!salesWindow||!suite.parentNode)return;
+  const home=suite.parentNode;
+  const anchor=document.createComment("nft-command-suite-home");
+  home.insertBefore(anchor,suite);
+  const media=window.matchMedia("(max-width: 760px)");
+  const sync=()=>{
+    if(media.matches){
+      if(suite.parentNode!==salesWindow)salesWindow.appendChild(suite);
+    }else if(suite.parentNode!==home){
+      home.insertBefore(suite,anchor.nextSibling);
+    }
+  };
+  sync();
+  if(typeof media.addEventListener==="function")media.addEventListener("change",sync);
+  else if(typeof media.addListener==="function")media.addListener(sync);
+})();

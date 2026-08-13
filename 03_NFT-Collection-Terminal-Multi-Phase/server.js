@@ -131,6 +131,12 @@ let mintStatsCache = null;
 let mintStatsRefreshPromise = null;
 let mintHistoryCache = null;
 let nftActivityCache = null;
+let nftActivityRefreshPromise = null;
+let nftActivityBackgroundStarted = false;
+let nftActivityBackgroundTimer = null;
+const NFT_ACTIVITY_CACHE_TTL_MS = 120_000;
+const NFT_ACTIVITY_REFRESH_MS = 180_000;
+const NFT_ACTIVITY_PAGE_TIMEOUT_MS = 4_000;
 
 function asNumber(value, fallback = 0) {
   const parsed = Number(value);
@@ -462,14 +468,52 @@ async function loadMintHistoryAnalytics(){
 }
 app.get("/api/mint-intelligence",async(_req,res)=>{try{res.json(await loadMintHistoryAnalytics())}catch(error){console.error("[mint-intelligence] failed:",error);res.status(502).json({connected:false,error:"Mint history analytics unavailable."})}});
 
-async function loadNftActivity(){
-  if(nftActivityCache && Date.now()-nftActivityCache.fetchedAt < 30000) return nftActivityCache.data;
-  let nextPageParams=null;const now=Date.now(),oneHour=now-3600000,day=now-86400000,wallets24=new Set();let transfers1h=0,transfers24h=0,mints1h=0,mints24h=0;const recent=[];
-  let partial=false;
-  for(let page=0;page<6;page+=1){let payload;try{payload=await fetchBlockscoutJson(buildTransfersPath(nextPageParams));}catch(error){partial=true;console.error("[nft-activity] transfer page failed:",error.message||error);break;}const items=Array.isArray(payload?.items)?payload.items:[];for(const item of items){const ts=getTransferTimestamp(item);const ms=ts?.getTime()||0;const mint=isMintTransfer(item);const from=getAddressHash(item?.from),to=getAddressHash(item?.to);if(ms>=day){transfers24h+=1;if(mint)mints24h+=1;if(/^0x[a-f0-9]{40}$/.test(from))wallets24.add(from);if(/^0x[a-f0-9]{40}$/.test(to))wallets24.add(to);}if(ms>=oneHour){transfers1h+=1;if(mint)mints1h+=1;}if(recent.length<12)recent.push({timestamp:ts?.toISOString()||null,type:mint?"MINT":"TRANSFER",tokenId:getTransferTokenId(item),from,to,txHash:getTransferTxHash(item)});}nextPageParams=payload?.next_page_params??null;if(!nextPageParams||items.length===0)break;}
-  const data={connected:true,partial,transfers1h,transfers24h,mints1h,mints24h,uniqueWallets24h:wallets24.size,recent,updatedAt:new Date().toISOString()};nftActivityCache={fetchedAt:Date.now(),data};return data;
+async function fetchNftActivityPage(pathname){
+  const response=await fetch(`${BLOCKSCOUT_API_BASE}${pathname}`,{headers:{Accept:"application/json","User-Agent":`${config.project.id}-nft-terminal/${config.project.version}`},signal:AbortSignal.timeout(NFT_ACTIVITY_PAGE_TIMEOUT_MS)});
+  if(!response.ok) throw new Error(`Blockscout activity request failed: HTTP ${response.status}`);
+  return response.json();
 }
-app.get("/api/nft-activity",async(_req,res)=>{try{res.json(await loadNftActivity())}catch(error){console.error("[nft-activity] failed:",error);res.status(502).json({connected:false,error:"NFT activity unavailable."})}});
+async function refreshNftActivityCache(){
+  if(nftActivityRefreshPromise) return nftActivityRefreshPromise;
+  nftActivityRefreshPromise=(async()=>{
+    let nextPageParams=null;const now=Date.now(),oneHour=now-3600000,day=now-86400000,wallets24=new Set();let transfers1h=0,transfers24h=0,mints1h=0,mints24h=0;const recent=[];let partial=false,seenAny=false,reachedWindowEnd=false;
+    for(let page=0;page<4;page+=1){
+      let payload;
+      try{payload=await fetchNftActivityPage(buildTransfersPath(nextPageParams));}
+      catch(error){partial=true;console.error("[nft-activity-cache] page failed:",error.message||error);break;}
+      const items=Array.isArray(payload?.items)?payload.items:[];
+      for(const item of items){
+        const ts=getTransferTimestamp(item);const ms=ts?.getTime()||0;if(ms>0&&ms<day) reachedWindowEnd=true;
+        const mint=isMintTransfer(item);const from=getAddressHash(item?.from),to=getAddressHash(item?.to);
+        if(ms>=day){seenAny=true;transfers24h+=1;if(mint)mints24h+=1;if(/^0x[a-f0-9]{40}$/.test(from))wallets24.add(from);if(/^0x[a-f0-9]{40}$/.test(to))wallets24.add(to);}
+        if(ms>=oneHour){transfers1h+=1;if(mint)mints1h+=1;}
+        if(recent.length<12)recent.push({timestamp:ts?.toISOString()||null,type:mint?"MINT":"TRANSFER",tokenId:getTransferTokenId(item),from,to,txHash:getTransferTxHash(item)});
+      }
+      nextPageParams=payload?.next_page_params??null;
+      if(reachedWindowEnd||!nextPageParams||items.length===0) break;
+      await new Promise(resolve=>setTimeout(resolve,80));
+    }
+    if(!seenAny&&partial&&nftActivityCache?.data) return {...nftActivityCache.data,stale:true,partial:true,cacheAgeSeconds:Math.floor((Date.now()-nftActivityCache.fetchedAt)/1000)};
+    const data={connected:true,partial,stale:false,transfers1h,transfers24h,mints1h,mints24h,uniqueWallets24h:wallets24.size,recent,updatedAt:new Date().toISOString()};
+    nftActivityCache={fetchedAt:Date.now(),data};return data;
+  })();
+  try{return await nftActivityRefreshPromise;}finally{nftActivityRefreshPromise=null;}
+}
+function getCachedNftActivity(){
+  if(!nftActivityCache?.data) return null;
+  return {...nftActivityCache.data,cacheAgeSeconds:Math.floor((Date.now()-nftActivityCache.fetchedAt)/1000),stale:Date.now()-nftActivityCache.fetchedAt>NFT_ACTIVITY_CACHE_TTL_MS||Boolean(nftActivityCache.data.stale)};
+}
+function startNftActivityBackgroundRefresh(){
+  if(nftActivityBackgroundStarted) return;nftActivityBackgroundStarted=true;
+  const warmup=setTimeout(()=>{void refreshNftActivityCache().catch(error=>console.error("[nft-activity-cache] warmup failed:",error.message||error));},1500);warmup.unref?.();
+  nftActivityBackgroundTimer=setInterval(()=>{void refreshNftActivityCache().catch(error=>console.error("[nft-activity-cache] refresh failed:",error.message||error));},NFT_ACTIVITY_REFRESH_MS);nftActivityBackgroundTimer.unref?.();
+}
+app.get("/api/nft-activity",async(_req,res)=>{
+  const cached=getCachedNftActivity();
+  if(cached){res.json(cached);if(cached.stale&&!nftActivityRefreshPromise) void refreshNftActivityCache().catch(error=>console.error("[nft-activity-cache] background refresh failed:",error.message||error));return;}
+  try{const data=await Promise.race([refreshNftActivityCache(),new Promise(resolve=>setTimeout(()=>resolve(null),3500))]);if(data){res.json(data);return;}res.status(202).json({connected:false,warming:true,error:"NFT activity cache is warming. Retry shortly."});}
+  catch(error){console.error("[nft-activity] failed:",error);res.status(502).json({connected:false,error:"NFT activity unavailable."});}
+});
 
 let nftPostMintCache = null;
 let nftPostMintPrevious = null;
@@ -1773,6 +1817,7 @@ app.use((_req, res) => {
 });
 
 app.listen(port, "0.0.0.0", () => {
+  startNftActivityBackgroundRefresh();
   console.log("");
   console.log(`[ OK ] ${config.project.name} NFT Terminal started.`);
   console.log(`[ READY ] Open: http://localhost:${port}`);

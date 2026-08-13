@@ -2436,3 +2436,11 @@ html,body{background:#000!important}
 /* Chapter 21 command cancellation */
 .nft-command-cancel{margin-left:8px;padding:2px 7px;border:1px solid var(--red);background:transparent;color:var(--red);font:inherit;font-size:.72em;cursor:pointer}
 .nft-command-cancel:hover,.nft-command-cancel:focus-visible{background:rgba(255,45,45,.08);outline:none}
+
+
+/* Chapter 21 Final Acceptance — mobile NFT commands follow Buy/Sell. */
+.nft-command-suite{min-width:0}
+@media(max-width:760px){
+  .nft-sales-window > .nft-command-suite{padding:0 14px 14px}
+  .nft-sales-window > .nft-command-suite .nft-command-separator:first-child{margin-top:4px}
+}

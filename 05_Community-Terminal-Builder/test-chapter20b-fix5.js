@@ -8,7 +8,7 @@ assert(app.includes('terminalUserFromTicker(val("ticker"))'),"Terminal identity 
 assert(app.includes('setValue("promptUser",terminalIdentityFromTicker(p.ticker))'),"Loaded projects must re-derive visible terminal identity from ticker");
 assert(app.includes('form.elements.ticker?.addEventListener("input",()=>{syncTerminalIdentity();update()})'),"Ticker edits must immediately sync terminal identity");
 assert(html.includes('name="promptUser" placeholder="ticker@robinhood — auto-derived" readonly'),"Terminal identity placeholder must describe ticker derivation");
-assert(/app\.js\?v=20b-fix(?:5|6|7)/.test(html),"Builder JS must remain cache-busted after FIX5");
+assert(/app\.js\?v=(?:20b-fix(?:5|6|7)|21a-finalfix)/.test(html),"Builder JS must remain cache-busted after FIX5");
 assert(app.includes('const target=`${base}-community-terminal`'),"Quick deploy must derive target from generated project name");
 const built=generate({projectName:"CTB Deployment Test 2",ticker:"CTBTWO",tokenContract:"0x1111111111111111111111111111111111111111",features:{whaleTracker:true,memeIntel:true,nftTerminal:false,communityPulse:true,timeline:true,liveMarket:true}});
 assert.strictEqual(built.project.promptUser,"ctbtwo","Generated terminal user must be lower-case ticker");

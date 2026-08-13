@@ -36,7 +36,7 @@ assert(!app.includes("https://www.terminal.xyz/"),"Legacy mock terminal URL must
 assert.match(app,/resetForm\(\);\nrefreshProjectList\(\);/,"Builder must start with a clean project-neutral workspace");
 assert.match(app,/NFT Contract Address is required before confirming NFT mint details/,"NFT mint confirmation must require a valid NFT contract first");
 assert.match(app,/NFT Contract Address is required while NFT Terminal is enabled/,"Generation must validate NFT CA before mint confirmation state");
-assert.match(html,/Your terminal has been created with the modules listed below\./,"Final terminal-ready wording must describe the listed modules");
+assert.match(html,/The terminal is being created with the modules listed below\./,"Final terminal-ready wording must describe the listed modules");
 assert.match(generator,/Mint begins on \$\{mintDisplay/,"Generated upcoming mint status must include the full scheduled date");
 assert.match(html,/id="nft-past-warning-edit"[\s\S]*GO BACK AND EDIT/,"Past-schedule warning must offer an edit action");
 assert.match(html,/id="nft-past-warning-keep"[\s\S]*KEEP THIS SCHEDULE/,"Past-schedule warning must offer an explicit keep action");
