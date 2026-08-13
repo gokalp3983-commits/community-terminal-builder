@@ -1660,7 +1660,7 @@ a:hover,a:focus-visible{
 }
 
 .nft-sales-window::before{
-  content:var(--nft-terminal-label, "NFT COLLECTION TERMINAL");
+  content:var(--nft-terminal-label, "MARKET UPDATE");
   display:block;
   padding:9px 12px;
   border-bottom:1px solid rgba(57,255,20,.35);

@@ -64,7 +64,7 @@
     Object.entries(colorMap).forEach(([key, variable]) => {
       if (colors[key]) document.documentElement.style.setProperty(variable, colors[key]);
     });
-    document.documentElement.style.setProperty("--nft-terminal-label", `"${c.nft?.collectionName || `${c.project.name} NFT`} COLLECTION TERMINAL"`);
+    document.documentElement.style.setProperty("--nft-terminal-label", '"MARKET UPDATE"');
 
     const openSeaUrl = c.links.openSea || (c.nft?.openSeaSlug ? `https://opensea.io/collection/${c.nft.openSeaSlug}/overview` : "");
     document.querySelectorAll("[data-opensea-link]").forEach((e) => {

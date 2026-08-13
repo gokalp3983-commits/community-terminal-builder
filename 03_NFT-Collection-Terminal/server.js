@@ -516,8 +516,13 @@ app.get("/api/nft-activity",async(_req,res)=>{
 });
 
 let nftPostMintCache = null;
-let nftPostMintPrevious = null;
-let nftRetentionBaseline = null;
+const NFT_HOLDER_HISTORY_MAX_MS = 26 * 60 * 60 * 1000;
+const NFT_HOLDER_HISTORY_SAMPLE_MS = 5 * 60 * 1000;
+const NFT_ENTRANT_WINDOW_MS = 4 * 60 * 60 * 1000;
+const NFT_MOVER_WINDOW_MS = 4 * 60 * 60 * 1000;
+const NFT_WHALE_WINDOW_MS = 12 * 60 * 60 * 1000;
+const NFT_RETENTION_WINDOW_MS = 24 * 60 * 60 * 1000;
+const nftHolderHistory = [];
 
 function holderSnapshotFromAnalytics(analytics){
   return new Map((analytics?.holders || []).map(holder => [String(holder.address || "").toLowerCase(), Number(holder.count) || 0]).filter(([address]) => /^0x[a-f0-9]{40}$/.test(address)));
@@ -529,28 +534,44 @@ function compareHolderSnapshots(previous,current){
     return {address,previous:before,current:now,delta:now-before};
   }).filter(item=>item.delta!==0);
 }
-function retentionFromBaseline(current, observationReady){
-  if(!nftRetentionBaseline) return {available:false,baselineEstablished:false};
-  const baseline=[...nftRetentionBaseline.holders.keys()];
-  const stillHolding=baseline.filter(address=>(current.get(address)||0)>0).length;
-  const newSinceBaseline=[...current.keys()].filter(address=>!nftRetentionBaseline.holders.has(address)).length;
-  return {available:Boolean(observationReady),baselineEstablished:true,baselineAt:nftRetentionBaseline.establishedAt,baselineHolders:baseline.length,stillHolding,exited:baseline.length-stillHolding,newSinceBaseline,retentionPercent:baseline.length?Number((stillHolding/baseline.length*100).toFixed(2)):100};
+function baselineForWindow(currentAtMs, windowMs){
+  const target=currentAtMs-windowMs;
+  const eligible=nftHolderHistory.filter(item=>item.observedAtMs<=target);
+  return eligible.length ? eligible[eligible.length-1] : null;
+}
+function windowComparison(current,currentAtMs,windowMs,threshold){
+  const baseline=baselineForWindow(currentAtMs,windowMs);
+  if(!baseline) return {ready:false,windowHours:windowMs/3600000,baselineAt:null,changes:[],entrants:[],exits:[],movers:[],whaleMovers:[],whalesEntered:0,whalesExited:0};
+  const changes=compareHolderSnapshots(baseline.holders,current);
+  const entrants=changes.filter(x=>x.previous===0&&x.current>0).sort((a,b)=>b.delta-a.delta);
+  const exits=changes.filter(x=>x.previous>0&&x.current===0).sort((a,b)=>a.delta-b.delta);
+  const movers=changes.slice().sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)).slice(0,20);
+  return {ready:true,windowHours:windowMs/3600000,baselineAt:baseline.observedAt,changes,entrants:entrants.slice(0,20),exits:exits.slice(0,20),movers,whaleMovers:movers.filter(x=>x.previous>=threshold||x.current>=threshold),whalesEntered:changes.filter(x=>x.previous<threshold&&x.current>=threshold).length,whalesExited:changes.filter(x=>x.previous>=threshold&&x.current<threshold).length};
+}
+function retentionForWindow(current,currentAtMs){
+  const baseline=baselineForWindow(currentAtMs,NFT_RETENTION_WINDOW_MS);
+  if(!baseline) return {available:false,baselineEstablished:nftHolderHistory.length>0,windowHours:24,baselineAt:nftHolderHistory[0]?.observedAt||null,baselineHolders:nftHolderHistory[0]?.holders.size||current.size};
+  const addresses=[...baseline.holders.keys()];
+  const stillHolding=addresses.filter(address=>(current.get(address)||0)>0).length;
+  const newSinceBaseline=[...current.keys()].filter(address=>!baseline.holders.has(address)).length;
+  return {available:true,baselineEstablished:true,windowHours:24,baselineAt:baseline.observedAt,baselineHolders:addresses.length,stillHolding,exited:addresses.length-stillHolding,newSinceBaseline,retentionPercent:addresses.length?Number((stillHolding/addresses.length*100).toFixed(2)):100};
 }
 function recordPostMintHolderObservation(holders){
   if(!holders?.connected || !Array.isArray(holders.holders) || !holders.updatedAt) return;
   if(nftPostMintCache?.sourceUpdatedAt===holders.updatedAt) return;
   const current=holderSnapshotFromAnalytics(holders);
-  if(!nftRetentionBaseline) nftRetentionBaseline={establishedAt:holders.updatedAt,holders:new Map(current)};
-  const previous=nftPostMintPrevious;
-  const observationReady=Boolean(previous);
-  const changes=previous?compareHolderSnapshots(previous.holders,current):[];
-  const entrants=changes.filter(x=>x.previous===0&&x.current>0).sort((a,b)=>b.delta-a.delta);
-  const exits=changes.filter(x=>x.previous>0&&x.current===0).sort((a,b)=>a.delta-b.delta);
-  const movers=changes.slice().sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)).slice(0,20);
+  const observedAtMs=Date.parse(holders.updatedAt)||Date.now();
+  const latestHistory=nftHolderHistory[nftHolderHistory.length-1];
+  if(!latestHistory || observedAtMs-latestHistory.observedAtMs>=NFT_HOLDER_HISTORY_SAMPLE_MS){
+    nftHolderHistory.push({observedAt:holders.updatedAt,observedAtMs,holders:new Map(current)});
+  }
+  while(nftHolderHistory.length>1 && nftHolderHistory[0].observedAtMs < observedAtMs-NFT_HOLDER_HISTORY_MAX_MS) nftHolderHistory.shift();
   const threshold=Number(holders.whaleThreshold)||10;
-  const whaleMovers=movers.filter(x=>x.previous>=threshold||x.current>=threshold);
-  const data={connected:true,snapshotBased:true,observationReady,previousAt:previous?.observedAt||null,currentAt:holders.updatedAt,entrants:entrants.slice(0,20),exits:exits.slice(0,20),movers,whaleMovers,whalesEntered:changes.filter(x=>x.previous<threshold&&x.current>=threshold).length,whalesExited:changes.filter(x=>x.previous>=threshold&&x.current<threshold).length,whaleThreshold:threshold,currentWhaleCount:Number(holders.whaleCount)||0,retention:retentionFromBaseline(current,observationReady),updatedAt:new Date().toISOString()};
-  nftPostMintPrevious={observedAt:holders.updatedAt,holders:new Map(current)};
+  const entrants4h=windowComparison(current,observedAtMs,NFT_ENTRANT_WINDOW_MS,threshold);
+  const movers4h=windowComparison(current,observedAtMs,NFT_MOVER_WINDOW_MS,threshold);
+  const whales12h=windowComparison(current,observedAtMs,NFT_WHALE_WINDOW_MS,threshold);
+  const retention24h=retentionForWindow(current,observedAtMs);
+  const data={connected:true,snapshotBased:true,currentAt:holders.updatedAt,whaleThreshold:threshold,currentWhaleCount:Number(holders.whaleCount)||0,windows:{entrants4h,movers4h,whales12h},entrants:entrants4h.entrants,movers:movers4h.movers,whaleMovers:whales12h.whaleMovers,whalesEntered:whales12h.whalesEntered,whalesExited:whales12h.whalesExited,observationReady:entrants4h.ready,previousAt:entrants4h.baselineAt,retention:retention24h,updatedAt:new Date().toISOString()};
   nftPostMintCache={sourceUpdatedAt:holders.updatedAt,data};
 }
 async function loadPostMintAnalytics(){
