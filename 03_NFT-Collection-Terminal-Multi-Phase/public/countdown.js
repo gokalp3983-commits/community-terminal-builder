@@ -227,7 +227,7 @@ function updatePhaseCommandLines(now){
       row.classList.add("is-live");
       tag.textContent = "[ ✓ ]";
       tag.className = "market-tag phase-command-live-tag";
-      value.textContent = "MINT IS LIVE";
+      value.textContent = phase.endMs ? `${shortDurationText(phase.endMs - now)} LEFT` : "MINT IS LIVE";
       return;
     }
 

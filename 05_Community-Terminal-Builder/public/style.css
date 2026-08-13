@@ -469,3 +469,7 @@ body::before,body::after,.hero::after{content:none!important;display:none!import
 .ctb-canonical-builder-footer .builder-signature-copy{font-size:.72rem;line-height:1.2;color:#d8e0dc}
 .ctb-canonical-builder-footer .builder-signature-copy strong{color:#fff}
 .ctb-canonical-builder-footer .builder-signature-copy a{color:#bfff00!important;text-decoration:none;border:0!important}
+
+/* Chapter 22 NFT schedule usability: keep native date/time picker affordances visible. */
+input[type="date"],input[type="time"]{color-scheme:dark;padding-right:38px}
+input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webkit-calendar-picker-indicator{display:block;opacity:.95;cursor:pointer;filter:invert(84%) sepia(92%) saturate(1386%) hue-rotate(42deg) brightness(104%) contrast(108%)}

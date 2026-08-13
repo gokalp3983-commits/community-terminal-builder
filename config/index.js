@@ -22,7 +22,8 @@ function validateProjectConfig(value) {
   requireText(value?.project?.version, "project.version");
   requireText(value?.project?.promptUser, "project.promptUser");
   requireText(value?.project?.promptHost, "project.promptHost");
-  requireAddress(value?.contracts?.token, "contracts.token");
+  const tokenRequired = Boolean(value?.features?.landing || value?.features?.whaleTracker || value?.features?.memeIntel || value?.features?.communityPulse || value?.features?.timeline || value?.features?.liveMarket);
+  requireAddress(value?.contracts?.token, "contracts.token", { optional: !tokenRequired });
   requireAddress(value?.contracts?.nft, "contracts.nft", { optional: true });
   requireText(value?.market?.dexScreenerChainId, "market.dexScreenerChainId");
   requireText(value?.market?.blockscoutApiBase, "market.blockscoutApiBase");

@@ -1688,3 +1688,11 @@ Core principle:
 **Simple enough for a normy. Powerful enough underneath.**
 
 The Chapter 21 data providers, analytics, generation architecture, configuration discipline, deployment workflow and safety gates remain the functional foundation. Chapter 22 should change the surface aggressively while protecting that proven engine.
+
+### Chapter 22 — NFT-only generation correction (13 Aug 2026)
+
+- NFT-only projects no longer require a fungible-token contract address when NFT Terminal is the only enabled module and Landing market data is disabled.
+- True NFT-only output now opens the NFT countdown/mint experience from the public root instead of generating a token-style landing page as the primary UI.
+- Native browser date/time picker affordances were restored for NFT mint schedule fields, including multi-phase schedule inputs.
+- Multi-phase active phase command rows now show the phase remaining time when an end time is configured instead of only `MINT IS LIVE`.
+- Token-enabled Community Terminal behavior remains unchanged.
