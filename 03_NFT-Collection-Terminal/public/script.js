@@ -1663,6 +1663,16 @@ async function nftCommandJson(url, allowHttpError = false){
   return data;
 }
 
+async function nftCommandJsonWithWarmRetry(url, attempts = 2, delayMs = 1200){
+  let data={};
+  for(let attempt=0;attempt<attempts;attempt+=1){
+    data=await nftCommandJson(url,true);
+    if(data.connected || !data.warming || attempt===attempts-1) return data;
+    await new Promise(resolve=>setTimeout(resolve,delayMs));
+  }
+  return data;
+}
+
 function nftSetCommandControlsDisabled(disabled){
   document.querySelectorAll("[data-nft-quick-command], [data-nft-guide-command]").forEach((button)=>{button.disabled=disabled;});
 }
@@ -1736,7 +1746,7 @@ async function nftCmdMinters(){
 }
 
 async function nftCmdActivity(){
-  const d=await nftCommandJson("/api/nft-activity",true);if(!d.connected){nftCommandBlock("NFT ACTIVITY",[["Status","On-chain activity unavailable"]]);return;}
+  const d=await nftCommandJsonWithWarmRetry("/api/nft-activity");if(!d.connected){nftCommandBlock("NFT ACTIVITY",[["Status",d.warming?"On-chain activity cache is warming — retry shortly.":"On-chain activity unavailable"]]);return;}
   nftCommandBlock("NFT ACTIVITY",[["Transfers 1h",nftFormatNumber(d.transfers1h)],["Transfers 24h",nftFormatNumber(d.transfers24h)],["Mints 1h",nftFormatNumber(d.mints1h)],["Mints 24h",nftFormatNumber(d.mints24h)],["Active Wallets 24h",nftFormatNumber(d.uniqueWallets24h)]],"Source: Robinhood Chain Blockscout");
 }
 
@@ -1798,7 +1808,7 @@ async function nftCmdSales(){
 
 async function nftCmdPulse(){
   const [activity,whales,sales,postmint]=await Promise.all([
-    nftCommandJson("/api/nft-activity",true).catch(()=>({connected:false})),
+    nftCommandJsonWithWarmRetry("/api/nft-activity").catch(()=>({connected:false})),
     nftCommandJson("/api/nft-whales",true).catch(()=>({})),
     nftCommandJson("/api/nft-sales",true).catch(()=>({connected:false})),
     nftCommandJson("/api/nft-postmint",true).catch(()=>({connected:false}))
@@ -1811,7 +1821,7 @@ async function nftCmdPulse(){
     ["Holder Movers 4h",postmint.windows?.movers4h?.ready?nftFormatNumber((postmint.windows.movers4h.movers||[]).length):"BUILDING BASELINE"],
     ["Marketplace Sales",sales.connected&&Array.isArray(sales.sales)?`${nftFormatNumber(sales.sales.length)} recent`:(sales.requiresApiKey?"OpenSea API key required":"UNAVAILABLE")]
   ];
-  nftCommandBlock("CTB NFT PULSE",rows,"Observable activity snapshot only — not a BUY/SELL recommendation or price prediction.");
+  nftCommandBlock("NFT Pulse",rows,"Observable activity snapshot only — not a BUY/SELL recommendation or price prediction.");
 }
 
 async function nftCmdRefresh(){await Promise.allSettled([refreshMarketPanel(),refreshMintStats(),refreshNftSales(),refreshNftWhales(),refreshCollectionStats(),refreshFloorTrend()]);nftCommandBlock("REFRESH",[["Status","NFT terminal data refresh completed"]]);}

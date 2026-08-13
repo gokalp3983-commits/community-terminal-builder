@@ -1,5 +1,24 @@
 # Community Terminal Builder
 
+## Chapter 22 — NFT Terminal Maintenance Update (2026-08-13)
+
+**Current milestone:** Chapter 22 targeted maintenance on the final accepted CTB baseline.  
+**Next product direction:** simplify the Builder UI, then prepare the broader crypto-normie-friendly community-terminal UI transition.
+
+This maintenance pass preserves the final accepted CTB architecture and applies only targeted NFT-terminal fixes:
+
+- Sales panel label is now `MARKET UPDATE` above the unchanged `NFT Sales Tracker`.
+- NFT BUY/SELL polling remains on the accepted 15-second refresh cadence.
+- Holder-history commands now use explicit windows: `whales` 12h, `entrants` 4h, `movers` 4h, and `retention` 24h.
+- Holder-history baselines are sampled every 5 minutes and retained for approximately 26 hours; fresh deployments report `BUILDING BASELINE` until the required history exists instead of reporting misleading zero-change results.
+- `whales` and `entrants` now wait for the same holder snapshot used by Holder Analytics instead of racing it and incorrectly reporting that the snapshot is still loading.
+- NFT Pulse title is simplified from `CTB NFT PULSE` to `NFT Pulse`.
+- NFT Pulse and the `activity` command retry the bounded Blockscout activity cache when it is still warming before rendering data unavailable; the accepted background-cache architecture remains unchanged.
+- NFT Pulse `Whale Wallets` continues to fall back to the holder-history snapshot when the separate whale request is temporarily unavailable.
+- No OpenSea credential values are stored in the code or README; Render environment-secret handling is unchanged.
+
+**Deferred usability item:** project `.js` export/import still needs a later fix so GitHub repository and Render URL fields are persisted and restored automatically.
+
 ## Milestone Status — Chapter 18A Local Builder Ready (2026-08-09)
 
 **Visible Builder version:** `ver 1.0`  

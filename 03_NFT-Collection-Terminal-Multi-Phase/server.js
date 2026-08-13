@@ -575,11 +575,19 @@ function recordPostMintHolderObservation(holders){
   nftPostMintCache={sourceUpdatedAt:holders.updatedAt,data};
 }
 async function loadPostMintAnalytics(){
-  // Commands consume the same holder snapshot already used by the on-page Holder Analytics panel.
+  // Commands consume the same holder snapshot used by the on-page Holder Analytics panel.
   // Interactive commands never rescan Blockscout transfer history.
+  // If that snapshot is still warming, wait for the holder loader instead of returning a
+  // misleading command-level "snapshot still loading" state. No transfer-history rescan occurs.
   if(nftPostMintCache?.data) return nftPostMintCache.data;
-  if(nftHoldersCache?.data){recordPostMintHolderObservation(nftHoldersCache.data);return nftPostMintCache?.data||{connected:false,warming:true,error:"Holder baseline is initializing."};}
-  return {connected:false,warming:true,error:"Holder analytics is still loading. Please retry shortly.",updatedAt:new Date().toISOString()};
+  try{
+    const holders=nftHoldersCache?.data||await getNftHolderAnalytics();
+    recordPostMintHolderObservation(holders);
+    return nftPostMintCache?.data||{connected:false,warming:true,error:"Holder baseline is initializing.",updatedAt:new Date().toISOString()};
+  }catch(error){
+    console.error("[nft-postmint] holder snapshot failed:",error.message||error);
+    return {connected:false,warming:Boolean(nftHoldersPromise),error:"Holder analytics unavailable. Please retry shortly.",updatedAt:new Date().toISOString()};
+  }
 }
 app.get("/api/nft-postmint",async(_req,res)=>{try{res.json(await loadPostMintAnalytics())}catch(error){console.error("[nft-postmint] failed:",error);res.status(502).json({connected:false,error:"Post-mint analytics unavailable."})}});
 
