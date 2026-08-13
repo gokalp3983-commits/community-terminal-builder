@@ -526,15 +526,11 @@ function deploymentCommands(kind){const p=lastBuild.project||{};const folder=(St
 async function copyDeployment(kind){const text=deploymentCommands(kind);document.querySelector("#deployment-command-preview").textContent=text;try{await navigator.clipboard.writeText(text);status.textContent="[ COPIED ] Deployment commands copied."}catch{status.textContent="[ READY ] Commands shown below; copy them manually."}}
 function setBuiltLiveUrl(value){
   const url=String(value||"").trim();
-  const link=document.querySelector("#built-terminal-url"),open=document.querySelector("#open-built-terminal"),copy=document.querySelector("#copy-built-terminal-link");
+  const link=document.querySelector("#built-terminal-url");
   if(url){
     link.textContent=url;link.href=url;link.target="_blank";link.rel="noopener noreferrer";link.removeAttribute("aria-disabled");
-    open.href=url;open.target="_blank";open.rel="noopener noreferrer";open.removeAttribute("aria-disabled");
-    copy.disabled=false;copy.dataset.url=url;
   }else{
     link.textContent="Not deployed yet";link.removeAttribute("href");link.removeAttribute("target");link.setAttribute("aria-disabled","true");
-    open.removeAttribute("href");open.removeAttribute("target");open.setAttribute("aria-disabled","true");
-    copy.disabled=true;delete copy.dataset.url;
   }
 }
 function resetQuickDeployUi(){
@@ -589,7 +585,7 @@ form.addEventListener("submit",async e=>{
 document.querySelector("#close-build-complete").addEventListener("click",()=>document.querySelector("#build-complete").close());
 document.querySelector("#close-build-complete-action").addEventListener("click",()=>document.querySelector("#build-complete").close());
 document.querySelector("#download-built-terminal")?.addEventListener("click",()=>{downloadBuild();status.textContent="[ DOWNLOAD ] Generated terminal ZIP downloaded."});
-document.querySelector("#copy-built-terminal-link").addEventListener("click",async event=>{const url=event.currentTarget.dataset.url;if(!url)return;try{await navigator.clipboard.writeText(url);status.textContent="[ COPIED ] Terminal link copied."}catch{status.textContent=`[ READY ] Terminal link: ${url}`}});
+
 
 async function syncBuilderRuntime(){
   try{

@@ -42,9 +42,21 @@ function write(target, html) {
 }
 
 async function loadConfig() {
-  const response = await fetch("/api/config", { headers: { Accept: "application/json" }, cache: "no-store" });
-  if (!response.ok) throw new Error("Project configuration is unavailable.");
-  return response.json();
+  const sources = ["/project-config.json", "/api/config"];
+  let lastError = null;
+  for (const source of sources) {
+    try {
+      const response = await fetch(source, { headers: { Accept: "application/json" }, cache: "no-store" });
+      if (!response.ok) throw new Error(`${source} returned HTTP ${response.status}`);
+      const data = await response.json();
+      if (!data?.project || !data?.modules || !data?.links) throw new Error(`${source} returned incomplete configuration`);
+      return data;
+    } catch (error) {
+      lastError = error;
+      console.warn(`[ CONFIG ] ${source} unavailable:`, error);
+    }
+  }
+  throw lastError || new Error("Project configuration is unavailable.");
 }
 
 function applyTheme(colors) {

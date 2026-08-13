@@ -213,6 +213,26 @@ function profileSource(p) {
   };
   return `"use strict";\nmodule.exports = ${js(value)};\n`;
 }
+
+function landingPublicConfig(p) {
+  return {
+    project:{id:p.id,name:p.name,displayName:p.name,ticker:p.ticker,version:p.version,description:p.description,ecosystem:p.ecosystem,promptUser:p.promptUser,promptHost:p.promptHost},
+    branding:{mascot:p.mascotPath,mascotAlt:`${p.name} mascot`,themeColor:p.colors.background,colors:p.colors},
+    links:{home:p.links.home,modules:{whales:p.links.whales,intel:p.links.intel,nft:p.links.nft,pulse:p.links.pulse,timeline:p.links.timeline},website:p.links.website,x:p.links.x,telegram:p.links.telegram,explorer:p.links.explorer,dexScreener:p.links.dexScreener,openSea:p.links.openSea},
+    features:p.features,
+    moduleOrder:["whales","intel","nft","pulse","timeline"],
+    modules:{
+      whales:{command:"whales",title:"Whale Activity Tracker",description:"Monitor Top-30 whales, DEX activity, and holder rankings.",status:p.features.whaleTracker?"READY":"DISABLED"},
+      intel:{command:"intel",title:"Meme Intelligence Terminal",description:"Read market pulse, buy pressure, holder behavior, and transparent risk signals.",status:p.features.memeIntel?"READY":"DISABLED"},
+      nft:{command:"nft",title:`${p.name} NFT Terminal`,description:p.features.nftTerminal?"NFT whale analytics and collection statistics.":"NFT collection analytics when configured.",status:p.features.nftTerminal?"READY":"DISABLED"},
+      pulse:{command:"pulse",title:"Community Pulse",description:"Synthesize explainable market, holder, whale, fresh-wallet and NFT signals.",status:p.features.communityPulse?"READY":"DISABLED"},
+      timeline:{command:"timeline",title:"Community Timeline",description:"Follow project, NFT and community milestones chronologically.",status:p.features.timeline?"READY":"DISABLED"}
+    },
+    contracts:{token:p.token,nft:p.nft},
+    market:{refreshMs:30000,dexScreenerChainId:p.dexChain,blockscoutApiBase:p.blockscout}
+  };
+}
+
 function makeMountableServer(source, moduleName) {
   const marker = source.lastIndexOf("app.listen(");
   if (marker < 0) throw new Error(`Unable to make ${moduleName}/server.js mountable.`);
@@ -491,6 +511,7 @@ function generatedValidator(p) {
     'pass("deployment verifier",fs.existsSync("verify-deployment.js"));',
     'pass("release metadata",fs.existsSync("terminal-release.json"));',
     'pass("landing favicon",fs.existsSync(path.join("01_Landing-Page","public","favicon.png"))||fs.readFileSync(path.join("01_Landing-Page","public","index.html"),"utf8").includes("assets/"));',
+    'pass("landing static config",fs.existsSync(path.join("01_Landing-Page","public","project-config.json")));',
     'const source=fs.readFileSync("server.js","utf8");',
     `pass("health route",source.includes('app.get("/health"'));`,
     `pass("healthz route",source.includes('app.get("/healthz"'));`,
@@ -626,6 +647,7 @@ function generate(input) {
       }
     }
   }
+  entries.push({name:`${root}/01_Landing-Page/public/project-config.json`,data:JSON.stringify(landingPublicConfig(p), null, 2)+"\n"});
   if (p.nftSettings.mode === "terminal") {
     for (let i = entries.length - 1; i >= 0; i--) {
       if (/\/03_NFT-Collection-Terminal\/public\/(?:index\.html|countdown\.js|countdown\.css)$/.test(entries[i].name)) entries.splice(i, 1);

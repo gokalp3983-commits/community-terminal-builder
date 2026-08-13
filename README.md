@@ -1581,3 +1581,14 @@ Date: 12 Aug 2026
 - The Builder itself now uses the canonical red-boundary/footer/signature visual grammar, titled `Community Terminal Builder` / `ver 1.0`, without a project-team disclaimer.
 - Chapter 21 uses a fresh browser-local saved-project namespace (`ctb.projects.v2`) so legacy CTB test saves do not appear in the Chapter 21 production workspace.
 - Standalone Chapter 20B/21 checkpoint/fix-note files are consolidated into this README; `SHELL Token_Readme.md` remains separate by design.
+
+
+## Chapter 21 final stabilization candidate — 13 Aug 2026
+
+Latest manual-test fixes before complete Hoodrat acceptance:
+- Landing configuration no longer depends on a single dynamic endpoint: generated projects include a static `01_Landing-Page/public/project-config.json` fallback and the Landing runtime tries it before `/api/config`.
+- Post-creation deployment modal no longer exposes Open Terminal / Copy Link before deployment is complete; final success dialog remains Open Website + Close.
+- NFT post-mint `retention` establishes a holder baseline on first observation and reports retention against that baseline on later observations.
+- NFT post-mint commands support explicit cancellation, automatic cancellation when a new command starts, and an 18-second interactive timeout.
+- Entrants/movers post-mint transfer scans are bounded to a smaller recent-page window for interactive responsiveness.
+- Canonical generated footer remains shared across every generated module and uses the single `/ctb-shared/gokalp-hoodrat-signature.png` creator-avatar route.

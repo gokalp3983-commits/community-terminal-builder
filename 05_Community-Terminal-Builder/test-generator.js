@@ -37,6 +37,15 @@ const rootServerSource = fs.readFileSync(path.join(generatedRoot, "server.js"), 
 if (!rootServerSource.includes('app.get("/health"') || !rootServerSource.includes('app.get("/healthz"') || !rootServerSource.includes('app.get("/status"')) throw new Error("Diagnostic routes missing");
 if (!rootServerSource.includes('app.get("/api/config"')) throw new Error("Root landing config route missing");
 if (!rootServerSource.includes('app.use("/ctb-shared"')) throw new Error("Shared footer asset route missing");
+if (!fs.existsSync(path.join(generatedRoot,"01_Landing-Page","public","project-config.json"))) throw new Error("Landing static project config missing");
+const landingStaticConfig=JSON.parse(fs.readFileSync(path.join(generatedRoot,"01_Landing-Page","public","project-config.json"),"utf8"));
+if(landingStaticConfig.project.id!=="testcat"||!landingStaticConfig.modules?.whales) throw new Error("Landing static project config is incomplete");
+for(const moduleName of ["01_Landing-Page","02_Whale-Activity-Tracker","03_NFT-Collection-Terminal","04_Meme-Intel","06_Community-Pulse","07_Timeline"]){
+  const footerPath=path.join(generatedRoot,moduleName,"public","canonical-footer.js");
+  if(!fs.existsSync(footerPath)) throw new Error(`Canonical footer runtime missing: ${moduleName}`);
+  const footer=fs.readFileSync(footerPath,"utf8");
+  if(!footer.includes('/ctb-shared/gokalp-hoodrat-signature.png')) throw new Error(`Shared footer avatar route missing: ${moduleName}`);
+}
 if (!fs.existsSync(path.join(generatedRoot,"ctb-shared","gokalp-hoodrat-signature.png"))) throw new Error("Shared creator avatar missing from generated project");
 const renderYaml = fs.readFileSync(path.join(generatedRoot, "render.yaml"), "utf8");
 if (!renderYaml.includes("healthCheckPath: /healthz")) throw new Error("Render health check missing");

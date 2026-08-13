@@ -6,7 +6,7 @@ const html=fs.readFileSync(path.join(root,"public","index.html"),"utf8");
 const style=fs.readFileSync(path.join(root,"public","style.css"),"utf8");
 const landingStyle=fs.readFileSync(path.join(root,"..","01_Landing-Page","public","style.css"),"utf8");
 
-assert(html.includes('app.js?v=20b-fix7'),"FIX7 builder JS must be cache-busted");
+assert(html.includes('app.js?v=21a-finalfix'),"Latest Builder JS must be cache-busted");
 assert(app.includes('function terminalIdentityFromTicker(value)'),"Visible terminal identity helper must exist");
 assert(app.includes('user.value=terminalIdentityFromTicker(val("ticker"))'),"Ticker must drive visible terminal identity");
 assert(html.includes('Terminal identity'),"Builder must label the derived identity clearly");
@@ -16,7 +16,8 @@ for(const stale of ["jacket-community-terminal","CATCOIN","catcoin","SPRITEHOOD"
   assert(!html.includes(stale),`Fresh builder HTML must not contain stale project data: ${stale}`);
 }
 
-assert(html.includes('<a id="open-built-terminal" class="action-link" aria-disabled="true">OPEN TERMINAL</a>'),"Build-complete Open Terminal must be a native link action");
+assert(!html.includes('id="open-built-terminal"'),"Build-complete dialog must not expose Open Terminal before deployment completes");
+assert(!html.includes('id="copy-built-terminal-link"'),"Build-complete dialog must not expose Copy Link before deployment completes");
 assert(html.includes('<a id="deployment-success-open" class="deployment-success-open" aria-disabled="true">OPEN WEBSITE</a>'),"Success Open Website must be a native link action");
 assert(html.includes('<form method="dialog"><button type="submit" id="deployment-success-close" value="close">CLOSE</button></form>'),"Success close must use native dialog submission and CLOSE label");
 assert(html.includes('deployment-success-x'),"Success dialog must expose an X close control");

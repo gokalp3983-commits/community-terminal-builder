@@ -1624,6 +1624,9 @@ boot();
 // CTB Chapter 21A — interactive NFT Terminal commands.
 const nftCommandInput = document.getElementById("nftCommandInput");
 const nftCommandHistory = document.getElementById("nftCommandHistory");
+const NFT_COMMAND_TIMEOUT_MS = 18_000;
+let nftActiveCommandController = null;
+let nftActiveCommandTimedOut = false;
 
 function nftEsc(value){
   return String(value ?? "")
@@ -1653,7 +1656,7 @@ function nftCommandError(message){
 }
 
 async function nftCommandJson(url, allowHttpError = false){
-  const response = await fetch(url, {headers:{Accept:"application/json"}});
+  const response = await fetch(url, {headers:{Accept:"application/json"},signal:nftActiveCommandController?.signal});
   const data = await response.json().catch(()=>({}));
   if(!response.ok && !allowHttpError) throw new Error(data.error || `HTTP ${response.status}`);
   return data;
@@ -1762,8 +1765,14 @@ async function nftCmdMovers(){
   nftCommandBlock("NFT MOVERS — 24H",rows.length?rows:[["Status","No holder position changes detected in the observed 24h window."]]);
 }
 async function nftCmdRetention(){
-  const d=await nftCommandJson("/api/nft-postmint",true);if(!d.connected||!d.retention?.available){nftCommandBlock("HOLDER RETENTION",[["Status","Retention baseline unavailable"]]);return;}
-  const r=d.retention;nftCommandBlock("HOLDER RETENTION",[["Original Minters",nftFormatNumber(r.originalMinters)],["Still Holding",nftFormatNumber(r.stillHolding)],["Exited",nftFormatNumber(r.exited)],["Retention",`${Number(r.retentionPercent).toFixed(2)}%`]],"Post-mint retention: original minter wallets that still hold at least one NFT.");
+  const d=await nftCommandJson("/api/nft-postmint",true);
+  if(!d.connected){nftCommandBlock("HOLDER RETENTION",[["Status","Post-mint analytics unavailable"]]);return;}
+  const r=d.retention||{};
+  if(!r.available){
+    nftCommandBlock("HOLDER RETENTION",[["Status",r.baselineEstablished?"Baseline established":"Baseline pending"],["Baseline Holders",nftFormatNumber(r.baselineHolders)]],r.baselineAt?`Baseline set ${new Date(r.baselineAt).toLocaleString()} · run retention again after holder activity is observed.`:"Retention analytics will begin after a baseline is established.");
+    return;
+  }
+  nftCommandBlock("HOLDER RETENTION",[["Baseline Holders",nftFormatNumber(r.baselineHolders)],["Still Holding",nftFormatNumber(r.stillHolding)],["Exited",nftFormatNumber(r.exited)],["New Since Baseline",nftFormatNumber(r.newSinceBaseline)],["Retention",`${Number(r.retentionPercent).toFixed(2)}%`]],`Baseline: ${r.baselineAt?new Date(r.baselineAt).toLocaleString():"current runtime"}.`);
 }
 
 async function nftCmdSales(){
@@ -1818,30 +1827,32 @@ function nftCommandEcho(command){
   const block=document.createElement("div");
   block.className="nft-command-echo";
   const prompt=(document.querySelector("[data-project-prompt]")?.textContent||"nft@robinhood:~$").trim();
-  block.innerHTML=`<div class="nft-command-echo-line"><span class="nft-command-echo-prompt">${nftEsc(prompt)}</span> <strong>${nftEsc(command)}</strong></div><div class="nft-command-loading">[ CONNECTING ] Loading command data...</div>`;
+  block.innerHTML=`<div class="nft-command-echo-line"><span class="nft-command-echo-prompt">${nftEsc(prompt)}</span> <strong>${nftEsc(command)}</strong></div><div class="nft-command-loading">[ CONNECTING ] Loading command data... <button type="button" class="nft-command-cancel" data-nft-cancel-command>CANCEL</button></div>`;
   nftCommandHistory.append(block);
   return block;
 }
 
 async function nftRunCommand(command){
-  const text = String(command||"").trim();
-  if(!text || !nftCommandInput || !nftCommandHistory) return;
-  if(text.toLowerCase()==="clear"){nftCommandHistory.innerHTML="";nftCommandInput.value="";nftCommandInput.focus();return;}
-  nftCommandInput.value="";
-  nftCommandInput.disabled=true;
-  nftSetCommandControlsDisabled(true);
-  nftHighlightCommand(text);
+  const text=String(command||"").trim();
+  if(!text||!nftCommandInput||!nftCommandHistory)return;
+  if(text.toLowerCase()==="clear"){nftActiveCommandController?.abort();nftActiveCommandController=null;nftCommandHistory.innerHTML="";nftCommandInput.value="";nftCommandInput.focus();return;}
+  if(nftActiveCommandController)nftActiveCommandController.abort();
+  const controller=new AbortController();
+  nftActiveCommandController=controller;nftActiveCommandTimedOut=false;
+  const timeout=setTimeout(()=>{if(nftActiveCommandController===controller){nftActiveCommandTimedOut=true;controller.abort();}},NFT_COMMAND_TIMEOUT_MS);
+  nftCommandInput.value="";nftHighlightCommand(text);
   const echo=nftCommandEcho(text);
   try{
     await nftExecuteCommand(text);
     echo?.querySelector(".nft-command-loading")?.remove();
   }catch(error){
     echo?.querySelector(".nft-command-loading")?.remove();
-    nftCommandError(error.message || "Command failed.");
+    if(error?.name==="AbortError")nftCommandError(nftActiveCommandTimedOut?"Command timed out after 18 seconds.":"Command cancelled.");
+    else nftCommandError(error.message||"Command failed.");
   }finally{
-    nftCommandInput.disabled=false;
-    nftSetCommandControlsDisabled(false);
-    nftCommandInput.focus();
+    clearTimeout(timeout);
+    if(nftActiveCommandController===controller)nftActiveCommandController=null;
+    nftCommandInput.disabled=false;nftSetCommandControlsDisabled(false);nftCommandInput.focus();
   }
 }
 
@@ -1853,6 +1864,7 @@ if(nftCommandInput && nftCommandHistory){
   });
 
   document.addEventListener("click", async (event)=>{
+    const cancelButton=event.target.closest("[data-nft-cancel-command]");if(cancelButton){event.preventDefault();nftActiveCommandTimedOut=false;nftActiveCommandController?.abort();return;}
     const copyButton=event.target.closest("[data-copy-wallet]");if(copyButton){event.preventDefault();try{await navigator.clipboard.writeText(copyButton.dataset.copyWallet);copyButton.textContent="✓";setTimeout(()=>{copyButton.textContent="⧉"},900);}catch{}return;}
     const backButton=event.target.closest("[data-nft-back]");if(backButton){event.preventDefault();document.getElementById("nftCommands")?.scrollIntoView({behavior:"smooth",block:"start"});nftCommandInput.focus();return;}
     const button = event.target.closest("[data-nft-quick-command], [data-nft-guide-command]");

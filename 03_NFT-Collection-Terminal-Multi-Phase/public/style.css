@@ -3021,3 +3021,7 @@ html,body{background:#000!important}
 .nft-command-echo{margin:0 0 8px;padding:7px 9px;border-left:1px solid var(--green);background:rgba(0,24,14,.34)}
 .nft-command-echo-line{color:#d8e0dc;font-size:.82em}.nft-command-echo-line strong{color:var(--cyan);font-weight:700}.nft-command-echo-prompt{color:var(--green)}
 .nft-command-loading{margin-top:5px;color:var(--orange);font-size:.76em}
+
+/* Chapter 21 command cancellation */
+.nft-command-cancel{margin-left:8px;padding:2px 7px;border:1px solid var(--red);background:transparent;color:var(--red);font:inherit;font-size:.72em;cursor:pointer}
+.nft-command-cancel:hover,.nft-command-cancel:focus-visible{background:rgba(255,45,45,.08);outline:none}
