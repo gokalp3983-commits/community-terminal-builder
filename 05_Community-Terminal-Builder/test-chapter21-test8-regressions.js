@@ -1,0 +1,26 @@
+"use strict";
+const fs=require("fs"),path=require("path"),os=require("os"),{execFileSync}=require("child_process");
+const {generate}=require("./generator");
+function ok(value,message){if(!value)throw new Error(message);console.log(`[ PASS ] ${message}`)}
+const result=generate({projectName:"HOODRAT TEST-8",ticker:"HOODRAT",tokenContract:"0x8e62F281f282686fCa6dCB39288069a93fC23F1c",nftContract:"0xc06a2fa2dc084017e5c06a1ed0941042ab363784",links:{website:"https://certifiedhoodrat.com/",x:"https://x.com/hoodrat_coin",telegram:"https://t.me/hoodratport",openSea:"https://opensea.io/collection/hoodrats-nft/overview"},nft:{mode:"terminal",collectionName:"Hoodrats",supply:2222,whaleThreshold:10},features:{whaleTracker:true,memeIntel:true,nftTerminal:true,communityPulse:true,timeline:true,liveMarket:true}});
+const tmp=fs.mkdtempSync(path.join(os.tmpdir(),"ctb-test8-"));const zip=path.join(tmp,result.filename);fs.writeFileSync(zip,result.buffer);execFileSync("unzip",["-q",zip,"-d",tmp]);const root=path.join(tmp,result.root);
+const landing=fs.readFileSync(path.join(root,"01_Landing-Page/public/script.js"),"utf8");
+ok(landing.includes('fetch("/api/config"'),"Landing keeps proven /api/config architecture");
+ok(!landing.includes('document.getElementById("footerCopy").innerHTML'),"Landing no longer races canonical footer runtime");
+const landingHtml=fs.readFileSync(path.join(root,"01_Landing-Page/public/index.html"),"utf8");
+ok(landingHtml.includes('canonical-footer.js'),"Landing loads canonical footer runtime");
+const rootServer=fs.readFileSync(path.join(root,"server.js"),"utf8");
+ok(rootServer.includes('app.use("/",require("./01_Landing-Page/server"))'),"Unified server preserves Landing root mount");
+const nftServer=fs.readFileSync(path.join(root,"03_NFT-Collection-Terminal/server.js"),"utf8");
+ok(nftServer.includes('recordPostMintHolderObservation(data);'),"Holder analytics refresh records post-mint snapshots");
+ok(nftServer.includes('Interactive commands never rescan Blockscout transfer history.'),"Post-mint commands are snapshot-only");
+const nftHtml=fs.readFileSync(path.join(root,"03_NFT-Collection-Terminal/public/terminal.html"),"utf8");
+const order=["whales","movers","activity","sales","pulse"].map(x=>nftHtml.indexOf(`data-nft-quick-command="${x}"`));ok(order.every((x,i)=>x>=0&&(i===0||x>order[i-1])),"NFT quick commands use WHALES MOVERS ACTIVITY SALES PULSE order");
+ok(!nftHtml.includes('data-nft-guide-command="refresh"'),"Refresh command remains removed");
+const builderHtml=fs.readFileSync(path.join(__dirname,"public/index.html"),"utf8");
+ok(builderHtml.includes('The terminal is being created with the modules listed below.'),"Creation popup wording updated");
+ok(builderHtml.includes('Please wait a couple minutes while the webpage is being deployed.'),"Deployment wait wording updated");
+const builderApp=fs.readFileSync(path.join(__dirname,"public/app.js"),"utf8");
+ok(builderApp.includes('waitForPublicTerminalReady'),"Final deployment success waits for public readiness");
+fs.rmSync(tmp,{recursive:true,force:true});
+console.log("Chapter 21 TEST-8 regression set: PASS");

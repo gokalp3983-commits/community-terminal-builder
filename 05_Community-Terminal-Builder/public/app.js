@@ -692,6 +692,20 @@ function showDeploymentSuccessDialog(publicUrl){
   if(!dialog.open)dialog.showModal();
 }
 
+async function waitForPublicTerminalReady(publicUrl,{timeoutMs=90000,intervalMs=3000}={}){
+  const url=String(publicUrl||"").trim();if(!url)return false;
+  const expected={whales:Boolean(form.elements.whaleTracker.checked),intel:Boolean(form.elements.memeIntel.checked),nft:Boolean(form.elements.nftTerminal.checked),pulse:Boolean(form.elements.communityPulse.checked),timeline:Boolean(form.elements.timeline.checked)};
+  const started=Date.now();
+  while(Date.now()-started<timeoutMs){
+    try{
+      const response=await fetch("/api/verify-terminal",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url,expected})});
+      const data=await response.json().catch(()=>({}));
+      if(response.ok&&data.ok)return true;
+    }catch{}
+    await new Promise(resolve=>setTimeout(resolve,intervalMs));
+  }
+  return false;
+}
 function releaseStatusClass(value){const s=String(value||"").toLowerCase();if(["live","successful","success"].includes(s))return "status-success";if(s.includes("fail")||s.includes("cancel"))return "status-fail";return "status-pending"}
 function renderProtectedRelease(out,data,statusText){
   const rows=[
@@ -716,7 +730,7 @@ async function pollRenderDeployment(data,out,{onLive}={}){
     try{
       const response=await fetch(`/api/render-deploy-status?serviceId=${encodeURIComponent(serviceId)}`,{cache:"no-store"});
       const state=await response.json();if(!response.ok||!state.ok)throw new Error(state.error||"Render deployment status unavailable");
-      if(state.success){const liveUrl=state.publicUrl||data.render.publicUrl||"";if(liveUrl)data.render.publicUrl=liveUrl;renderProtectedRelease(out,data,"live");status.textContent="[ LIVE ] Deployment successful. Run Public Acceptance to verify the public terminal.";if(onLive)onLive(liveUrl);showDeploymentSuccessDialog(liveUrl);return {success:true,publicUrl:liveUrl}}
+      if(state.success){const liveUrl=state.publicUrl||data.render.publicUrl||"";if(liveUrl)data.render.publicUrl=liveUrl;renderProtectedRelease(out,data,"finalizing");status.textContent="[ FINALIZING ] Render deployment completed. Waiting for the public terminal to become reachable...";const ready=await waitForPublicTerminalReady(liveUrl);if(!ready){renderProtectedRelease(out,data,"readiness pending");status.textContent="[ WAIT ] Render finished, but the public terminal is not fully reachable yet. CTB will not mark the release complete prematurely.";continue;}renderProtectedRelease(out,data,"live");status.textContent="[ LIVE ] Deployment successful. Run Public Acceptance to verify the public terminal.";if(onLive)onLive(liveUrl);showDeploymentSuccessDialog(liveUrl);return {success:true,publicUrl:liveUrl}}
       if(state.failed){renderProtectedRelease(out,data,state.status||"failed");status.textContent="[ FAIL ] Render deployment failed. Review the Render deployment logs before trying again.";showDeploymentToast("The deployment did not complete successfully. Review the Render logs before trying again.",{state:"fail",duration:8000});return {success:false,failed:true}}
       renderProtectedRelease(out,data,"Deploying the website...");
     }catch(error){console.warn("Render deployment status check failed:",error.message)}

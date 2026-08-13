@@ -485,46 +485,36 @@ function compareHolderSnapshots(previous,current){
     return {address,previous:before,current:now,delta:now-before};
   }).filter(item=>item.delta!==0);
 }
-function retentionFromBaseline(current){
+function retentionFromBaseline(current, observationReady){
   if(!nftRetentionBaseline) return {available:false,baselineEstablished:false};
   const baseline=[...nftRetentionBaseline.holders.keys()];
   const stillHolding=baseline.filter(address=>(current.get(address)||0)>0).length;
   const newSinceBaseline=[...current.keys()].filter(address=>!nftRetentionBaseline.holders.has(address)).length;
-  return {available:nftPostMintPrevious!==null,baselineEstablished:true,baselineAt:nftRetentionBaseline.establishedAt,baselineHolders:baseline.length,stillHolding,exited:baseline.length-stillHolding,newSinceBaseline,retentionPercent:baseline.length?Number((stillHolding/baseline.length*100).toFixed(2)):100};
+  return {available:Boolean(observationReady),baselineEstablished:true,baselineAt:nftRetentionBaseline.establishedAt,baselineHolders:baseline.length,stillHolding,exited:baseline.length-stillHolding,newSinceBaseline,retentionPercent:baseline.length?Number((stillHolding/baseline.length*100).toFixed(2)):100};
 }
-async function loadPostMintAnalytics(){
-  // The on-page Holder Analytics endpoint is the canonical ownership data source.
-  // Never rescan the transfer chain from an interactive command.
-  const holders=nftHoldersCache?.data;
-  if(!holders){
-    return {connected:false,warming:true,error:"Holder snapshot is still loading. Please retry shortly.",updatedAt:new Date().toISOString()};
-  }
-  if(nftPostMintCache && nftPostMintCache.sourceUpdatedAt===holders.updatedAt) return nftPostMintCache.data;
-
+function recordPostMintHolderObservation(holders){
+  if(!holders?.connected || !Array.isArray(holders.holders) || !holders.updatedAt) return;
+  if(nftPostMintCache?.sourceUpdatedAt===holders.updatedAt) return;
   const current=holderSnapshotFromAnalytics(holders);
-  if(!nftRetentionBaseline){
-    nftRetentionBaseline={establishedAt:new Date().toISOString(),holders:new Map(current)};
-  }
-  let changes=[];
-  let observationReady=false;
-  let previousAt=null;
-  if(nftPostMintPrevious){
-    observationReady=true;
-    previousAt=nftPostMintPrevious.observedAt;
-    changes=compareHolderSnapshots(nftPostMintPrevious.holders,current);
-  }
+  if(!nftRetentionBaseline) nftRetentionBaseline={establishedAt:holders.updatedAt,holders:new Map(current)};
+  const previous=nftPostMintPrevious;
+  const observationReady=Boolean(previous);
+  const changes=previous?compareHolderSnapshots(previous.holders,current):[];
   const entrants=changes.filter(x=>x.previous===0&&x.current>0).sort((a,b)=>b.delta-a.delta);
   const exits=changes.filter(x=>x.previous>0&&x.current===0).sort((a,b)=>a.delta-b.delta);
   const movers=changes.slice().sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)).slice(0,20);
   const threshold=Number(holders.whaleThreshold)||10;
   const whaleMovers=movers.filter(x=>x.previous>=threshold||x.current>=threshold);
-  const whalesEntered=changes.filter(x=>x.previous<threshold&&x.current>=threshold).length;
-  const whalesExited=changes.filter(x=>x.previous>=threshold&&x.current<threshold).length;
-  const retention=retentionFromBaseline(current);
-  const data={connected:true,snapshotBased:true,observationReady,previousAt,currentAt:holders.updatedAt,entrants:entrants.slice(0,20),exits:exits.slice(0,20),movers,whaleMovers,whalesEntered,whalesExited,whaleThreshold:threshold,currentWhaleCount:Number(holders.whaleCount)||0,retention,updatedAt:new Date().toISOString()};
-  nftPostMintPrevious={observedAt:holders.updatedAt||new Date().toISOString(),holders:new Map(current)};
+  const data={connected:true,snapshotBased:true,observationReady,previousAt:previous?.observedAt||null,currentAt:holders.updatedAt,entrants:entrants.slice(0,20),exits:exits.slice(0,20),movers,whaleMovers,whalesEntered:changes.filter(x=>x.previous<threshold&&x.current>=threshold).length,whalesExited:changes.filter(x=>x.previous>=threshold&&x.current<threshold).length,whaleThreshold:threshold,currentWhaleCount:Number(holders.whaleCount)||0,retention:retentionFromBaseline(current,observationReady),updatedAt:new Date().toISOString()};
+  nftPostMintPrevious={observedAt:holders.updatedAt,holders:new Map(current)};
   nftPostMintCache={sourceUpdatedAt:holders.updatedAt,data};
-  return data;
+}
+async function loadPostMintAnalytics(){
+  // Commands consume the same holder snapshot already used by the on-page Holder Analytics panel.
+  // Interactive commands never rescan Blockscout transfer history.
+  if(nftPostMintCache?.data) return nftPostMintCache.data;
+  if(nftHoldersCache?.data){recordPostMintHolderObservation(nftHoldersCache.data);return nftPostMintCache?.data||{connected:false,warming:true,error:"Holder baseline is initializing."};}
+  return {connected:false,warming:true,error:"Holder analytics is still loading. Please retry shortly.",updatedAt:new Date().toISOString()};
 }
 app.get("/api/nft-postmint",async(_req,res)=>{try{res.json(await loadPostMintAnalytics())}catch(error){console.error("[nft-postmint] failed:",error);res.status(502).json({connected:false,error:"Post-mint analytics unavailable."})}});
 
@@ -1658,6 +1648,7 @@ async function getNftHolderAnalytics() {
         fetchedAt: Date.now(),
         data,
       };
+      recordPostMintHolderObservation(data);
       return data;
     } finally {
       nftHoldersPromise = null;
