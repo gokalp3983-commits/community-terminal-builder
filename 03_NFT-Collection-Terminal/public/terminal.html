@@ -486,29 +486,33 @@
 
       <section id="nftCommands" class="nft-quick-commands" aria-labelledby="nftQuickCommandsTitle">
         <h3 id="nftQuickCommandsTitle" class="nft-command-section-label">[ QUICK COMMANDS ]</h3>
-        <div class="nft-quick-command-tabs" aria-label="NFT quick commands">
+        <div class="nft-quick-command-tabs" aria-label="NFT terminal quick commands">
           <button class="nft-quick-command" type="button" data-nft-quick-command="mint">MINT</button>
-          <button class="nft-quick-command" type="button" data-nft-quick-command="holders">HOLDERS</button>
+          <button class="nft-quick-command" type="button" data-nft-quick-command="minters">MINTERS</button>
           <button class="nft-quick-command" type="button" data-nft-quick-command="whales">WHALES</button>
-          <button class="nft-quick-command" type="button" data-nft-quick-command="market">MARKET</button>
+          <button class="nft-quick-command" type="button" data-nft-quick-command="activity">ACTIVITY</button>
           <button class="nft-quick-command" type="button" data-nft-quick-command="wallet " data-command-prefill="true">WALLET</button>
         </div>
+      </section>
 
+      <div class="nft-command-separator" aria-hidden="true"></div>
+
+      <section class="nft-command-guide" aria-labelledby="nftCommandGuideTitle">
+        <h3 id="nftCommandGuideTitle" class="nft-command-section-label nft-command-available-label">[ AVAILABLE COMMANDS ]</h3>
         <div class="nft-command-guide-list" aria-label="NFT terminal available commands">
-          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="mint">&gt; Mint</button><span>Current mint progress and activity</span></div>
-          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="holders">&gt; Holders</button><span>Holder count and distribution summary</span></div>
-          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="whales">&gt; Whales</button><span>Largest collection holders</span></div>
-          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="market">&gt; Market</button><span>OpenSea collection market summary</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="mint">&gt; Mint</button><span>Mint status and historical mint behavior</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="minters">&gt; Minters</button><span>Unique/repeat minters, largest mint and mint duration</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="whales">&gt; Whales</button><span>Largest holders with wallet actions</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="activity">&gt; Activity</button><span>Recent on-chain NFT transfer activity</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="sales">&gt; Sales</button><span>Recent marketplace sales analysis</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="pulse">&gt; Pulse</button><span>Explainable activity snapshot from observable collection data</span></div>
           <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="wallet " data-command-prefill="true">&gt; Wallet &lt;address&gt;</button><span>Collection position for one wallet <em class="nft-command-input-hint">requires wallet input</em></span></div>
-          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="status">&gt; Status</button><span>Combined chain and marketplace status</span></div>
-          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="floor">&gt; Floor</button><span>Current floor and 4-hour trend</span></div>
-          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="sales">&gt; Sales</button><span>Recent OpenSea sales</span></div>
-          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="collection">&gt; Collection</button><span>Configured collection identity</span></div>
-          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="contract">&gt; Contract</button><span>NFT contract and explorer link</span></div>
           <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="refresh">&gt; Refresh</button><span>Refreshes NFT terminal data</span></div>
-          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="clear">&gt; Clear</button><span>Resets command output</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="clear">&gt; Clear</button><span>Resets the terminal</span></div>
         </div>
       </section>
+
+      <div class="nft-command-separator" aria-hidden="true"></div>
 
       <section id="nftCommandTerminal" class="nft-command-terminal" aria-label="NFT terminal command prompt">
         <div id="nftCommandHistory" class="nft-command-output" aria-live="polite"></div>
@@ -520,25 +524,20 @@
       </div>
 
       <div id="terminal-footer" class="terminal-area terminal-footer">
-        <div class="footer-version">
-          <span data-project-version></span>
-        </div>
-
-        <div class="powered-by">
-          <span class="orange">[ INFO ]</span> Independent community tools for {{PROJECT_ECOSYSTEM}}.<br>
-          <span class="orange">[ INFO ]</span> Collection statistics powered by OpenSea API.
-        </div>
 
         <footer class="footer">
+          <span class="ctb-footer-title">__CTB_TICKER_PLAIN__ Community Terminal</span>
+          <span class="ctb-footer-version">ver __CTB_PROJECT_VERSION__</span>
+          <span class="ctb-footer-opensea">NFT Collection statistics powered by OpenSea API.</span>
           <div class="builder-signature" aria-label="Built by Gokalp @Gokalp8339">
-            <img class="builder-signature-avatar" src="/assets/gokalp-hoodrat-signature.png" alt="Gokalp Hoodrat NFT avatar">
+            <img class="builder-signature-avatar" src="assets/gokalp-hoodrat-signature.png" alt="Gokalp Hoodrat NFT avatar">
             <div class="builder-signature-copy">
               <span class="builder-signature-label">Built by</span>
               <span class="builder-signature-name">Gokalp</span>
               <a class="x-credit builder-signature-handle" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp8339 on X">𝕏 @Gokalp8339</a>
             </div>
           </div>
-          <div class="builder-signature-disclaimer">Not affiliated with or endorsed by the official {{PROJECT_NAME}} team.</div>
+          <div class="builder-signature-disclaimer">Not affiliated with or endorsed by the official __CTB_TICKER__ team.</div>
         </footer>
       </div>
     </section>

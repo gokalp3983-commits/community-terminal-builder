@@ -10,17 +10,21 @@ for(const mod of mods){
   const html=text(`${mod}/public/terminal.html`);
   const js=text(`${mod}/public/script.js`);
   const css=text(`${mod}/public/style.css`);
-  for(const command of ["mint","holders","whales","market"]){
+  for(const command of ["mint","holders","whales","minters"]){
     ok(html.includes(`data-nft-quick-command="${command}"`),`${mod}: ${command.toUpperCase()} primary button present`);
   }
   ok(html.includes('data-nft-quick-command="wallet " data-command-prefill="true"'),`${mod}: WALLET primary button prefills address command`);
-  for(const command of ["status","floor","sales","collection","contract","refresh","clear"]){
+  for(const command of ["mint","holders","whales","minters","distribution","activity","sales","refresh","clear"]){
     ok(html.includes(`data-nft-guide-command="${command}"`),`${mod}: ${command} guide command present`);
   }
   ok(!html.includes('data-nft-guide-command="help"')&&!html.includes('data-nft-quick-command="help"'),`${mod}: no help command in UI`);
   ok(!js.includes('lower==="help"')&&!js.includes('nftCmdHelp'),`${mod}: no help command in dispatcher`);
   ok(html.includes('id="nftCommandInput"')&&html.includes('data-project-prompt'),`${mod}: project-derived command prompt present`);
-  ok(js.includes('async function nftExecuteCommand')&&js.includes('async function nftCmdWallet'),`${mod}: NFT command dispatcher and wallet command present`);
+  ok(js.includes('async function nftExecuteCommand')&&js.includes('async function nftCmdWallet')&&js.includes('async function nftCmdMinters'),`${mod}: NFT command dispatcher and intelligence commands present`);
+  ok(js.includes('MINT STATUS')&&!js.includes('MINT INTELLIGENCE'),`${mod}: mint output uses MINT STATUS`);
+  ok(!html.includes('data-nft-guide-command="floor"')&&!html.includes('data-nft-guide-command="collection"')&&!html.includes('data-nft-guide-command="contract"'),`${mod}: redundant page-data commands removed`);
+  ok(js.includes('data-copy-wallet')&&js.includes('↗'),`${mod}: whale wallet copy + Blockscout actions present`);
+  ok(js.includes('data-nft-back')&&js.includes('Back to commands'),`${mod}: back-to-commands control present`);
   ok(css.includes('CTB Chapter 21A — NFT Terminal command interface'),`${mod}: NFT command styles present`);
 }
 const common={projectName:"CH21TEST",ticker:"CH21",version:"1.0.0",description:"Chapter 21 test",promptUser:"ch21",promptHost:"robinhood",ecosystem:"Robinhood Chain",tokenContract:"0x7A3F9C2B1D6E4F8A5C0B7D9E2F1A6C3B8D4E5F90",nftContract:"0xB4E8D1C7A9F3056E2C8B7A4D1F9E6C3A5B0D2F71",dexScreenerChainId:"robinhood",blockscoutApiBase:"https://robinhoodchain.blockscout.com/api/v2",links:{website:"https://example.com",x:"@ch21",telegram:"https://t.me/ch21",openSea:"https://opensea.io/collection/ch21"},features:{whaleTracker:true,memeIntel:true,communityPulse:true,timeline:true,nftTerminal:true,liveMarket:true}};

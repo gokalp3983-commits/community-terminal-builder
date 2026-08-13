@@ -42,7 +42,8 @@
       e.textContent = `${c.project.name} Community Terminal`;
     });
     document.querySelectorAll("[data-project-footer]").forEach((e) => {
-      e.innerHTML = `Independent community-built tools.<br>Not affiliated with or endorsed by the official ${c.project.name} team.<br>Built for the ${c.project.ecosystem} community.`;
+      const ticker = String(c.project.ticker || "").replace(/^\$/, "");
+      e.innerHTML = `<span class="ctb-footer-title">${ticker} Community Terminal</span><span class="ctb-footer-version">ver ${c.project.version}</span><div class="builder-signature" aria-label="Built by Gokalp @Gokalp8339"><img class="builder-signature-avatar" src="assets/gokalp-hoodrat-signature.png" alt="Gokalp Hoodrat NFT avatar"><div class="builder-signature-copy"><span class="builder-signature-label">Built by</span><span class="builder-signature-name">Gokalp</span><a class="x-credit builder-signature-handle" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp8339 on X">𝕏 @Gokalp8339</a></div></div><div class="builder-signature-disclaimer">Not affiliated with or endorsed by the official ${c.project.ticker} team.</div>`;
     });
 
     document.querySelectorAll("[data-token-contract]").forEach((e) => {

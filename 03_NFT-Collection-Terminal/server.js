@@ -129,6 +129,8 @@ const ZERO_ADDRESS =
 
 let mintStatsCache = null;
 let mintStatsRefreshPromise = null;
+let mintHistoryCache = null;
+let nftActivityCache = null;
 
 function asNumber(value, fallback = 0) {
   const parsed = Number(value);
@@ -435,6 +437,38 @@ async function getLiveMintStats() {
 
   return mintStatsRefreshPromise;
 }
+
+
+async function loadMintHistoryAnalytics(){
+  if(mintHistoryCache && Date.now()-mintHistoryCache.fetchedAt < 300000) return mintHistoryCache.data;
+  const byWallet=new Map(), minuteBuckets=new Map();let nextPageParams=null,totalMintEvents=0,firstMintAt=null,lastMintAt=null;
+  for(let page=0;page<100;page+=1){
+    let payload;
+    try{payload=await fetchBlockscoutJson(buildTransfersPath(nextPageParams));}
+    catch(error){if(totalMintEvents>0)break;throw error;}
+    const items=Array.isArray(payload?.items)?payload.items:[];
+    for(const item of items){
+      if(!isMintTransfer(item)) continue;
+      const to=getAddressHash(item?.to); const timestamp=getTransferTimestamp(item);
+      if(/^0x[a-f0-9]{40}$/.test(to)){byWallet.set(to,(byWallet.get(to)||0)+1);totalMintEvents+=1;}
+      if(timestamp){const ms=timestamp.getTime();if(!firstMintAt||ms<firstMintAt)firstMintAt=ms;if(!lastMintAt||ms>lastMintAt)lastMintAt=ms;const bucket=Math.floor(ms/60000);minuteBuckets.set(bucket,(minuteBuckets.get(bucket)||0)+1);}
+    }
+    nextPageParams=payload?.next_page_params??null;if(!nextPageParams||items.length===0)break;
+    await new Promise(resolve=>setTimeout(resolve,120));
+  }
+  const counts=[...byWallet.values()]; const largestMint=counts.length?Math.max(...counts):0; const repeatMinters=counts.filter(x=>x>1).length;
+  const data={connected:true,uniqueMinters:byWallet.size,totalMintEvents,repeatMinters,largestMint,averageNftsPerMinter:byWallet.size?Number((totalMintEvents/byWallet.size).toFixed(2)):0,firstMintAt:firstMintAt?new Date(firstMintAt).toISOString():null,lastMintAt:lastMintAt?new Date(lastMintAt).toISOString():null,mintDurationMinutes:firstMintAt&&lastMintAt?Number(((lastMintAt-firstMintAt)/60000).toFixed(1)):null,updatedAt:new Date().toISOString()};
+  mintHistoryCache={fetchedAt:Date.now(),data};return data;
+}
+app.get("/api/mint-intelligence",async(_req,res)=>{try{res.json(await loadMintHistoryAnalytics())}catch(error){console.error("[mint-intelligence] failed:",error);res.status(502).json({connected:false,error:"Mint history analytics unavailable."})}});
+
+async function loadNftActivity(){
+  if(nftActivityCache && Date.now()-nftActivityCache.fetchedAt < 30000) return nftActivityCache.data;
+  let nextPageParams=null;const now=Date.now(),oneHour=now-3600000,day=now-86400000,wallets24=new Set();let transfers1h=0,transfers24h=0,mints1h=0,mints24h=0;const recent=[];
+  for(let page=0;page<6;page+=1){const payload=await fetchBlockscoutJson(buildTransfersPath(nextPageParams));const items=Array.isArray(payload?.items)?payload.items:[];for(const item of items){const ts=getTransferTimestamp(item);const ms=ts?.getTime()||0;const mint=isMintTransfer(item);const from=getAddressHash(item?.from),to=getAddressHash(item?.to);if(ms>=day){transfers24h+=1;if(mint)mints24h+=1;if(/^0x[a-f0-9]{40}$/.test(from))wallets24.add(from);if(/^0x[a-f0-9]{40}$/.test(to))wallets24.add(to);}if(ms>=oneHour){transfers1h+=1;if(mint)mints1h+=1;}if(recent.length<12)recent.push({timestamp:ts?.toISOString()||null,type:mint?"MINT":"TRANSFER",tokenId:getTransferTokenId(item),from,to,txHash:getTransferTxHash(item)});}nextPageParams=payload?.next_page_params??null;if(!nextPageParams||items.length===0)break;}
+  const data={connected:true,transfers1h,transfers24h,mints1h,mints24h,uniqueWallets24h:wallets24.size,recent,updatedAt:new Date().toISOString()};nftActivityCache={fetchedAt:Date.now(),data};return data;
+}
+app.get("/api/nft-activity",async(_req,res)=>{try{res.json(await loadNftActivity())}catch(error){console.error("[nft-activity] failed:",error);res.status(502).json({connected:false,error:"NFT activity unavailable."})}});
 
 app.get("/api/mint-stats", async (_req, res) => {
   try {
@@ -1526,6 +1560,13 @@ async function loadNftHolderAnalytics() {
   const top10Held = holders
     .slice(0, 10)
     .reduce((sum, holder) => sum + holder.count, 0);
+  const sortedCounts = holders.map((holder)=>holder.count).sort((a,b)=>a-b);
+  const middle = Math.floor(sortedCounts.length / 2);
+  const medianHeld = sortedCounts.length % 2
+    ? sortedCounts[middle]
+    : Number(((sortedCounts[middle - 1] + sortedCounts[middle]) / 2).toFixed(2));
+  const top1HolderCount = Math.max(1, Math.ceil(holders.length * 0.01));
+  const top1Held = holders.slice(0, top1HolderCount).reduce((sum, holder)=>sum + holder.count, 0);
 
   return {
     connected: true,
@@ -1536,6 +1577,7 @@ async function loadNftHolderAnalytics() {
       holders.length > 0
         ? Number((totalHeld / holders.length).toFixed(2))
         : 0,
+    medianHeld,
     whaleThreshold: NFT_WHALE_THRESHOLD,
     whaleCount: holders.filter(
       (holder) =>
@@ -1547,6 +1589,9 @@ async function loadNftHolderAnalytics() {
             ((top10Held / totalHeld) * 100).toFixed(2)
           )
         : 0,
+    top1ConcentrationPercent:
+      totalHeld > 0 ? Number(((top1Held / totalHeld) * 100).toFixed(2)) : 0,
+    top1HolderCount,
     distribution,
     holders,
     updatedAt: new Date().toISOString(),
@@ -1623,6 +1668,9 @@ app.get("/api/nft-whales", async (req, res) => {
       totalHeld: analytics.totalHeld,
       largestHolder: analytics.largestHolder,
       averageHeld: analytics.averageHeld,
+      medianHeld: analytics.medianHeld,
+      top1ConcentrationPercent: analytics.top1ConcentrationPercent,
+      top1HolderCount: analytics.top1HolderCount,
       whaleThreshold: analytics.whaleThreshold,
       whaleCount: analytics.whaleCount,
       top10ConcentrationPercent:

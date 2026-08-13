@@ -9,12 +9,14 @@ function envConfig(env=process.env){return {
   githubToken:String(env.GITHUB_TOKEN||""), githubOwner:String(env.GITHUB_OWNER||""),
   renderKey:String(env.RENDER_API_KEY||""), renderOwnerId:String(env.RENDER_OWNER_ID||""),
   renderRegion:String(env.RENDER_REGION||"oregon"),
+  openSeaApiKey:String(env.OPENSEA_API_KEY||""),
 }}
 function publicStatus(env=process.env){const c=envConfig(env);return {
   enabled:c.enabled,
   releaseActionsEnabled:c.releaseActionsEnabled,
   github:{configured:Boolean(c.githubToken),ownerConfigured:Boolean(c.githubOwner),verified:false},
   render:{configured:Boolean(c.renderKey&&c.renderOwnerId),workspaceConfigured:Boolean(c.renderOwnerId),verified:false},
+  marketplace:{openSeaConfigured:Boolean(c.openSeaApiKey)},
   mode:"server-side-credentials",
   secretsExposed:false,
 }}
@@ -107,15 +109,24 @@ async function publishGitHub(fetchImpl,c,result,{repoName,visibility="public",re
 }
 async function renderRequest(fetchImpl,c,path,opts={}){return api(fetchImpl,`https://api.render.com/v1${path}`,{...opts,token:c.renderKey})}
 function renderUrl(service){return service?.serviceDetails?.url||service?.url||service?.service?.serviceDetails?.url||""}
+async function syncRenderRuntimeSecrets(fetchImpl,c,serviceId){
+  if(!serviceId)return;
+  if(c.openSeaApiKey){
+    await renderRequest(fetchImpl,c,`/services/${serviceId}/env-vars/OPENSEA_API_KEY`,{method:"PUT",body:{value:c.openSeaApiKey}});
+  }
+}
 async function deployRender(fetchImpl,c,{repoUrl,serviceName,releaseMode="update"}){
   let services=[];try{services=await renderRequest(fetchImpl,c,`/services?name=${encodeURIComponent(serviceName)}`)}catch{}
   const list=Array.isArray(services)?services.map(x=>x.service||x):[];let service=list.find(x=>x.name===serviceName);let created=false;
   if(releaseMode==="create"){
     if(service)throw new Error(`Render service ${serviceName} already exists. Choose UPDATE EXISTING RELEASE instead.`);
     service=await renderRequest(fetchImpl,c,"/services",{method:"POST",body:{type:"web_service",name:serviceName,ownerId:c.renderOwnerId,repo:repoUrl,branch:"main",autoDeploy:"yes",serviceDetails:{runtime:"node",plan:"free",region:c.renderRegion,buildCommand:"npm install",startCommand:"npm start",healthCheckPath:"/healthz",envSpecificDetails:{buildCommand:"npm install",startCommand:"npm start"}}}});created=true;
+    const serviceId=service.id||service.service?.id||null;
+    if(c.openSeaApiKey&&serviceId){await syncRenderRuntimeSecrets(fetchImpl,c,serviceId);const deploy=await renderRequest(fetchImpl,c,`/services/${serviceId}/deploys`,{method:"POST",body:{clearCache:"do_not_clear"}});service={...service,_ctbDeploy:deploy};}
   }else{
     if(!service)throw new Error(`Render service ${serviceName} does not exist. Choose CREATE NEW RELEASE instead.`);
     await renderRequest(fetchImpl,c,`/services/${service.id}`,{method:"PATCH",body:{repo:repoUrl,branch:"main",autoDeploy:"yes"}});
+    await syncRenderRuntimeSecrets(fetchImpl,c,service.id);
     const deploy=await renderRequest(fetchImpl,c,`/services/${service.id}/deploys`,{method:"POST",body:{clearCache:"do_not_clear"}});
     service={...service,_ctbDeploy:deploy};
   }

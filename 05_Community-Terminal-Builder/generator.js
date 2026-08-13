@@ -253,6 +253,9 @@ function transformModuleFile(moduleName, relativeName, data, p) {
       .replaceAll("__CTB_NFT_COLLECTION_NAME_UPPER__", nftName.toUpperCase())
       .replaceAll("__CTB_PROJECT_NAME_UPPER__", p.name)
       .replaceAll("__CTB_PROJECT_NAME__", p.name)
+      .replaceAll("__CTB_TICKER_PLAIN__", p.ticker.replace(/^\$/, ""))
+      .replaceAll("__CTB_TICKER__", p.ticker)
+      .replaceAll("__CTB_PROJECT_VERSION__", p.version)
       .replaceAll("__CTB_OPENSEA_URL__", openSea)
       .replaceAll("__CTB_X_URL__", p.links.x || "#")
       .replaceAll("__CTB_MASCOT_PATH__", p.mascotPath)
@@ -346,7 +349,6 @@ function walkModule(dir, prefix, moduleName, entries, p, relative = "") {
   for (const item of fs.readdirSync(dir, { withFileTypes:true })) {
     if (["node_modules", ".git"].includes(item.name)) continue;
     if (["hoodrat-mascot.jpeg", "stonkbrokers-mascot.jpg", "stonkbrokers-mascot.svg"].includes(item.name)) continue;
-    if (moduleName === "03_NFT-Collection-Terminal" && relative === "public" && item.name === "assets") continue;
     const full = path.join(dir, item.name);
     const relLocal = relative ? path.posix.join(relative, item.name) : item.name;
     const relZip = path.posix.join(prefix, item.name);

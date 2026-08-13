@@ -1640,7 +1640,7 @@ function nftCommandBlock(title, rows = [], note = ""){
   block.className = "nft-command-block";
   const body = rows.map(([label, value]) => `
     <div class="nft-command-kv"><span>${nftEsc(label)}</span><span>${value}</span></div>`).join("");
-  block.innerHTML = `<div class="nft-command-title">${nftEsc(title)}</div>${body}${note ? `<div class="nft-command-muted">${nftEsc(note)}</div>` : ""}`;
+  block.innerHTML = `<div class="nft-command-title">${nftEsc(title)}</div>${body}${note ? `<div class="nft-command-muted">${nftEsc(note)}</div>` : ""}<div class="nft-command-back-row"><button type="button" class="nft-command-back" data-nft-back>← Back to commands</button></div>`;
   nftCommandHistory.append(block);
 }
 
@@ -1683,159 +1683,92 @@ function nftFormatFloorTrend(trend){
   return `${change > 0 ? "+" : ""}${change.toFixed(2)}% (${nftEsc(trend.status || "4h")})`;
 }
 
+function nftExplorerWalletUrl(address){
+  try{const base=CFG?.market?.blockscoutExplorerBase||new URL(CFG.market.blockscoutApiBase).origin;return `${String(base).replace(/\/$/,"")}/address/${address}`;}catch{return "";}
+}
+function nftWalletActions(address){
+  if(!/^0x[a-fA-F0-9]{40}$/.test(address||"")) return "";
+  const href=nftExplorerWalletUrl(address);
+  return `<span class="nft-wallet-actions"><button type="button" class="nft-wallet-action" data-copy-wallet="${nftEsc(address)}" title="Copy wallet address" aria-label="Copy wallet address">⧉</button>${href?`<a class="nft-wallet-action" href="${nftEsc(href)}" target="_blank" rel="noopener noreferrer" title="Open wallet on Blockscout" aria-label="Open wallet on Blockscout">↗</a>`:""}</span>`;
+}
+
 async function nftCmdMint(){
-  const d = await nftCommandJson("/api/mint-stats");
-  nftCommandBlock("MINT INTELLIGENCE", [
+  const [d,intel]=await Promise.all([nftCommandJson("/api/mint-stats"),nftCommandJson("/api/mint-intelligence",true).catch(()=>({connected:false}))]);
+  nftCommandBlock("MINT STATUS", [
     ["Status", nftEsc(d.status || "UNAVAILABLE")],
-    ["Minted", nftFormatNumber(d.minted)],
+    ["Minted", `${nftFormatNumber(d.minted)} / ${nftFormatNumber(d.totalSupply)}`],
     ["Remaining", nftFormatNumber(d.remaining)],
     ["Progress", Number.isFinite(Number(d.progressPercent)) ? `${Number(d.progressPercent).toFixed(2)}%` : "UNAVAILABLE"],
-    ["Holders", nftFormatNumber(d.uniqueHolders)],
-    ["Mint Rate", Number.isFinite(Number(d.mintRatePerMinute)) ? `${Number(d.mintRatePerMinute).toFixed(1)} / min` : "UNAVAILABLE"],
-    ["Latest Mint", d.latestMint ? `#${nftEsc(d.latestMint.tokenId ?? "—")} → <span class="nft-command-wallet">${nftEsc(d.latestMint.toDisplay || d.latestMint.to || "—")}</span>` : "—"]
+    ["Unique Minters", intel.connected ? nftFormatNumber(intel.uniqueMinters) : "UNAVAILABLE"],
+    ["Repeat Minters", intel.connected ? nftFormatNumber(intel.repeatMinters) : "UNAVAILABLE"],
+    ["Largest Mint", intel.connected ? `${nftFormatNumber(intel.largestMint)} NFTs` : "UNAVAILABLE"],
+    ["Avg NFTs / Minter", intel.connected ? nftFormatNumber(intel.averageNftsPerMinter) : "UNAVAILABLE"],
+    ["Mint Duration", intel.connected && Number.isFinite(Number(intel.mintDurationMinutes)) ? `${Number(intel.mintDurationMinutes).toLocaleString()} min` : "UNAVAILABLE"],
+    ["Final Mint", intel.connected && intel.lastMintAt ? nftEsc(new Date(intel.lastMintAt).toLocaleString()) : (d.latestMint?.timestamp ? nftEsc(new Date(d.latestMint.timestamp).toLocaleString()) : "UNAVAILABLE")]
   ], `Source: ${d.source || "Robinhood Chain"}`);
 }
 
-async function nftCmdHolders(){
-  const d = await nftCommandJson("/api/nft-whales");
-  nftCommandBlock("HOLDER INTELLIGENCE", [
-    ["Total Holders", nftFormatNumber(d.totalHolders)],
-    ["NFTs Held", nftFormatNumber(d.totalHeld)],
-    ["Average Holding", Number.isFinite(Number(d.averageHeld)) ? Number(d.averageHeld).toFixed(2) : "UNAVAILABLE"],
-    ["Whale Threshold", `${nftFormatNumber(d.whaleThreshold)} NFTs`],
-    ["Whale Wallets", nftFormatNumber(d.whaleCount)],
-    ["Top-10 Concentration", Number.isFinite(Number(d.top10ConcentrationPercent)) ? `${Number(d.top10ConcentrationPercent).toFixed(2)}%` : "UNAVAILABLE"]
-  ]);
-}
-
 async function nftCmdWhales(){
-  const d = await nftCommandJson("/api/nft-whales");
-  const whales = Array.isArray(d.topHolders) ? d.topHolders.filter((x)=>Number(x.count)>=Number(d.whaleThreshold||0)).slice(0,10) : [];
-  const rows = whales.map((holder)=>[
-    `#${holder.rank}`,
-    `<span class="nft-command-wallet">${nftEsc(shortWallet(holder.address))}</span> — ${nftFormatNumber(holder.count)} NFTs (${Number(holder.sharePercent||0).toFixed(2)}%)`
-  ]);
-  nftCommandBlock("NFT WHALES", rows.length ? rows : [["Status", "No wallets currently meet the configured whale threshold."]], `Threshold: ${nftFormatNumber(d.whaleThreshold)} NFTs`);
+  const d=await nftCommandJson("/api/nft-whales");
+  const whales=Array.isArray(d.topHolders)?d.topHolders.filter(x=>Number(x.count)>=Number(d.whaleThreshold||0)).slice(0,10):[];
+  const rows=whales.map(holder=>[`#${holder.rank}`,`<span class="nft-command-wallet">${nftEsc(shortWallet(holder.address))}</span> — ${nftFormatNumber(holder.count)} NFTs (${Number(holder.sharePercent||0).toFixed(2)}%) ${nftWalletActions(holder.address)}`]);
+  nftCommandBlock("NFT WHALES",rows.length?rows:[["Status","No wallets currently meet the configured whale threshold."]],`Threshold: ${nftFormatNumber(d.whaleThreshold)} NFTs`);
 }
 
-async function nftCmdMarket(){
-  const d = await nftCommandJson("/api/collection-stats", true);
-  if(!d.connected){
-    nftCommandBlock("MARKET", [["Status", d.requiresApiKey ? "OpenSea API key required" : "UNAVAILABLE"]]);
-    return;
-  }
-  nftCommandBlock("MARKET", [
-    ["Floor", nftEsc(d.floorPriceDisplay || "UNAVAILABLE")],
-    ["24h Volume", nftEsc(d.volume24hDisplay || "UNAVAILABLE")],
-    ["Total Volume", nftEsc(d.totalVolumeDisplay || "UNAVAILABLE")],
-    ["Owners", nftFormatNumber(d.owners)],
-    ["Sales", nftFormatNumber(d.sales)],
-    ["Listed", nftFormatNumber(d.listed)]
-  ], "Source: OpenSea");
+async function nftCmdMinters(){
+  const d=await nftCommandJson("/api/mint-intelligence",true);
+  if(!d.connected){nftCommandBlock("MINTER INTELLIGENCE",[["Status","Mint history analytics unavailable"]]);return;}
+  nftCommandBlock("MINTER INTELLIGENCE",[
+    ["Unique Minters",nftFormatNumber(d.uniqueMinters)],
+    ["Repeat Minters",nftFormatNumber(d.repeatMinters)],
+    ["Mint Events",nftFormatNumber(d.totalMintEvents)],
+    ["Largest Mint",`${nftFormatNumber(d.largestMint)} NFTs`],
+    ["Avg NFTs / Minter",nftFormatNumber(d.averageNftsPerMinter)],
+    ["First Mint",d.firstMintAt?nftEsc(new Date(d.firstMintAt).toLocaleString()):"UNAVAILABLE"],
+    ["Last Mint",d.lastMintAt?nftEsc(new Date(d.lastMintAt).toLocaleString()):"UNAVAILABLE"]
+  ]);
+}
+
+async function nftCmdActivity(){
+  const d=await nftCommandJson("/api/nft-activity",true);if(!d.connected){nftCommandBlock("NFT ACTIVITY",[["Status","On-chain activity unavailable"]]);return;}
+  nftCommandBlock("NFT ACTIVITY",[["Transfers 1h",nftFormatNumber(d.transfers1h)],["Transfers 24h",nftFormatNumber(d.transfers24h)],["Mints 1h",nftFormatNumber(d.mints1h)],["Mints 24h",nftFormatNumber(d.mints24h)],["Active Wallets 24h",nftFormatNumber(d.uniqueWallets24h)]],"Source: Robinhood Chain Blockscout");
 }
 
 async function nftCmdWallet(address){
   if(!/^0x[a-fA-F0-9]{40}$/.test(address||"")) throw new Error("Wallet command requires a valid 0x wallet address.");
-  const d = await nftCommandJson(`/api/nft-whales?address=${encodeURIComponent(address)}`);
-  const wallet = d.wallet;
-  if(!wallet?.found){
-    nftCommandBlock("WALLET", [["Address", `<span class="nft-command-wallet">${nftEsc(address)}</span>`],["NFTs Owned", "0"],["Collection Position", "Not currently ranked"]]);
-    return;
-  }
-  const percentile = Number(d.totalHolders)>0 ? (wallet.rank/Number(d.totalHolders))*100 : null;
-  nftCommandBlock("WALLET VS COLLECTION", [
-    ["Address", `<span class="nft-command-wallet">${nftEsc(wallet.address)}</span>`],
-    ["NFTs Owned", nftFormatNumber(wallet.count)],
-    ["Collection Rank", `#${nftFormatNumber(wallet.rank)}`],
-    ["Position Percentile", Number.isFinite(percentile) ? `Top ${percentile.toFixed(2)}%` : "UNAVAILABLE"],
-    ["Status", wallet.isWhale ? "NFT WHALE" : "NFT COLLECTOR"]
-  ]);
-}
-
-async function nftCmdStatus(){
-  const [mint, market] = await Promise.all([nftCommandJson("/api/mint-stats"), nftCommandJson("/api/collection-stats", true).catch(()=>({connected:false}))]);
-  nftCommandBlock("NFT TERMINAL STATUS", [
-    ["Chain Data", mint.connected ? "LIVE" : "UNAVAILABLE"],
-    ["Mint", nftEsc(mint.status || "UNAVAILABLE")],
-    ["Marketplace", market.connected ? "LIVE" : (market.requiresApiKey ? "API KEY REQUIRED" : "UNAVAILABLE")],
-    ["Collection", nftEsc(CFG?.nft?.collectionName || `${CFG.project.name} NFT`)],
-    ["Contract", CFG?.contracts?.nft ? `<span class="nft-command-wallet">${nftEsc(CFG.contracts.nft)}</span>` : "NOT CONFIGURED"]
-  ]);
-}
-
-async function nftCmdFloor(){
-  const d = await nftCommandJson("/api/floor-trend");
-  nftCommandBlock("FLOOR", [
-    ["Current Floor", Number.isFinite(Number(d.floorPriceEth)) ? `${Number(d.floorPriceEth)} ETH` : "UNAVAILABLE"],
-    ["4h Trend", nftFormatFloorTrend(d.floorTrend)]
-  ], "Marketplace-derived data");
+  const d=await nftCommandJson(`/api/nft-whales?address=${encodeURIComponent(address)}`);const wallet=d.wallet;
+  if(!wallet?.found){nftCommandBlock("WALLET VS COLLECTION",[["Address",`<span class="nft-command-wallet">${nftEsc(address)}</span> ${nftWalletActions(address)}`],["NFTs Owned","0"],["Collection Position","Not currently ranked"]]);return;}
+  const percentile=Number(d.totalHolders)>0?(wallet.rank/Number(d.totalHolders))*100:null;
+  nftCommandBlock("WALLET VS COLLECTION",[["Address",`<span class="nft-command-wallet">${nftEsc(wallet.address)}</span> ${nftWalletActions(wallet.address)}`],["NFTs Owned",nftFormatNumber(wallet.count)],["Collection Rank",`#${nftFormatNumber(wallet.rank)}`],["Position Percentile",Number.isFinite(percentile)?`Top ${percentile.toFixed(2)}%`:"UNAVAILABLE"],["Status",wallet.isWhale?"NFT WHALE":"NFT COLLECTOR"]]);
 }
 
 async function nftCmdSales(){
-  const d = await nftCommandJson("/api/nft-sales", true);
-  if(!d.connected){
-    nftCommandBlock("RECENT SALES", [["Status", d.requiresApiKey ? "OpenSea API key required" : "UNAVAILABLE"]]);
-    return;
-  }
-  const sales = Array.isArray(d.sales) ? d.sales.slice(0,8) : [];
-  nftCommandBlock("RECENT SALES", sales.length ? sales.map((sale)=>[
-    sale.tokenId != null ? `NFT #${sale.tokenId}` : "NFT",
-    `${nftEsc(sale.priceDisplay || "Price unavailable")}${sale.buyer ? ` → <span class="nft-command-wallet">${nftEsc(shortWallet(sale.buyer))}</span>` : ""}`
-  ]) : [["Status", "No recent sales returned."]], "Source: OpenSea");
+  const d=await nftCommandJson("/api/nft-sales",true);if(!d.connected){nftCommandBlock("RECENT SALES",[["Status",d.requiresApiKey?"OpenSea API key required":"UNAVAILABLE"]]);return;}
+  const sales=Array.isArray(d.sales)?d.sales.slice(0,8):[];
+  nftCommandBlock("RECENT SALES",sales.length?sales.map(sale=>[sale.tokenId!=null?`NFT #${sale.tokenId}`:"NFT",`${nftEsc(sale.priceDisplay||"Price unavailable")}${sale.buyer?` → <span class="nft-command-wallet">${nftEsc(shortWallet(sale.buyer))}</span> ${nftWalletActions(sale.buyer)}`:""}`]):[["Status","No recent sales returned."]],"Source: OpenSea");
 }
 
-function nftCmdCollection(){
-  nftCommandBlock("COLLECTION", [
-    ["Collection", nftEsc(CFG?.nft?.collectionName || `${CFG.project.name} NFT`)],
-    ["Project", nftEsc(CFG.project.name)],
-    ["Ticker", nftEsc(CFG.project.ticker)],
-    ["Chain", nftEsc(CFG.project.ecosystem)],
-    ["Standard", nftEsc(CFG?.nft?.standard || "UNCONFIRMED")],
-    ["Symbol", nftEsc(CFG?.nft?.symbol || "UNAVAILABLE")],
-    ["Max Supply", nftFormatNumber(CFG?.nft?.supply)]
+async function nftCmdPulse(){
+  const [activity,whales,sales]=await Promise.all([
+    nftCommandJson("/api/nft-activity",true).catch(()=>({connected:false})),
+    nftCommandJson("/api/nft-whales",true).catch(()=>({})),
+    nftCommandJson("/api/nft-sales",true).catch(()=>({connected:false}))
   ]);
+  const rows=[
+    ["On-chain Activity 24h",activity.connected?`${nftFormatNumber(activity.transfers24h)} transfers`:`UNAVAILABLE`],
+    ["Active Wallets 24h",activity.connected?nftFormatNumber(activity.uniqueWallets24h):"UNAVAILABLE"],
+    ["Whale Wallets",Number.isFinite(Number(whales.whaleCount))?nftFormatNumber(whales.whaleCount):"UNAVAILABLE"],
+    ["Marketplace Sales",sales.connected&&Array.isArray(sales.sales)?`${nftFormatNumber(sales.sales.length)} recent`:(sales.requiresApiKey?"OpenSea API key required":"UNAVAILABLE")]
+  ];
+  nftCommandBlock("CTB NFT PULSE",rows,"Observable activity snapshot only — not a BUY/SELL recommendation or price prediction.");
 }
 
-async function nftCmdContract(){
-  const contract = CFG?.contracts?.nft || "";
-  if(!contract){nftCommandBlock("NFT CONTRACT", [["Contract", "NOT CONFIGURED"]]);return;}
-  let d=null;
-  try{d=await nftCommandJson("/api/contract-discovery");}catch{}
-  let explorer=d?.contract?.explorerUrl||"";
-  if(!explorer){try{const base=CFG?.market?.blockscoutExplorerBase||new URL(CFG.market.blockscoutApiBase).origin;explorer=`${base}/address/${contract}`}catch{}}
-  nftCommandBlock("NFT CONTRACT", [
-    ["Contract", `<span class="nft-command-wallet">${nftEsc(contract)}</span>`],
-    ["Standard", nftEsc(d?.nft?.standard || CFG?.nft?.standard || "UNCONFIRMED")],
-    ["Collection", nftEsc(d?.nft?.collectionName || CFG?.nft?.collectionName || "UNAVAILABLE")],
-    ["Symbol", nftEsc(d?.nft?.symbol || CFG?.nft?.symbol || "UNAVAILABLE")],
-    ["Supply", nftFormatNumber(d?.nft?.supply ?? CFG?.nft?.supply)],
-    ["Metadata", nftEsc(d?.nft?.metadataUriMethod || CFG?.nft?.metadataUriMethod || "UNCONFIRMED")],
-    ["Explorer", explorer ? `<a href="${nftEsc(explorer)}" target="_blank" rel="noopener noreferrer">Open Blockscout</a>` : "UNAVAILABLE"]
-  ], d?.sources?.rpc?.available ? "Contract inspected live on Robinhood Chain" : "Using configured/indexed contract metadata");
-}
-
-async function nftCmdRefresh(){
-  await Promise.allSettled([refreshMarketPanel(), refreshMintStats(), refreshNftSales(), refreshNftWhales(), refreshCollectionStats(), refreshFloorTrend()]);
-  nftCommandBlock("REFRESH", [["Status", "NFT terminal data refresh completed"]]);
-}
+async function nftCmdRefresh(){await Promise.allSettled([refreshMarketPanel(),refreshMintStats(),refreshNftSales(),refreshNftWhales(),refreshCollectionStats(),refreshFloorTrend()]);nftCommandBlock("REFRESH",[["Status","NFT terminal data refresh completed"]]);}
 
 async function nftExecuteCommand(command){
-  const text = String(command||"").trim();
-  const lower = text.toLowerCase();
+  const text=String(command||"").trim();const lower=text.toLowerCase();
   if(lower==="clear"){nftCommandHistory.innerHTML="";return;}
-  if(lower==="mint") return nftCmdMint();
-  if(lower==="holders") return nftCmdHolders();
-  if(lower==="whales") return nftCmdWhales();
-  if(lower==="market") return nftCmdMarket();
-  if(lower==="status") return nftCmdStatus();
-  if(lower==="floor") return nftCmdFloor();
-  if(lower==="sales") return nftCmdSales();
-  if(lower==="collection") return nftCmdCollection();
-  if(lower==="contract") return nftCmdContract();
-  if(lower==="refresh") return nftCmdRefresh();
-  if(lower.startsWith("wallet ")) return nftCmdWallet(text.slice(7).trim());
-  if(/^0x[a-fA-F0-9]{40}$/.test(text)) return nftCmdWallet(text);
-  throw new Error("Unknown command. Use the clickable commands above.");
+  if(lower==="mint")return nftCmdMint();if(lower==="whales")return nftCmdWhales();if(lower==="minters")return nftCmdMinters();if(lower==="activity")return nftCmdActivity();if(lower==="sales")return nftCmdSales();if(lower==="pulse")return nftCmdPulse();if(lower==="refresh")return nftCmdRefresh();if(lower.startsWith("wallet "))return nftCmdWallet(text.slice(7).trim());if(/^0x[a-fA-F0-9]{40}$/.test(text))return nftCmdWallet(text);throw new Error("Unknown command. Use the clickable commands above.");
 }
 
 async function nftRunCommand(command){
@@ -1864,6 +1797,8 @@ if(nftCommandInput && nftCommandHistory){
   });
 
   document.addEventListener("click", async (event)=>{
+    const copyButton=event.target.closest("[data-copy-wallet]");if(copyButton){event.preventDefault();try{await navigator.clipboard.writeText(copyButton.dataset.copyWallet);copyButton.textContent="✓";setTimeout(()=>{copyButton.textContent="⧉"},900);}catch{}return;}
+    const backButton=event.target.closest("[data-nft-back]");if(backButton){event.preventDefault();document.getElementById("nftCommands")?.scrollIntoView({behavior:"smooth",block:"start"});nftCommandInput.focus();return;}
     const button = event.target.closest("[data-nft-quick-command], [data-nft-guide-command]");
     if(!button || button.disabled) return;
     event.preventDefault();
