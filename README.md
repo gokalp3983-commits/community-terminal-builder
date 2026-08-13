@@ -1427,3 +1427,157 @@ Chapter 20 closes with a source-of-truth cleanup prompted by direct NFT-only gen
 **Chapter 20 is COMPLETE / CLEANED / CANONICAL.**  
 The next workstream is **CTB Chapter-20B — Deployment Integration**.
 
+
+
+## Chapter 20B / Chapter 21 — Consolidated Development Record (13 Aug 2026)
+
+
+### Consolidated from `CHAPTER20B_DEPLOYMENT_INTEGRATION_NOTES.md`
+
+# Chapter 20B — Deployment Integration Test Candidate
+
+Date: 12 August 2026
+Baseline: Community_Terminal_Builder_CHAPTER20_FINAL_CLEANED_CANONICAL_12AUG2026.zip
+Status: TEST CANDIDATE — not canonical until user acceptance.
+
+## Integrated workflow
+Configure → Validate → Auto-save → Create Terminal → Deploy → Return Live URL
+
+## Changes
+- Removed automatic ZIP download after generation.
+- Removed the mock `terminal.xyz` URL from the post-build completion flow.
+- Added a primary `DEPLOY TERMINAL` action after a successful build.
+- Retained `DOWNLOAD ZIP` as an explicit fallback/manual-hosting action.
+- Reused the existing protected server-side GitHub + Render deployment engine.
+- Reused release readiness, build fingerprint validation, one-time authorization, exact confirmation phrase, expiry, and lockout safeguards.
+- First `CREATE` deployment no longer requires a pre-existing public acceptance result; `UPDATE` deployments still require public acceptance.
+- Automatically selects CREATE for projects without a prior connected deployment and UPDATE for projects with a saved deployment record.
+- Render deployment polling now also retrieves the service public URL, allowing CTB to return the live URL even when it was absent from the initial service response.
+- Added Chapter 20B regression coverage.
+
+## Verification
+- Full CTB `npm test`: PASS.
+- Local builder `/health`: PASS.
+- Local `/api/integrations` secret-safe disabled-state smoke test: PASS.
+
+## Remaining live acceptance
+A real connected deployment still requires the builder host to be configured with the existing server-side GitHub and Render credentials and release policy environment variables. Live provider execution has not been performed in this offline build environment.
+
+## FIX5 — 12 Aug 2026
+- Canonical terminal identity now derives from Ticker: `<ticker-lowercase>@robinhood`.
+- Builder Terminal User is read-only and re-derived from Ticker on edit/load/generation.
+- Quick deployment derives one canonical GitHub/Render target from the generated project snapshot and passes it explicitly to release readiness, authorization, and deployment.
+- Builder app.js uses an explicit FIX5 cache-busting query string for local candidate testing.
+- Full regression suite passes.
+
+### Consolidated from `CHAPTER21A_NFT_CONTRACT_DISCOVERY_CHECKPOINT2_13AUG2026.md`
+
+# CTB Chapter 21A — NFT Contract Discovery Checkpoint 2
+
+Built from the source-neutralized Chapter 21A checkpoint, itself derived from accepted Chapter 20B commit 463be82.
+
+Scope: project-specific NFT Terminal only. Robinhood NFT Radar is not included yet.
+
+## Added
+- Modular ChainDataProvider for Robinhood Chain RPC + Blockscout.
+- Conservative NFT contract auto-discovery in Builder.
+- ERC-721 / ERC-1155 detection using ERC-165 with Blockscout indexed fallback.
+- Collection name, symbol, supply and holder-count discovery where available.
+- Contract bytecode verification through Robinhood Chain public RPC.
+- Explorer URL derivation.
+- Metadata URI method identification (`tokenURI(uint256)` / `uri(uint256)`) without guessing a token ID.
+- Builder auto-fills discovered collection name/supply only when safe; existing user-entered values are preserved.
+- Discovery never invents OpenSea mapping, mint price, wallet limit or mint schedule.
+- Generated NFT terminals expose `/api/contract-discovery`.
+- NFT `contract` command now displays live/discovered standard, collection, symbol, supply, metadata method and explorer link.
+- Single-phase and multi-phase templates both carry the same discovery layer.
+
+## Data architecture
+- Chain-native facts: Robinhood RPC + Blockscout.
+- Marketplace data remains optional and separate.
+- Public Robinhood RPC is used for basic reads; no API key is required by this checkpoint.
+- No secrets are exposed client-side.
+
+## Regression
+- Full existing CTB test suite: PASS.
+- Chapter 21 command regression: PASS.
+- New Chapter 21 NFT discovery regression: PASS.
+- Generated-package propagation check: PASS.
+
+This is a test checkpoint, not a new canonical acceptance baseline.
+
+### Consolidated from `CHAPTER21A_NFT_TERMINAL_COMMANDS_NOTES.md`
+
+# CTB Chapter 21A — NFT Terminal Command Interface
+
+Baseline: Chapter 20B accepted canonical state, GitHub commit `463be82`.
+
+This checkpoint changes only the project-specific NFT Terminal interaction layer. Robinhood NFT Radar and new backend intelligence/provider refactors are not included yet.
+
+Implemented in both single-phase and multi-phase NFT templates:
+
+- Whale-Tracker-style project-derived command prompt.
+- Five primary buttons: MINT, HOLDERS, WHALES, MARKET, WALLET.
+- WALLET prefills `wallet ` and requires a user-supplied address.
+- Clickable explained commands: mint, holders, whales, market, wallet <address>, status, floor, sales, collection, contract, refresh, clear.
+- No `help` command. The clickable Quick Commands area is the command documentation.
+- Commands reuse the existing Chapter 20B NFT APIs; no fake CTB Pulse or new intelligence endpoints are introduced in this checkpoint.
+- Existing NFT UI panels, mint lifecycle, OpenSea integration, Blockscout integration, generator behavior, deployment integration, and ZIP fallback remain intact.
+
+Regression protection:
+
+- Added `test-chapter21-nft-terminal-commands.js`.
+- Added the Chapter 21A regression to the builder `npm test` chain.
+- Validates both canonical NFT templates and both generated single/multi-phase outputs.
+
+### Consolidated from `CHAPTER21_FIX_BATCH_NOTES_13AUG2026.txt`
+
+CTB Chapter 21 manual-test fix batch — 13 Aug 2026
+
+Fixes from fresh HOODRAT generation test:
+1. Preserve explicit UPDATE EXISTING release mode in build-complete flow.
+2. Package creator Hoodrat footer avatar asset into generated NFT projects.
+3. Align NFT Quick/Available Commands visual hierarchy with Whale Tracker.
+4. Rename current mint output header to MINT STATUS.
+5. Add deeper mint-history analytics endpoint and use it in commands.
+6. Propagate OPENSEA_API_KEY server-side into connected Render services when configured.
+7. Normalize NFT Terminal project logo dimensions to project-wide accepted size.
+8. Add copy-wallet and Blockscout outbound actions to NFT whale/wallet/sales outputs.
+9. Remove redundant floor/collection/contract/status/market commands from command guide/dispatcher.
+10. Add clickable Back to commands after command output.
+11. Add deeper commands: minters, distribution, activity; deepen mint/holders/whales/wallet/sales.
+
+Manual acceptance still required.
+
+### Consolidated from `CHAPTER21_PREFLIGHT_SOURCE_NEUTRALIZATION_12AUG2026.txt`
+
+Chapter 21 preflight source-neutralization
+Date: 12 Aug 2026
+
+- Canonical raw CTB modules now boot from a neutral `template` profile.
+- Removed active HOODRAT and STONKBROKERS project profiles from `config/projects`.
+- Removed legacy HOODRAT / STONKBROKERS mascot assets from runnable source modules.
+- Added a neutral CTB placeholder mascot to every runnable UI module.
+- Generated-project behavior remains configuration-driven; generated terminals still receive their own project config/assets.
+- Historical project names remain only where intentionally required by regression tests or project history documentation.
+- Chapter 21 NFT Terminal command checkpoint remains included unchanged functionally.
+
+### Consolidated from `CHAPTER21_STABILIZATION_PASS_13AUG2026.md`
+
+# Chapter 21 Stabilization Pass — 13 Aug 2026
+
+- Canonical mounted asset routing fixed for module-relative assets.
+- Post-create Download ZIP button removed; export capability remains internal/fallback.
+- Post-mint NFT commands: whales, entrants, movers, retention, activity, sales, pulse, wallet, refresh, clear.
+- Mint/minter/velocity commands removed from post-mint command surface.
+- Added /api/nft-postmint analytics using Blockscout transfer history + current holder state.
+- OpenSea Render secret synchronization now verifies the env var after write before deploy.
+- Marketplace data still requires OPENSEA_API_KEY in the CTB Builder server environment; generated source never contains the secret.
+
+### Chapter 21 current stabilization notes
+
+- Live Builder connected deployment requires `CONNECTED_DEPLOYMENTS_ENABLED=true` and `RELEASE_ACTIONS_ENABLED=true`; GitHub/Render/OpenSea secrets remain server-side.
+- Fresh GitHub CREATE now initializes the repository at creation and waits for the `main` ref before publishing the generated tree, preventing the transient `Git Repository is empty` failure seen in live TEST-3.
+- The Builder itself now uses the canonical red-boundary/footer/signature visual grammar, titled `Community Terminal Builder` / `ver 1.0`, without a project-team disclaimer.
+- Chapter 21 uses a fresh browser-local saved-project namespace (`ctb.projects.v2`) so legacy CTB test saves do not appear in the Chapter 21 production workspace.
+- Standalone Chapter 20B/21 checkpoint/fix-note files are consolidated into this README; `SHELL Token_Readme.md` remains separate by design.

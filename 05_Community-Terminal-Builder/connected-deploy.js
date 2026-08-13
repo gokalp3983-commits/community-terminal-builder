@@ -67,14 +67,14 @@ async function initializeEmptyRepo(fetchImpl,c,owner,repoName,files){
   const seed=files[0];
   if(!seed)throw new Error("Generated terminal contains no publishable files.");
   let created=null,lastError=null;
-  for(let attempt=0;attempt<4;attempt++){
+  for(let attempt=0;attempt<10;attempt++){
     try{
       created=await githubRequest(fetchImpl,c,`/repos/${owner}/${repoName}/contents/${seed.path.split("/").map(encodeURIComponent).join("/")}`,{method:"PUT",body:{message:"Initialize repository for CTB deployment",content:seed.data.toString("base64"),branch:"main"}});
       break;
     }catch(error){
       lastError=error;
       if(error.status!==409)throw error;
-      await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)));
+      await new Promise(resolve=>setTimeout(resolve,500*(attempt+1)));
     }
   }
   if(!created)throw lastError||new Error("GitHub repository could not be initialized.");

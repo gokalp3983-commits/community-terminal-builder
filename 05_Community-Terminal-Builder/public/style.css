@@ -458,3 +458,14 @@ body::before,body::after,.hero::after{content:none!important;display:none!import
 .deployment-success-actions form{display:flex}
 .deployment-success-actions form button{width:100%}
 @media(max-width:560px){.deployment-success-actions>a,.deployment-success-actions form,.deployment-success-actions button{width:100%}}
+
+
+/* Chapter 21 canonical Builder footer: same visual grammar as generated terminals. */
+.ctb-canonical-builder-footer{margin-top:18px!important;padding:14px 4px 4px!important;border-top:2px solid #ff2d2d!important;display:grid!important;justify-items:center!important;gap:4px!important;text-align:center!important}
+.ctb-canonical-builder-footer .footer-title{font-size:.72rem!important;font-weight:700!important;letter-spacing:.08em!important}
+.ctb-canonical-builder-footer .footer-version{font-size:.64rem!important;margin:0 0 7px!important}
+.ctb-canonical-builder-footer .builder-signature{display:flex;align-items:center;justify-content:center;gap:8px}
+.ctb-canonical-builder-footer .builder-signature-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;display:block}
+.ctb-canonical-builder-footer .builder-signature-copy{font-size:.72rem;line-height:1.2;color:#d8e0dc}
+.ctb-canonical-builder-footer .builder-signature-copy strong{color:#fff}
+.ctb-canonical-builder-footer .builder-signature-copy a{color:#bfff00!important;text-decoration:none;border:0!important}
