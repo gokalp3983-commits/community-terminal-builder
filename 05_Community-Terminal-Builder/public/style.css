@@ -473,3 +473,16 @@ body::before,body::after,.hero::after{content:none!important;display:none!import
 /* Chapter 22 NFT schedule usability: keep native date/time picker affordances visible. */
 input[type="date"],input[type="time"]{color-scheme:dark;padding-right:38px}
 input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webkit-calendar-picker-indicator{display:block;opacity:.95;cursor:pointer;filter:invert(84%) sepia(92%) saturate(1386%) hue-rotate(42deg) brightness(104%) contrast(108%)}
+
+
+/* Chapter 22 — deployment decision hierarchy: deploy stays green, close/cancel is red. */
+.final-product-actions #close-build-complete-action{
+  color:var(--danger)!important;
+  border-color:var(--danger)!important;
+  background:#120306!important;
+  box-shadow:none!important;
+}
+.final-product-actions #close-build-complete-action:hover{
+  background:#1b0509!important;
+  box-shadow:0 0 20px rgba(255,90,103,.15)!important;
+}

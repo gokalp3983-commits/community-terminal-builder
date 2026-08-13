@@ -155,25 +155,47 @@ function setOverallComplete(){
     `<span class="green">[ READY ]</span> ${responsiveStatusCopy("NFT Terminal is tracking collection activity.", "Tracking active.")}`;
 }
 
-function setOverallLive(){
-  if (overallLiveSet) return;
-  overallLiveSet = true;
+function livePhaseSummary(now = Date.now()){
+  const started = phases
+    .map((phase, index) => ({ phase, index }))
+    .filter(({ phase }) => now >= phase.startMs);
 
+  // Once every configured phase has opened, MINT IS LIVE stands on its own.
+  if (!started.length || started.length >= phases.length) return "";
+
+  return started.map(({ phase, index }) => {
+    const name = String(phase.name || phase.label || `PHASE-${index + 1}`).trim();
+    return `PHASE-${index + 1} (${name})`;
+  }).join(" & ");
+}
+
+function setOverallLive(now = Date.now()){
   const livePanel = $("launchLivePanel");
-  if (livePanel) {
-    livePanel.hidden = false;
-    livePanel.innerHTML = `
-      <div class="countdown-box post-mint-live-box">
-        <div class="countdown-label">[ MINT LIVE ]</div>
-        <div class="countdown-value">MINT IS LIVE</div>
-        <div class="countdown-prompt"><span class="green">&gt;</span> one or more mint phases are active or underway <span class="cursor">█</span></div>
-      </div>`;
+
+  if (!overallLiveSet) {
+    overallLiveSet = true;
+    if (livePanel) {
+      livePanel.hidden = false;
+      livePanel.innerHTML = `
+        <div class="countdown-box post-mint-live-box">
+          <div class="countdown-label">[ MINT LIVE ]</div>
+          <div class="countdown-value">MINT IS LIVE</div>
+          <div id="mintLivePhaseSummary" class="countdown-prompt mint-live-phase-summary" hidden></div>
+        </div>`;
+    }
+
+    const terminalLine = $("postMintTerminalLine");
+    if (terminalLine) terminalLine.hidden = false;
+    $("mintCommand").innerHTML = `<span class="green">[ LIVE ]</span> ${responsiveStatusCopy("__CTB_PROJECT_NAME_UPPER__ mint schedule is underway.", "Mint active.")}`;
+    $("mintReady").innerHTML = `<span class="green">[ READY ]</span> ${responsiveStatusCopy("NFT Terminal is the live collection dashboard.", "Live dashboard ready.")}`;
   }
 
-  const terminalLine = $("postMintTerminalLine");
-  if (terminalLine) terminalLine.hidden = false;
-  $("mintCommand").innerHTML = `<span class="green">[ LIVE ]</span> ${responsiveStatusCopy("__CTB_PROJECT_NAME_UPPER__ mint schedule is underway.", "Mint active.")}`;
-  $("mintReady").innerHTML = `<span class="green">[ READY ]</span> ${responsiveStatusCopy("NFT Terminal is the live collection dashboard.", "Live dashboard ready.")}`;
+  const summary = $("mintLivePhaseSummary");
+  if (summary) {
+    const text = livePhaseSummary(now);
+    summary.textContent = text;
+    summary.hidden = !text;
+  }
 }
 
 function renderPhase(phase, now){
@@ -247,7 +269,7 @@ function tick(){
   if (isMintComplete(now)){
     setOverallComplete();
   }else if (isMintLive()){
-    setOverallLive();
+    setOverallLive(now);
   }
 }
 

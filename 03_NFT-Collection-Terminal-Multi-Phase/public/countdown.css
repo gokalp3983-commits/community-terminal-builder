@@ -441,3 +441,15 @@
 .phase-detail-row{grid-template-columns:15ch 1ch minmax(0,1fr)!important;justify-content:start!important}
 .phase-details{border-top:0!important}
 @media(max-width:560px){.launch-boot .line{grid-template-columns:13ch minmax(0,1fr)!important;column-gap:.45ch!important}.phase-details-kv{font-size:.96rem!important}}
+
+
+/* Chapter 22 — cumulative live-phase status replaces the generic mint-live subtitle. */
+.mint-live-phase-summary{
+  margin-top:8px;
+  color:var(--text);
+  font-size:clamp(.96rem,2.2vw,1.18rem);
+  font-weight:700;
+  letter-spacing:.045em;
+  line-height:1.45;
+}
+.mint-live-phase-summary[hidden]{display:none!important}

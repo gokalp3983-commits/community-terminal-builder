@@ -1738,3 +1738,12 @@ The Chapter 21 data providers, analytics, generation architecture, configuration
 - `/api/mint-intelligence` and `/api/nft-postmint` now expose pre-mint pending states without creating false holder-history baselines before any holders exist.
 - NFT command output and **NFT Pulse** distinguish pre-mint states (`AWAITING ACTIVITY`, `NO HOLDERS YET`) from genuine provider outages.
 - The existing Blockscout endpoint URLs and post-mint error handling remain unchanged; only the known scheduled pre-mint 404/no-data case is softened.
+
+### Chapter 22 — Mint-live phase context + deploy decision color correction (13 Aug 2026)
+
+- Replaced the generic multi-phase countdown subtitle `one or more mint phases are active or underway` with a cumulative, configuration-driven phase summary beneath **MINT IS LIVE**.
+- After the first phase opens, the banner shows `PHASE-1 (Configured Phase Name)`; after later phases open it accumulates them with ` & `, for example `PHASE-1 (GTDs) & PHASE-2 (FCFs)`.
+- Once every configured phase has opened, the phase-summary line disappears and the banner intentionally returns to **MINT IS LIVE** only.
+- The cumulative line updates while the page remains open, uses the actual configured phase names, and is slightly larger/more prominent than the removed generic subtitle while remaining secondary to the main mint-live heading.
+- In CTB's Terminal Ready deployment decision area, **DEPLOY / CONFIRM & DEPLOY** remain green while **CLOSE** is now red to prevent accidental cancellation when the two actions are adjacent.
+- Added Chapter 22 regression coverage for the cumulative phase logic, the final-phase collapse behavior, and the red/green deployment decision hierarchy.
