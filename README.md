@@ -17,7 +17,7 @@ This maintenance pass preserves the final accepted CTB architecture and applies 
 - NFT Pulse `Whale Wallets` continues to fall back to the holder-history snapshot when the separate whale request is temporarily unavailable.
 - No OpenSea credential values are stored in the code or README; Render environment-secret handling is unchanged.
 
-**Deferred usability item:** project `.js` export/import still needs a later fix so GitHub repository and Render URL fields are persisted and restored automatically.
+**Import/export usability fix:** exported project configuration now includes the saved GitHub repository URL and Public Render URL. Import restores each non-empty value automatically into the Deployment Dashboard while preserving any existing local value when the imported field is blank or absent. Older exports without deployment metadata remain compatible.
 
 ## Milestone Status — Chapter 18A Local Builder Ready (2026-08-09)
 
