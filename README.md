@@ -1728,3 +1728,13 @@ The Chapter 21 data providers, analytics, generation architecture, configuration
 - Removed CTB's automatic `$` prefix from the canonical generated disclaimer footer. Token and NFT terminals now always render the plain normalized ticker/name form, for example `Not affiliated with or endorsed by the official HOODBIRDS team.`
 - Updated module runtime footer fallbacks so a saved ticker that already contains a leading `$` is normalized before disclaimer rendering.
 - Added Chapter 22 regression coverage for both mascot persistence and the global no-`$` disclaimer rule.
+
+### Chapter 22 — Pre-mint Blockscout graceful-state correction (13 Aug 2026)
+
+- Canonical NFT templates now treat Blockscout `404` responses before the configured first mint phase as an expected **pre-mint / not-indexed-yet** state instead of a hard provider failure.
+- `/api/mint-stats` returns a normal HTTP 200 `WAITING` payload with zero minted/holders while the scheduled mint has not started and Blockscout has not indexed the NFT contract yet.
+- `/api/nft-whales` returns a normal pending holder snapshot with zero holders/whales before mint rather than escalating `no holders yet` into a 502/500-style failure path.
+- `/api/nft-activity` returns an **awaiting on-chain activity** state before the first indexed NFT transfer, avoiding noisy Blockscout error logs during a valid countdown period.
+- `/api/mint-intelligence` and `/api/nft-postmint` now expose pre-mint pending states without creating false holder-history baselines before any holders exist.
+- NFT command output and **NFT Pulse** distinguish pre-mint states (`AWAITING ACTIVITY`, `NO HOLDERS YET`) from genuine provider outages.
+- The existing Blockscout endpoint URLs and post-mint error handling remain unchanged; only the known scheduled pre-mint 404/no-data case is softened.

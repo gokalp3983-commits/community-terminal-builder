@@ -199,6 +199,87 @@ function shortenAddress(address) {
   return `${value.slice(0, 6)}...${value.slice(-4)}`;
 }
 
+function blockscoutHttpStatus(error) {
+  if (Number.isFinite(Number(error?.status))) return Number(error.status);
+  const match = String(error?.message || error || "").match(/HTTP\s+(\d{3})/i);
+  return match ? Number(match[1]) : null;
+}
+
+function configuredMintStartMs() {
+  const starts = [];
+  const single = Date.parse(String(config.nft?.mintAt || ""));
+  if (Number.isFinite(single)) starts.push(single);
+  for (const phase of Array.isArray(config.nft?.mintPhases) ? config.nft.mintPhases : []) {
+    const value = Date.parse(String(phase?.startsAt || ""));
+    if (Number.isFinite(value)) starts.push(value);
+  }
+  return starts.length ? Math.min(...starts) : null;
+}
+
+function isScheduledPreMint() {
+  const startsAt = configuredMintStartMs();
+  return Number.isFinite(startsAt) && Date.now() < startsAt;
+}
+
+function pendingMintStats() {
+  return {
+    connected: true,
+    pending: true,
+    indexing: true,
+    source: "Robinhood Chain Blockscout",
+    status: "WAITING",
+    totalSupply: NFT_MAX_SUPPLY,
+    minted: 0,
+    remaining: NFT_MAX_SUPPLY,
+    progressPercent: 0,
+    uniqueHolders: 0,
+    mintRatePerMinute: 0,
+    latestMint: null,
+    updatedAt: new Date().toISOString(),
+    message: "Mint has not started; awaiting Blockscout indexing."
+  };
+}
+
+function pendingHolderAnalytics() {
+  return {
+    connected: true,
+    pending: true,
+    indexing: true,
+    totalHolders: 0,
+    totalHeld: 0,
+    largestHolder: 0,
+    averageHeld: 0,
+    medianHeld: 0,
+    whaleThreshold: NFT_WHALE_THRESHOLD,
+    whaleCount: 0,
+    top10ConcentrationPercent: 0,
+    top1ConcentrationPercent: 0,
+    top1HolderCount: 0,
+    distribution: { "1": 0, "2": 0, "3-5": 0, "6-9": 0, "10+": 0 },
+    holders: [],
+    updatedAt: new Date().toISOString(),
+    message: "Mint has not started; no NFT holders indexed yet."
+  };
+}
+
+function pendingNftActivityData() {
+  return {
+    connected: true,
+    pending: true,
+    indexing: true,
+    partial: false,
+    stale: false,
+    transfers1h: 0,
+    transfers24h: 0,
+    mints1h: 0,
+    mints24h: 0,
+    uniqueWallets24h: 0,
+    recent: [],
+    updatedAt: new Date().toISOString(),
+    message: "Mint has not started; awaiting on-chain NFT activity."
+  };
+}
+
 async function fetchBlockscoutJson(pathname, attempt = 0) {
   const response = await fetch(
     `${BLOCKSCOUT_API_BASE}${pathname}`,
@@ -227,9 +308,9 @@ async function fetchBlockscoutJson(pathname, attempt = 0) {
   }
 
   if (!response.ok) {
-    throw new Error(
-      `Blockscout request failed: HTTP ${response.status}`
-    );
+    const error = new Error(`Blockscout request failed: HTTP ${response.status}`);
+    error.status = response.status;
+    throw error;
   }
 
   return response.json();
@@ -309,16 +390,19 @@ async function fetchRecentMintTransfers() {
 }
 
 async function loadLiveMintStats() {
-  const [tokenInfo, counters, recentMints] =
-    await Promise.all([
-      fetchBlockscoutJson(
-        `/tokens/${NFT_CONTRACT}`
-      ),
-      fetchBlockscoutJson(
-        `/tokens/${NFT_CONTRACT}/counters`
-      ).catch(() => null),
-      fetchRecentMintTransfers().catch(() => []),
-    ]);
+  let tokenInfo;
+  try {
+    tokenInfo = await fetchBlockscoutJson(`/tokens/${NFT_CONTRACT}`);
+  } catch (error) {
+    if (blockscoutHttpStatus(error) === 404 && isScheduledPreMint()) {
+      return pendingMintStats();
+    }
+    throw error;
+  }
+  const [counters, recentMints] = await Promise.all([
+    fetchBlockscoutJson(`/tokens/${NFT_CONTRACT}/counters`).catch(() => null),
+    fetchRecentMintTransfers().catch(() => []),
+  ]);
 
   const minted = Math.max(
     0,
@@ -466,11 +550,11 @@ async function loadMintHistoryAnalytics(){
   const data={connected:true,uniqueMinters:byWallet.size,totalMintEvents,repeatMinters,largestMint,averageNftsPerMinter:byWallet.size?Number((totalMintEvents/byWallet.size).toFixed(2)):0,firstMintAt:firstMintAt?new Date(firstMintAt).toISOString():null,lastMintAt:lastMintAt?new Date(lastMintAt).toISOString():null,mintDurationMinutes:firstMintAt&&lastMintAt?Number(((lastMintAt-firstMintAt)/60000).toFixed(1)):null,minterAddresses:[...byWallet.keys()],updatedAt:new Date().toISOString()};
   mintHistoryCache={fetchedAt:Date.now(),data};return data;
 }
-app.get("/api/mint-intelligence",async(_req,res)=>{try{res.json(await loadMintHistoryAnalytics())}catch(error){console.error("[mint-intelligence] failed:",error);res.status(502).json({connected:false,error:"Mint history analytics unavailable."})}});
+app.get("/api/mint-intelligence",async(_req,res)=>{try{res.json(await loadMintHistoryAnalytics())}catch(error){if(blockscoutHttpStatus(error)===404&&isScheduledPreMint()){res.json({connected:true,pending:true,indexing:true,uniqueMinters:0,totalMintEvents:0,repeatMinters:0,largestMint:0,averageNftsPerMinter:0,firstMintAt:null,lastMintAt:null,mintDurationMinutes:null,minterAddresses:[],updatedAt:new Date().toISOString(),message:"Mint has not started; awaiting mint history."});return;}console.error("[mint-intelligence] failed:",error);res.status(502).json({connected:false,error:"Mint history analytics unavailable."})}});
 
 async function fetchNftActivityPage(pathname){
   const response=await fetch(`${BLOCKSCOUT_API_BASE}${pathname}`,{headers:{Accept:"application/json","User-Agent":`${config.project.id}-nft-terminal/${config.project.version}`},signal:AbortSignal.timeout(NFT_ACTIVITY_PAGE_TIMEOUT_MS)});
-  if(!response.ok) throw new Error(`Blockscout activity request failed: HTTP ${response.status}`);
+  if(!response.ok){const error=new Error(`Blockscout activity request failed: HTTP ${response.status}`);error.status=response.status;throw error;}
   return response.json();
 }
 async function refreshNftActivityCache(){
@@ -480,7 +564,10 @@ async function refreshNftActivityCache(){
     for(let page=0;page<4;page+=1){
       let payload;
       try{payload=await fetchNftActivityPage(buildTransfersPath(nextPageParams));}
-      catch(error){partial=true;console.error("[nft-activity-cache] page failed:",error.message||error);break;}
+      catch(error){
+        if(blockscoutHttpStatus(error)===404 && isScheduledPreMint()){const data=pendingNftActivityData();nftActivityCache={fetchedAt:Date.now(),data};return data;}
+        partial=true;console.error("[nft-activity-cache] page failed:",error.message||error);break;
+      }
       const items=Array.isArray(payload?.items)?payload.items:[];
       for(const item of items){
         const ts=getTransferTimestamp(item);const ms=ts?.getTime()||0;if(ms>0&&ms<day) reachedWindowEnd=true;
@@ -582,6 +669,7 @@ async function loadPostMintAnalytics(){
   if(nftPostMintCache?.data) return nftPostMintCache.data;
   try{
     const holders=nftHoldersCache?.data||await getNftHolderAnalytics();
+    if(holders?.pending) return {connected:true,pending:true,warming:true,currentWhaleCount:0,windows:{},updatedAt:new Date().toISOString(),message:"Mint has not started; holder baseline will begin after holders appear."};
     recordPostMintHolderObservation(holders);
     return nftPostMintCache?.data||{connected:false,warming:true,error:"Holder baseline is initializing.",updatedAt:new Date().toISOString()};
   }catch(error){
@@ -1631,7 +1719,16 @@ async function fetchAllNftHoldersV2() {
 }
 
 async function loadNftHolderAnalytics() {
-  const holders = (await fetchAllNftHoldersV2())
+  let rawHolders;
+  try {
+    rawHolders = await fetchAllNftHoldersV2();
+  } catch (error) {
+    if (blockscoutHttpStatus(error) === 404 && isScheduledPreMint()) {
+      return pendingHolderAnalytics();
+    }
+    throw error;
+  }
+  const holders = rawHolders
     .filter(
       (holder) =>
         /^0x[a-f0-9]{40}$/.test(holder.address) &&
@@ -1640,9 +1737,8 @@ async function loadNftHolderAnalytics() {
     .sort((a, b) => b.count - a.count);
 
   if (holders.length === 0) {
-    throw new Error(
-      "Blockscout returned no NFT holders."
-    );
+    if (isScheduledPreMint()) return pendingHolderAnalytics();
+    throw new Error("Blockscout returned no NFT holders.");
   }
 
   const totalHeld = holders.reduce(

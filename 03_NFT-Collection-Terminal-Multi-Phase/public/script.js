@@ -1672,6 +1672,7 @@ async function nftCmdMint(){
 
 async function nftCmdWhales(){
   const d=await nftCommandJson("/api/nft-postmint");
+  if(d.pending){nftCommandBlock("WHALE MOVEMENT",[["Status","No NFT holders yet — whale tracking will begin after mint activity starts."]]);return;}
   if(d.warming){nftCommandBlock("WHALE MOVEMENT",[["Status","Holder snapshot is still loading — retry shortly."]]);return;}
   const w=d.windows?.whales12h||{};
   if(!w.ready){nftCommandBlock("WHALE MOVEMENT",[["Status","12-hour baseline is building"],["Whales",nftFormatNumber(d.currentWhaleCount)],["Threshold",`${nftFormatNumber(d.whaleThreshold)}+ NFTs`]],"Whale movement will become available after 12 hours of holder history.");return;}
@@ -1682,6 +1683,7 @@ async function nftCmdWhales(){
 async function nftCmdMinters(){
   const d=await nftCommandJson("/api/mint-intelligence",true);
   if(!d.connected){nftCommandBlock("MINTER INTELLIGENCE",[["Status","Mint history analytics unavailable"]]);return;}
+  if(d.pending){nftCommandBlock("MINTER INTELLIGENCE",[["Status","Mint has not started — awaiting mint history."]]);return;}
   nftCommandBlock("MINTER INTELLIGENCE",[
     ["Unique Minters",nftFormatNumber(d.uniqueMinters)],
     ["Repeat Minters",nftFormatNumber(d.repeatMinters)],
@@ -1695,6 +1697,7 @@ async function nftCmdMinters(){
 
 async function nftCmdActivity(){
   const d=await nftCommandJsonWithWarmRetry("/api/nft-activity");if(!d.connected){nftCommandBlock("NFT ACTIVITY",[["Status",d.warming?"On-chain activity cache is warming — retry shortly.":"On-chain activity unavailable"]]);return;}
+  if(d.pending){nftCommandBlock("NFT ACTIVITY",[["Status","Awaiting on-chain NFT activity."]],"Mint has not started or Blockscout has not indexed the first NFT activity yet.");return;}
   nftCommandBlock("NFT ACTIVITY",[["Transfers 1h",nftFormatNumber(d.transfers1h)],["Transfers 24h",nftFormatNumber(d.transfers24h)],["Mints 1h",nftFormatNumber(d.mints1h)],["Mints 24h",nftFormatNumber(d.mints24h)],["Active Wallets 24h",nftFormatNumber(d.uniqueWallets24h)]],"Source: Robinhood Chain Blockscout");
 }
 
@@ -1708,6 +1711,7 @@ async function nftCmdWallet(address){
 
 async function nftCmdEntrants(){
   const d=await nftCommandJson("/api/nft-postmint");
+  if(d.pending){nftCommandBlock("NEW ENTRANTS",[["Status","No NFT holders yet — entrant tracking will begin after mint activity starts."]]);return;}
   if(d.warming){nftCommandBlock("NEW ENTRANTS",[["Status","Holder snapshot is still loading — retry shortly."]]);return;}
   const w=d.windows?.entrants4h||{};
   if(!w.ready){nftCommandBlock("NEW ENTRANTS",[["Status","4-hour baseline is building"]],"New entrants will become available after 4 hours of holder history.");return;}
@@ -1716,6 +1720,7 @@ async function nftCmdEntrants(){
 }
 async function nftCmdMovers(){
   const d=await nftCommandJson("/api/nft-postmint");
+  if(d.pending){nftCommandBlock("HOLDER MOVERS",[["Status","No NFT holders yet — mover tracking will begin after mint activity starts."]]);return;}
   if(d.warming){nftCommandBlock("HOLDER MOVERS",[["Status","Holder snapshot is still loading — retry shortly."]]);return;}
   const w=d.windows?.movers4h||{};
   if(!w.ready){nftCommandBlock("HOLDER MOVERS",[["Status","4-hour baseline is building"]],"Holder movement will become available after 4 hours of holder history.");return;}
@@ -1762,9 +1767,9 @@ async function nftCmdPulse(){
     nftCommandJson("/api/nft-postmint",true).catch(()=>({connected:false}))
   ]);
   const rows=[
-    ["On-chain Activity 24h",activity.connected?`${nftFormatNumber(activity.transfers24h)} transfers`:`UNAVAILABLE`],
-    ["Active Wallets 24h",activity.connected?nftFormatNumber(activity.uniqueWallets24h):"UNAVAILABLE"],
-    ["Whale Wallets",Number.isFinite(Number(whales.whaleCount))?nftFormatNumber(whales.whaleCount):(Number.isFinite(Number(postmint.currentWhaleCount))?nftFormatNumber(postmint.currentWhaleCount):"UNAVAILABLE")],
+    ["On-chain Activity 24h",activity.pending?"AWAITING ACTIVITY":(activity.connected?`${nftFormatNumber(activity.transfers24h)} transfers`:`UNAVAILABLE`)],
+    ["Active Wallets 24h",activity.pending?"AWAITING ACTIVITY":(activity.connected?nftFormatNumber(activity.uniqueWallets24h):"UNAVAILABLE")],
+    ["Whale Wallets",whales.pending?"NO HOLDERS YET":(Number.isFinite(Number(whales.whaleCount))?nftFormatNumber(whales.whaleCount):(Number.isFinite(Number(postmint.currentWhaleCount))?nftFormatNumber(postmint.currentWhaleCount):"UNAVAILABLE"))],
     ["New Entrants 4h",postmint.windows?.entrants4h?.ready?nftFormatNumber((postmint.windows.entrants4h.entrants||[]).length):"BUILDING BASELINE"],
     ["Holder Movers 4h",postmint.windows?.movers4h?.ready?nftFormatNumber((postmint.windows.movers4h.movers||[]).length):"BUILDING BASELINE"],
     ["Marketplace Sales",sales.connected&&Array.isArray(sales.sales)?`${nftFormatNumber(sales.sales.length)} recent`:(sales.requiresApiKey?"OpenSea API key required":"UNAVAILABLE")]
