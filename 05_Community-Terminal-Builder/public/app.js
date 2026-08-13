@@ -128,7 +128,10 @@ function nftMintSchedule(){
     const start=scheduleFromWallTime(get("startDate"),get("startTime"),zone,`${label} start`);if(!start.ok)return start;
     const endSchedule=scheduleFromWallTime(get("endDate"),get("endTime"),zone,`${label} end`);if(!endSchedule.ok)return endSchedule;
     if(endSchedule.instant<=start.instant){markPhaseInvalid(card,["endDate","endTime"]);return {ok:false,error:`${label} end time must be after its start time.`}};
-    const id=slugify(label)||`phase-${i+1}`;
+    // Internal phase ids must be unique and must not depend on a user-visible label.
+    // Duplicate labels (for example two ALLOWLIST stages) are valid and previously
+    // caused duplicate DOM ids, leaving the later phase countdown unbound.
+    const id=`phase-${i+1}`;
     phases.push({id,label,name,startsAt:start.iso,endsAt:endSchedule.iso,price:get("price")||"—",limit:get("limit")||"—",timezone:zone,start,end:endSchedule});
   }
   for(let i=1;i<phases.length;i++)if(phases[i].start.instant<phases[i-1].end.instant){markPhaseInvalid(cards[i],["startDate","startTime"]);return {ok:false,error:`${phases[i].label} starts before ${phases[i-1].label} ends.`}};

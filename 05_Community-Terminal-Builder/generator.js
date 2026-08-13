@@ -89,13 +89,22 @@ function normalize(input) {
     },
     nftSettings: (() => {
       const requestedMode = requestedNftMode;
-      const phases = Array.isArray(input.nft?.mintPhases) ? input.nft.mintPhases.slice(0, 6).map((phase, index) => ({
-        id: slugify(phase?.id || phase?.label || `phase-${index + 1}`) || `phase-${index + 1}`,
-        label: text(phase?.label, `PHASE ${index + 1}`).toUpperCase(),
-        name: text(phase?.name, text(phase?.label, `Phase ${index + 1}`)),
-        startsAt: text(phase?.startsAt), endsAt: text(phase?.endsAt),
-        price: text(phase?.price, "—"), limit: text(phase?.limit, "—"), timezone: text(phase?.timezone, text(input.nft?.timezone, "UTC")),
-      })) : [];
+      const usedPhaseIds = new Set();
+      const phases = Array.isArray(input.nft?.mintPhases) ? input.nft.mintPhases.slice(0, 6).map((phase, index) => {
+        const fallbackId = `phase-${index + 1}`;
+        const baseId = slugify(phase?.id || phase?.label || fallbackId) || fallbackId;
+        let id = baseId;
+        let suffix = 2;
+        while (usedPhaseIds.has(id)) id = `${baseId}-${suffix++}`;
+        usedPhaseIds.add(id);
+        return {
+          id,
+          label: text(phase?.label, `PHASE ${index + 1}`).toUpperCase(),
+          name: text(phase?.name, text(phase?.label, `Phase ${index + 1}`)),
+          startsAt: text(phase?.startsAt), endsAt: text(phase?.endsAt),
+          price: text(phase?.price, "—"), limit: text(phase?.limit, "—"), timezone: text(phase?.timezone, text(input.nft?.timezone, "UTC")),
+        };
+      }) : [];
       if (requestedMode === "multiple") {
         if (phases.length < 2) throw new Error("Multiple-phase NFT mint requires at least 2 phases.");
         for (const [index, phase] of phases.entries()) {

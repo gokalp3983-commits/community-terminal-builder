@@ -1705,3 +1705,11 @@ The Chapter 21 data providers, analytics, generation architecture, configuration
 - Token CA remains required for token-based terminals, but is explicitly skipped when **NFT Terminal is the only enabled terminal profile**.
 - The Builder contract status now reports that Token CA is not required for a true NFT-only terminal instead of blocking creation.
 - Strengthened Chapter 22 NFT-only regression coverage so a hard-coded Token CA requirement cannot return unnoticed.
+
+### Chapter 22 — Duplicate phase-label countdown fix (13 Aug 2026)
+
+- Fixed a multi-phase NFT countdown bug where two phases using the same visible label (for example two `ALLOWLIST` stages) could receive the same internal phase ID.
+- Duplicate internal IDs caused the browser to update the first matching countdown element while a later phase remained stuck at `--D --H --M --S` even though its name, price, wallet limit, and schedule text were present.
+- Builder-created multi-phase projects now use stable position-based internal IDs (`phase-1`, `phase-2`, etc.) that are independent from user-visible phase labels.
+- Generator normalization now also enforces unique internal phase IDs for imported/custom project data, preserving compatibility with previously saved projects and duplicate labels.
+- Added a Chapter 22 regression test covering a three-phase schedule with duplicate `ALLOWLIST` labels and requiring a unique countdown binding for every phase.
