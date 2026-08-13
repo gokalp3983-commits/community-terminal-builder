@@ -481,6 +481,42 @@
           </a>
         </div>
       </section>
+
+      <div class="nft-command-separator" aria-hidden="true"></div>
+
+      <section id="nftCommands" class="nft-quick-commands" aria-labelledby="nftQuickCommandsTitle">
+        <h3 id="nftQuickCommandsTitle" class="nft-command-section-label">[ QUICK COMMANDS ]</h3>
+        <div class="nft-quick-command-tabs" aria-label="NFT quick commands">
+          <button class="nft-quick-command" type="button" data-nft-quick-command="mint">MINT</button>
+          <button class="nft-quick-command" type="button" data-nft-quick-command="holders">HOLDERS</button>
+          <button class="nft-quick-command" type="button" data-nft-quick-command="whales">WHALES</button>
+          <button class="nft-quick-command" type="button" data-nft-quick-command="market">MARKET</button>
+          <button class="nft-quick-command" type="button" data-nft-quick-command="wallet " data-command-prefill="true">WALLET</button>
+        </div>
+
+        <div class="nft-command-guide-list" aria-label="NFT terminal available commands">
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="mint">&gt; Mint</button><span>Current mint progress and activity</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="holders">&gt; Holders</button><span>Holder count and distribution summary</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="whales">&gt; Whales</button><span>Largest collection holders</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="market">&gt; Market</button><span>OpenSea collection market summary</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="wallet " data-command-prefill="true">&gt; Wallet &lt;address&gt;</button><span>Collection position for one wallet <em class="nft-command-input-hint">requires wallet input</em></span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="status">&gt; Status</button><span>Combined chain and marketplace status</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="floor">&gt; Floor</button><span>Current floor and 4-hour trend</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="sales">&gt; Sales</button><span>Recent OpenSea sales</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="collection">&gt; Collection</button><span>Configured collection identity</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="contract">&gt; Contract</button><span>NFT contract and explorer link</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="refresh">&gt; Refresh</button><span>Refreshes NFT terminal data</span></div>
+          <div class="nft-command-guide-row"><button class="nft-command-name" type="button" data-nft-guide-command="clear">&gt; Clear</button><span>Resets command output</span></div>
+        </div>
+      </section>
+
+      <section id="nftCommandTerminal" class="nft-command-terminal" aria-label="NFT terminal command prompt">
+        <div id="nftCommandHistory" class="nft-command-output" aria-live="polite"></div>
+        <div id="nftCommandPromptRow" class="nft-command-prompt-row">
+          <label class="nft-command-prompt-label" for="nftCommandInput"><span data-project-prompt></span></label>
+          <input id="nftCommandInput" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="NFT terminal command">
+        </div>
+      </section>
       </div>
 
       <div id="terminal-footer" class="terminal-area terminal-footer">
@@ -494,8 +530,15 @@
         </div>
 
         <footer class="footer">
-          Built by Gokalp <a class="x-credit" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp8339 on X">𝕏 @Gokalp8339</a><br>
-          Not affiliated with or endorsed by the official {{PROJECT_NAME}} team.
+          <div class="builder-signature" aria-label="Built by Gokalp @Gokalp8339">
+            <img class="builder-signature-avatar" src="/assets/gokalp-hoodrat-signature.png" alt="Gokalp Hoodrat NFT avatar">
+            <div class="builder-signature-copy">
+              <span class="builder-signature-label">Built by</span>
+              <span class="builder-signature-name">Gokalp</span>
+              <a class="x-credit builder-signature-handle" href="https://x.com/Gokalp8339" target="_blank" rel="noopener noreferrer" aria-label="Gokalp8339 on X">𝕏 @Gokalp8339</a>
+            </div>
+          </div>
+          <div class="builder-signature-disclaimer">Not affiliated with or endorsed by the official {{PROJECT_NAME}} team.</div>
         </footer>
       </div>
     </section>

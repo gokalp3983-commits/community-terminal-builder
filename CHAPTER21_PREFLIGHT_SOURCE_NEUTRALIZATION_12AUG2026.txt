@@ -1,0 +1,10 @@
+Chapter 21 preflight source-neutralization
+Date: 12 Aug 2026
+
+- Canonical raw CTB modules now boot from a neutral `template` profile.
+- Removed active HOODRAT and STONKBROKERS project profiles from `config/projects`.
+- Removed legacy HOODRAT / STONKBROKERS mascot assets from runnable source modules.
+- Added a neutral CTB placeholder mascot to every runnable UI module.
+- Generated-project behavior remains configuration-driven; generated terminals still receive their own project config/assets.
+- Historical project names remain only where intentionally required by regression tests or project history documentation.
+- Chapter 21 NFT Terminal command checkpoint remains included unchanged functionally.

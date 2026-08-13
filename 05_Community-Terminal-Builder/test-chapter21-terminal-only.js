@@ -1,0 +1,16 @@
+"use strict";
+const fs=require("fs"),os=require("os"),path=require("path");
+const {execFileSync}=require("child_process");
+const {generate,normalize}=require("./generator");
+const input={projectName:"TERMONLY",ticker:"TERM",tokenContract:"0x1111111111111111111111111111111111111111",nftContract:"0x2222222222222222222222222222222222222222",features:{nftTerminal:true,whaleTracker:true,memeIntel:true,communityPulse:true,timeline:true,liveMarket:true},nft:{mode:"terminal",collectionName:"Terminal Only Collection",supply:1000},links:{}};
+const normalized=normalize(input);
+if(normalized.nftSettings.mode!=="terminal")throw new Error("Terminal-only mode not normalized");
+if(normalized.links.nft!=="/nft/terminal")throw new Error("Landing NFT route is not direct-to-terminal");
+if(normalized.nftSettings.mintAt||normalized.nftSettings.mintEndAt||normalized.nftSettings.mintPrice||normalized.nftSettings.mintLimit)throw new Error("Terminal-only mode retained mint-only fields");
+const result=generate(input); const temp=fs.mkdtempSync(path.join(os.tmpdir(),"ctb-terminal-only-")); const zip=path.join(temp,result.filename);fs.writeFileSync(zip,result.buffer);execFileSync("unzip",["-q",zip,"-d",temp]);const root=path.join(temp,"TERMONLY_Community_Terminal"),nft=path.join(root,"03_NFT-Collection-Terminal");
+for(const file of ["public/index.html","public/countdown.js","public/countdown.css"])if(fs.existsSync(path.join(nft,file)))throw new Error(`${file} should not exist in terminal-only package`);
+if(!fs.existsSync(path.join(nft,"public/terminal.html")))throw new Error("NFT terminal page missing");
+const server=fs.readFileSync(path.join(nft,"server.js"),"utf8");if(!server.includes('renderProjectPage("terminal.html", "/terminal", req, res);'))throw new Error("NFT root does not render terminal directly");
+const config=require(path.join(root,"config"));if(config.links.modules.nft!=="/nft/terminal")throw new Error("Generated landing module NFT link is not /nft/terminal");
+execFileSync(process.execPath,["--check",path.join(nft,"server.js")]);
+fs.rmSync(temp,{recursive:true,force:true});console.log("PASS: Chapter 21 Terminal Only mode generates NFT Terminal without countdown assets and routes NFT directly to /nft/terminal.");

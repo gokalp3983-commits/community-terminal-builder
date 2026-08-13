@@ -60,6 +60,7 @@ function normalize(input) {
   const nftRequested = bool(input.features?.nftTerminal, Boolean(nft));
   if (nftRequested && !nft) throw new Error("NFT contract is required when NFT Terminal is enabled.");
   const nftEnabled = nftRequested && Boolean(nft);
+  const requestedNftMode = ["single","multiple","terminal"].includes(text(input.nft?.mode)) ? text(input.nft?.mode) : "single";
   const openSeaUrl = normalizeExternalUrl(input.links?.openSea);
   const derivedOpenSeaSlug = openSeaSlugFromUrl(openSeaUrl);
   const openSeaSlug = derivedOpenSeaSlug || text(input.nft?.openSeaSlug);
@@ -76,12 +77,12 @@ function normalize(input) {
     colors: { ...DEFAULT_TERMINAL_THEME },
     links: {
       home: text(input.links?.home) || "/", whales: text(input.links?.whales) || "/whales",
-      intel: text(input.links?.intel) || "/intel", pulse: text(input.links?.pulse) || "/pulse", timeline: text(input.links?.timeline) || "/timeline", nft: text(input.links?.nft) || "/nft", website: normalizeExternalUrl(input.links?.website),
+      intel: text(input.links?.intel) || "/intel", pulse: text(input.links?.pulse) || "/pulse", timeline: text(input.links?.timeline) || "/timeline", nft: requestedNftMode === "terminal" ? "/nft/terminal" : (text(input.links?.nft) || "/nft"), website: normalizeExternalUrl(input.links?.website),
       x: normalizeXUrl(input.links?.x), telegram: normalizeExternalUrl(input.links?.telegram), explorer: normalizeExternalUrl(input.links?.explorer),
       dexScreener: normalizeExternalUrl(input.links?.dexScreener), openSea: openSeaUrl,
     },
     nftSettings: (() => {
-      const requestedMode = text(input.nft?.mode, "single") === "multiple" ? "multiple" : "single";
+      const requestedMode = requestedNftMode;
       const phases = Array.isArray(input.nft?.mintPhases) ? input.nft.mintPhases.slice(0, 6).map((phase, index) => ({
         id: slugify(phase?.id || phase?.label || `phase-${index + 1}`) || `phase-${index + 1}`,
         label: text(phase?.label, `PHASE ${index + 1}`).toUpperCase(),
@@ -101,7 +102,7 @@ function normalize(input) {
       if(nftEnabled&&requestedMode==="single"&&!mintPrice)throw new Error("NFT Mint Price is required for single-phase mint. Use 0 or FREE for a free mint.");
       if(nftEnabled&&requestedMode==="single"&&!mintLimit)throw new Error("NFT Mint Per Wallet / Wallet Limit is required for single-phase mint.");
       if(nftEnabled&&requestedMode==="multiple")for(const [index,phase] of phases.entries()){if(!phase.price||phase.price==="—")throw new Error(`NFT phase ${index+1} Mint Price is required.`);if(!phase.limit||phase.limit==="—")throw new Error(`NFT phase ${index+1} Mint Per Wallet / Wallet Limit is required.`)}
-      return { collectionName: text(input.nft?.collectionName, `${name} NFT`), openSeaSlug, mode: requestedMode, mintAt: requestedMode === "multiple" ? phases[0]?.startsAt || text(input.nft?.mintAt) : text(input.nft?.mintAt), mintEndAt: text(input.nft?.mintEndAt) || null, mintPrice, mintLimit, mintPhases: requestedMode === "multiple" ? phases : [], timezone: text(input.nft?.timezone, "UTC"), supply: numberOrNull(input.nft?.supply), whaleThreshold: numberOrNull(input.nft?.whaleThreshold) || 10 };
+      return { collectionName: text(input.nft?.collectionName, `${name} NFT`), openSeaSlug, standard: text(input.nft?.standard), symbol: text(input.nft?.symbol), metadataUriMethod: text(input.nft?.metadataUriMethod), mode: requestedMode, mintAt: requestedMode === "terminal" ? "" : (requestedMode === "multiple" ? phases[0]?.startsAt || text(input.nft?.mintAt) : text(input.nft?.mintAt)), mintEndAt: requestedMode === "terminal" ? null : (text(input.nft?.mintEndAt) || null), mintPrice: requestedMode === "terminal" ? "" : mintPrice, mintLimit: requestedMode === "terminal" ? "" : mintLimit, mintPhases: requestedMode === "multiple" ? phases : [], timezone: text(input.nft?.timezone, "UTC"), supply: numberOrNull(input.nft?.supply), whaleThreshold: numberOrNull(input.nft?.whaleThreshold) || 10 };
     })(),
     features: { landing: true, whaleTracker: bool(input.features?.whaleTracker, true), nftTerminal: nftEnabled, memeIntel: bool(input.features?.memeIntel, true), communityPulse: bool(input.features?.communityPulse, true), timeline: bool(input.features?.timeline, true), liveMarket: bool(input.features?.liveMarket, true) },
     mascot, mascotPath: `/assets/${id}-mascot.${ext}`, mascotExt: ext,
@@ -260,7 +261,10 @@ function transformModuleFile(moduleName, relativeName, data, p) {
       .replaceAll("__CTB_MINT_FEE__", mintFeeDisplay(p.nftSettings.mintPrice))
       .replaceAll("__CTB_MINT_LIMIT__", mintLimitDisplay(p.nftSettings.mintLimit));
 
-    if (relativeName === "server.js") return Buffer.from(makeMountableServer(source, moduleName));
+    if (relativeName === "server.js") {
+      if (p.nftSettings.mode === "terminal") source = source.replace('app.get("/", (req, res) => {\n  renderProjectPage("index.html", "/", req, res);\n});', 'app.get("/", (req, res) => {\n  renderProjectPage("terminal.html", "/terminal", req, res);\n});');
+      return Buffer.from(makeMountableServer(source, moduleName));
+    }
 
     if (p.nftSettings.mode === "multiple") {
       if (/\.(css|js|html)$/.test(relativeName)) {
@@ -389,7 +393,7 @@ function rootServer() {
     '  server:{startedAt:startedAt.toISOString(),uptimeSeconds:Math.floor(process.uptime()),environment:process.env.NODE_ENV||"development",port},',
     '  moduleOrder:Array.isArray(config.moduleOrder)?config.moduleOrder:["whales","intel","nft","pulse","timeline"],',
     '  modules:{landing:true,whales:Boolean(config.features.whaleTracker),intel:Boolean(config.features.memeIntel),nft:Boolean(config.features.nftTerminal),pulse:Boolean(config.features.communityPulse),timeline:Boolean(config.features.timeline),landingMarket:Boolean(config.features.liveMarket)},',
-    '  routes:{home:"/",health:"/healthz",healthLegacy:"/health",status:"/status",whales:config.features.whaleTracker?"/whales":null,intel:config.features.memeIntel?"/intel":null,pulse:config.features.communityPulse?"/pulse":null,timeline:config.features.timeline?"/timeline":null,nft:config.features.nftTerminal?"/nft":null}',
+    '  routes:{home:"/",health:"/healthz",healthLegacy:"/health",status:"/status",whales:config.features.whaleTracker?"/whales":null,intel:config.features.memeIntel?"/intel":null,pulse:config.features.communityPulse?"/pulse":null,timeline:config.features.timeline?"/timeline":null,nft:config.features.nftTerminal?(config.nft?.mode==="terminal"?"/nft/terminal":"/nft"):null}',
     '}));',
     'if(config.features.whaleTracker) app.use("/whales",require("./02_Whale-Activity-Tracker/server"));',
     'if(config.features.nftTerminal) app.use("/nft",require("./03_NFT-Collection-Terminal/server"));',
@@ -517,7 +521,7 @@ function releaseMetadata(p) {
     releaseStatus: "deployment-ready",
     chain: { type:"EVM", dexScreenerChainId:p.dexChain, blockscoutApiBase:p.blockscout },
     enabledModules: ["landing", ...(p.features.whaleTracker?["whales"]:[]), ...(p.features.memeIntel?["intel"]:[]), ...(p.features.nftTerminal?["nft"]:[]), ...(p.features.communityPulse?["pulse"]:[]), ...(p.features.timeline?["timeline"]:[])],
-    routes: { home:"/", health:"/healthz", healthLegacy:"/health", status:"/status", whales:p.features.whaleTracker?"/whales":null, intel:p.features.memeIntel?"/intel":null, nft:p.features.nftTerminal?"/nft":null, pulse:p.features.communityPulse?"/pulse":null, timeline:p.features.timeline?"/timeline":null },
+    routes: { home:"/", health:"/healthz", healthLegacy:"/health", status:"/status", whales:p.features.whaleTracker?"/whales":null, intel:p.features.memeIntel?"/intel":null, nft:p.features.nftTerminal?(p.nftSettings.mode==="terminal"?"/nft/terminal":"/nft"):null, pulse:p.features.communityPulse?"/pulse":null, timeline:p.features.timeline?"/timeline":null },
     deployment: { provider:"Render Blueprint compatible", blueprint:"render.yaml", publicAcceptanceCommand:"npm run test:deployed -- https://YOUR-TERMINAL.onrender.com" }
   }, null, 2) + "\n";
 }
@@ -560,7 +564,7 @@ npm test
 - Meme Intel: /intel (${p.features.memeIntel ? "enabled" : "disabled"})
 - Community Pulse: /pulse (${p.features.communityPulse ? "enabled" : "disabled"})
 - Community Timeline: /timeline (${p.features.timeline ? "enabled" : "disabled"})
-- NFT Terminal: /nft (${p.features.nftTerminal ? "enabled" : "disabled"})
+- NFT Terminal: ${p.nftSettings.mode === "terminal" ? "/nft/terminal" : "/nft"} (${p.features.nftTerminal ? "enabled" : "disabled"})
 - Render health check: /healthz
 - Legacy health alias: /health
 - Runtime status: /status
@@ -593,6 +597,11 @@ function generate(input) {
   for (const moduleName of MODULES) {
     const sourceName = moduleName === "03_NFT-Collection-Terminal" && p.nftSettings.mode === "multiple" ? NFT_MULTI_TEMPLATE : moduleName;
     walkModule(path.join(MASTER_ROOT, sourceName), `${root}/${moduleName}`, moduleName, entries, p);
+  }
+  if (p.nftSettings.mode === "terminal") {
+    for (let i = entries.length - 1; i >= 0; i--) {
+      if (/\/03_NFT-Collection-Terminal\/public\/(?:index\.html|countdown\.js|countdown\.css)$/.test(entries[i].name)) entries.splice(i, 1);
+    }
   }
   walk(path.join(MASTER_ROOT, "config"), `${root}/config`, entries);
   for (let i = entries.length - 1; i >= 0; i--) {

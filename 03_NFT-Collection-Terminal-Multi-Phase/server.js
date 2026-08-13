@@ -2,6 +2,7 @@
 const express = require("express");
 const path = require("path");
 const config = require("../config");
+const { discoverNftContract } = require("./lib/nft/contract-discovery");
 const fs = require("fs");
 
 const app = express();
@@ -109,6 +110,14 @@ app.get("/health", (_req, res) => {
 });
 
 
+
+app.get("/api/contract-discovery", async (_req, res) => {
+  try {
+    res.json(await discoverNftContract(config.contracts.nft));
+  } catch (error) {
+    res.status(502).json({ ok: false, error: error.message, code: error.code || "NFT_DISCOVERY_UNAVAILABLE" });
+  }
+});
 
 const NFT_CONTRACT = process.env.NFT_CONTRACT || config.contracts.nft;
 const NFT_MAX_SUPPLY = Number(config.nft.supply || 0);

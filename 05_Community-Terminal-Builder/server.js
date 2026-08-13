@@ -7,6 +7,7 @@ const { connectedDeploy, publicStatus: integrationStatus, validateIntegrations, 
 const { releaseReadiness } = require("./release-readiness");
 const { createReleaseAuthorization, verifyReleaseConfirmation } = require("./release-authorization");
 const { buildFingerprint } = require("./build-fingerprint");
+const { discoverNftContract } = require("./nft/contract-discovery");
 
 const VERSION = "1.3.2-b";
 const PORT = Number(process.env.PORT || 3050);
@@ -64,6 +65,16 @@ const server = http.createServer((req,res) => {
         json(res,200,{ok:true,address,selectedChain,detectedChains,match});
       })
       .catch(error=>json(res,502,{ok:false,error:error.message,code:"MARKET_VALIDATION_UNAVAILABLE"}));
+    return;
+  }
+
+
+  if(req.method==="GET" && url.pathname==="/api/discover-nft") {
+    const address=String(url.searchParams.get("address")||"").trim();
+    if(!/^0x[a-fA-F0-9]{40}$/.test(address)) return json(res,400,{ok:false,error:"Invalid EVM address format.",code:"INVALID_EVM_ADDRESS"});
+    discoverNftContract(address)
+      .then(result=>json(res,200,result))
+      .catch(error=>json(res,502,{ok:false,error:error.message,code:error.code||"NFT_DISCOVERY_UNAVAILABLE"}));
     return;
   }
 

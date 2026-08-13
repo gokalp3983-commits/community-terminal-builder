@@ -14,12 +14,7 @@ const modules = [
   "06_Community-Pulse",
   "07_Timeline",
 ];
-const referenceMascotModules = new Set([
-  "01_Landing-Page",
-  "02_Whale-Activity-Tracker",
-  "04_Meme-Intel",
-]);
-const profiles = ["stonkbrokers", "hoodrat"];
+const profiles = ["template"];
 const forbiddenInModules = [
   "STONKBROKERS",
   "HOODRAT",
@@ -78,13 +73,9 @@ for (const moduleName of modules) {
     else fail(`${moduleName}/${required} is missing`);
   }
 
-  if (referenceMascotModules.has(moduleName)) {
-    for (const mascot of ["stonkbrokers-mascot.jpg", "hoodrat-mascot.jpeg"]) {
-      const mascotPath = path.join(modulePath, "public", "assets", mascot);
-      if (fs.existsSync(mascotPath)) pass(`${moduleName} contains ${mascot}`);
-      else fail(`${moduleName} is missing ${mascot}`);
-    }
-  }
+  const neutralMascot = path.join(modulePath, "public", "assets", "ctb-placeholder-mascot.svg");
+  if (fs.existsSync(neutralMascot)) pass(`${moduleName} contains neutral CTB placeholder mascot`);
+  else fail(`${moduleName} is missing neutral CTB placeholder mascot`);
 
   for (const file of walk(modulePath)) {
     const relative = path.relative(root, file);

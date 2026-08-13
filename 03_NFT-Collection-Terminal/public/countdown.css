@@ -164,7 +164,7 @@
 }
 
 
-/* Chapter 20 — Spritehood QA carry-over, CTB palette preserved. */
+/* Chapter 20 — NFT QA carry-over, CTB palette preserved. */
 .log-copy-mobile,.mobile-launch-tag{display:none}
 @media(max-width:560px){
   .log-copy-desktop,.desktop-launch-tag{display:none!important}

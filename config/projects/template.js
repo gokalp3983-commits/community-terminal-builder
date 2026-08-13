@@ -1,0 +1,73 @@
+"use strict";
+
+module.exports = {
+  project: {
+    id: "community-terminal",
+    name: "COMMUNITY TERMINAL",
+    displayName: "COMMUNITY TERMINAL",
+    ticker: "$TOKEN",
+    version: "21A-preflight",
+    description: "Configuration-driven Community Terminal template.",
+    ecosystem: "Robinhood Chain",
+    promptUser: "token",
+    promptHost: "robinhood",
+  },
+  contracts: {
+    token: "0x0000000000000000000000000000000000000001",
+    nft: "0x0000000000000000000000000000000000000002",
+  },
+  market: {
+    dexScreenerChainId: "robinhood",
+    blockscoutApiBase: "https://robinhoodchain.blockscout.com/api/v2",
+    refreshMs: 30000,
+    cacheTtlMs: 30000,
+  },
+  branding: {
+    mascot: "/assets/ctb-placeholder-mascot.svg",
+    mascotAlt: "Community Terminal placeholder mascot",
+    themeColor: "#020704",
+    colors: {
+      background: "#020806",
+      panel: "#03100b",
+      green: "#39ff14",
+      yellow: "#ff6a00",
+      cyan: "#65dfff",
+      blue: "#68c8ff",
+      orange: "#ff8a00",
+      red: "#ff5a67",
+      muted: "#708a7b",
+      line: "#194b2d",
+    },
+  },
+  links: {
+    home: "/",
+    modules: { whales: "", intel: "", nft: "", pulse: "", timeline: "" },
+    website: "",
+    x: "",
+    telegram: "",
+    explorer: "",
+    dexScreener: "",
+    openSea: "",
+  },
+  nft: {
+    collectionName: "NFT Collection",
+    openSeaSlug: "",
+    supply: null,
+    whaleThreshold: 10,
+  },
+  features: {
+    landing: true,
+    whaleTracker: true,
+    nftTerminal: true,
+    memeIntel: true,
+    liveMarket: false,
+  },
+  moduleOrder: ["whales", "intel", "nft", "pulse", "timeline"],
+  modules: {
+    whales: { command: "whales", title: "Whale Activity Tracker", description: "Monitor whale activity and holder rankings.", status: "READY" },
+    intel: { command: "intel", title: "Meme Intelligence Terminal", description: "Inspect market and community activity signals.", status: "READY" },
+    nft: { command: "nft", title: "NFT Collection Terminal", description: "Inspect NFT mint, holder, and marketplace intelligence.", status: "READY" },
+    pulse: { command: "pulse", title: "Community Pulse", description: "Inspect transparent community activity signals.", status: "READY" },
+    timeline: { command: "timeline", title: "Community Timeline", description: "Review project activity over time.", status: "READY" },
+  },
+};

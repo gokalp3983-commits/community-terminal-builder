@@ -148,7 +148,7 @@
               <div class="section-heading"><span>02</span><h2>TOKEN &amp; NFT</h2><small>PROJECT CONTRACTS</small></div><p class="guided-step-note">Paste the token contract. Add an NFT contract whenever the project also has a collection; a valid NFT CA automatically enables the NFT Terminal.</p>
               <div class="grid">
                 <label class="span-2 contract-field"><span>Token CA * <b class="evm-badge">EVM ONLY</b></span><input name="tokenContract" required placeholder="0x..." autocomplete="off" spellcheck="false"><small class="field-help">Supported: Ethereum and EVM-compatible chains. Paste the token contract, not the liquidity-pool address.</small><output id="contract-check" class="contract-check" aria-live="polite">[ WAIT ] Enter a 42-character 0x contract address.</output></label>
-                <label class="span-2 contract-field"><span>NFT Contract Address (optional) <b class="evm-badge">EVM ONLY</b></span><input name="nftContract" placeholder="0x..." autocomplete="off" spellcheck="false"><small class="field-help">Leave blank for token-only projects. Entering a valid NFT contract automatically enables the NFT Terminal module.</small><output id="nft-contract-check" class="contract-check" aria-live="polite">[ OPTIONAL ] No NFT contract entered.</output></label>
+                <label class="span-2 contract-field"><span>NFT Contract Address (optional) <b class="evm-badge">EVM ONLY</b></span><input name="nftContract" placeholder="0x..." autocomplete="off" spellcheck="false"><small class="field-help">Leave blank for token-only projects. A valid NFT contract automatically enables the NFT Terminal and triggers safe Robinhood Chain discovery.</small><output id="nft-contract-check" class="contract-check" aria-live="polite">[ OPTIONAL ] No NFT contract entered.</output><output id="nft-discovery-check" class="contract-check" aria-live="polite">[ DISCOVERY ] Waiting for NFT contract.</output><input type="hidden" name="nftStandard"><input type="hidden" name="nftSymbol"><input type="hidden" name="nftMetadataUriMethod"></label>
                 <label class="advanced-field"><span>DexScreener chain ID</span><input name="dexScreenerChainId" value="robinhood"></label>
                 <label class="advanced-field"><span>Blockscout API base</span><input name="blockscoutApiBase" value="https://robinhoodchain.blockscout.com/api/v2"></label>
               </div>
@@ -190,9 +190,9 @@
                 <label><span>NFT collection name</span><input name="nftCollectionName" placeholder="Optional — derived from project name"></label>
                 <label><span>NFT total supply</span><input name="nftSupply" type="number" min="1" step="1" placeholder="Enter total supply"></label>
                 <div class="span-2 nft-mint-schedule" id="nft-mint-schedule">
-                  <div class="nft-mint-heading"><span>NFT mint structure</span><small>Choose the canonical single-phase or multiple-phase NFT launch base.</small></div>
+                  <div class="nft-mint-heading"><span>NFT mint structure</span><small>Choose Single Phase, Multiple Phases, or Terminal Only when the mint has ended / no countdown page is needed.</small></div>
                   <div class="nft-mint-mode-row">
-                    <label><span>Mint structure</span><select name="nftMintMode" id="nft-mint-mode"><option value="" selected disabled>Please select mint structure</option><option value="single">Single Phase</option><option value="multiple">Multiple Phases</option></select></label>
+                    <label><span>Mint structure</span><select name="nftMintMode" id="nft-mint-mode"><option value="" selected disabled>Please select mint structure</option><option value="single">Single Phase</option><option value="multiple">Multiple Phases</option><option value="terminal">Terminal Only / Mint Ended</option></select></label>
                   </div>
                   <div id="nft-single-phase-fields">
                     <div class="nft-mint-grid">
@@ -205,6 +205,9 @@
                       <label class="nft-timezone-field"><span>Timezone</span><input name="nftMintTimezone" list="nft-timezone-options" placeholder="e.g. UTC or Europe/Bucharest" autocomplete="off"><datalist id="nft-timezone-options"></datalist></label>
                       <button class="timezone-button" id="use-local-timezone" type="button">USE MY TIMEZONE</button>
                     </div>
+                  </div>
+                  <div id="nft-terminal-only-fields" hidden>
+                    <div class="nft-phase-help"><strong>Terminal Only:</strong> no mint countdown page, schedule, price, or wallet-limit fields are required. Landing-page NFT links open the NFT Terminal directly.</div>
                   </div>
                   <div id="nft-multiple-phase-fields" hidden>
                     <div class="nft-phase-help">Add 2–6 mint phases. Each phase can use its own timezone, price and wallet limit.</div>
