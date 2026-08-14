@@ -453,3 +453,50 @@
   line-height:1.45;
 }
 .mint-live-phase-summary[hidden]{display:none!important}
+
+
+/* Pre-simplification mobile countdown polish — keep desktop geometry unchanged. */
+@media (max-width:760px), (hover:none) and (pointer:coarse){
+  .launch-links-line.project-launch-link{
+    grid-template-columns:10ch minmax(0,1fr)!important;
+    column-gap:.75ch!important;
+    row-gap:2px!important;
+    align-items:start!important;
+    font-size:.90em!important;
+  }
+  .launch-links-line.project-launch-link>span:first-child{
+    grid-column:1!important;
+    grid-row:1 / span 2!important;
+  }
+  .launch-links-line.project-launch-link .project-launch-label{
+    grid-column:2!important;
+    grid-row:1!important;
+    min-width:0!important;
+    white-space:nowrap!important;
+  }
+  .launch-links-line.project-launch-link .project-launch-colon{display:none!important}
+  .launch-links-line.project-launch-link a{
+    grid-column:2!important;
+    grid-row:2!important;
+    min-width:0!important;
+    white-space:normal!important;
+    overflow-wrap:normal!important;
+    word-break:normal!important;
+  }
+  .link-copy-mobile{white-space:normal!important}
+}
+
+@media (max-width:760px), (hover:none) and (pointer:coarse){
+  .phase-countdown-grid{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+  .phase-countdown-card{width:100%!important;min-width:0!important;padding:14px 12px!important}
+  .phase-card-topline{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) max-content!important;
+    gap:8px!important;
+    align-items:baseline!important;
+  }
+  .phase-status{justify-self:end!important}
+  .phase-detail-row{grid-template-columns:minmax(0,1fr) 1ch max-content!important}
+  .phase-detail-label{min-width:0!important;white-space:normal!important}
+  .phase-countdown-value{white-space:normal!important;overflow-wrap:normal!important}
+}

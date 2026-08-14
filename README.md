@@ -1,3 +1,10 @@
+## Pre-Simplification Mobile Countdown Polish (14 Aug 2026)
+
+- Added a mobile-only responsive correction for NFT mint countdown pages.
+- Project/social command links now use a compact two-row phone layout instead of squeezing four fixed-width columns.
+- Multi-phase mint cards now force a single-column stack on phone/coarse-pointer layouts, preventing phase titles, mint limits, fees, and status text from colliding.
+- Desktop countdown layout, mint/countdown JavaScript, generator/deployment behavior, and terminal styling remain unchanged.
+
 ## Chapter 22 — Since Last Visit + Additional Links (14 Aug 2026)
 
 - Corrected NFT **Collection Pulse / Since Last Visit** semantics so a baseline is not reset by background refreshes or ordinary reloads within the same browser-tab visit. The UI now uses **Last visit** language instead of **Previous check / Last check**.
