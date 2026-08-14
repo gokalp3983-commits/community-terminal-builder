@@ -1,3 +1,10 @@
+## Chapter 22 — Since Last Visit + Additional Links (14 Aug 2026)
+
+- Corrected NFT **Collection Pulse / Since Last Visit** semantics so a baseline is not reset by background refreshes or ordinary reloads within the same browser-tab visit. The UI now uses **Last visit** language instead of **Previous check / Last check**.
+- Made **Collection Pulse / Since Last Visit** collapsible/expandable and preserved the user's collapsed preference locally without changing the visit baseline.
+- Added reusable CTB **Additional Links** configuration (up to 5 entries) with Label, Link text, URL, and optional **Highlight red**. Saved/imported projects retain these links.
+- Generated NFT terminals render Additional Links between OpenSea and Wallet. Normal links follow the existing terminal color scheme; highlighted links use the bright-red action treatment. This supports entries such as `[ BOT ] Click to access Sniper Bot.` without project-specific hard-coding.
+
 # Community Terminal Builder
 
 ## Chapter 22 — NFT Terminal Maintenance Update (2026-08-13)

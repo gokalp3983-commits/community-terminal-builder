@@ -2444,3 +2444,14 @@ html,body{background:#000!important}
   .nft-sales-window > .nft-command-suite{padding:0 14px 14px}
   .nft-sales-window > .nft-command-suite .nft-command-separator:first-child{margin-top:4px}
 }
+
+
+/* Chapter 22 — CTB Additional Links */
+.additional-terminal-links{border-bottom:1px solid rgba(25,75,45,.7);padding:8px 0 10px}
+.additional-terminal-link{display:flex;align-items:baseline;gap:8px;min-width:0;font-weight:700}
+.additional-terminal-link+.additional-terminal-link{margin-top:7px}
+.additional-terminal-link-label{color:var(--green);flex:0 0 auto}
+.additional-terminal-link a{color:var(--cyan);text-decoration:none;overflow-wrap:anywhere}
+.additional-terminal-link a:hover{text-decoration:underline}
+.additional-terminal-link.is-highlighted .additional-terminal-link-label,.additional-terminal-link.is-highlighted a{color:#ff2020;text-shadow:0 0 9px rgba(255,32,32,.18)}
+.additional-terminal-link.is-highlighted a:hover{color:#ff4d4d}

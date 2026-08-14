@@ -135,6 +135,12 @@ const elements = {
     document.getElementById("collectionPulsePanel"),
   collectionPulseAge:
     document.getElementById("collectionPulseAge"),
+  collectionPulseToggle:
+    document.getElementById("collectionPulseToggle"),
+  collectionPulseSummary:
+    document.getElementById("collectionPulseSummary"),
+  collectionPulseContent:
+    document.getElementById("collectionPulseContent"),
   collectionPulseFirstVisit:
     document.getElementById("collectionPulseFirstVisit"),
   collectionPulseBody:
@@ -158,11 +164,20 @@ const elements = {
 const sleep = (ms) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
-const COLLECTION_PULSE_STORAGE_KEY = `nft-terminal-pulse:${CFG?.project?.id || "collection"}`;
-const collectionPulseVisitStartedAt = Date.now();
+const COLLECTION_PULSE_STORAGE_KEY = `nft-terminal-pulse:${CFG?.project?.id || "collection"}:v2`;
+const COLLECTION_PULSE_SESSION_KEY = `nft-terminal-pulse-session:${CFG?.project?.id || "collection"}:v2`;
+const COLLECTION_PULSE_COLLAPSE_KEY = `nft-terminal-pulse-collapsed:${CFG?.project?.id || "collection"}:v1`;
+let collectionPulseVisitStartedAt = Date.now();
+let collectionPulseSavedThisVisit = false;
 let collectionPulsePrevious = null;
 let collectionPulseCurrentFloorEth = null;
 let collectionPulseSalesData = null;
+
+try {
+  const sessionPulse=JSON.parse(sessionStorage.getItem(COLLECTION_PULSE_SESSION_KEY)||"null");
+  if(sessionPulse&&Number.isFinite(Number(sessionPulse.startedAt))){collectionPulseVisitStartedAt=Number(sessionPulse.startedAt);collectionPulseSavedThisVisit=Boolean(sessionPulse.baselineSaved)}
+  else sessionStorage.setItem(COLLECTION_PULSE_SESSION_KEY,JSON.stringify({startedAt:collectionPulseVisitStartedAt,baselineSaved:false}));
+} catch (_) {}
 
 try {
   const storedPulse = JSON.parse(localStorage.getItem(COLLECTION_PULSE_STORAGE_KEY) || "null");
@@ -197,6 +212,7 @@ function formatPulseFloorChange(current, previous){
 }
 
 function saveCollectionPulseVisit(){
+  if(collectionPulseSavedThisVisit) return;
   try {
     localStorage.setItem(COLLECTION_PULSE_STORAGE_KEY, JSON.stringify({
       visitedAt: collectionPulseVisitStartedAt,
@@ -204,8 +220,19 @@ function saveCollectionPulseVisit(){
         ? collectionPulseCurrentFloorEth
         : null,
     }));
+    collectionPulseSavedThisVisit=true;
+    try{sessionStorage.setItem(COLLECTION_PULSE_SESSION_KEY,JSON.stringify({startedAt:collectionPulseVisitStartedAt,baselineSaved:true}))}catch(_){}
   } catch (_) {}
 }
+
+function setCollectionPulseCollapsed(collapsed){
+  if(!elements.collectionPulsePanel||!elements.collectionPulseToggle||!elements.collectionPulseContent||!elements.collectionPulseSummary)return;
+  elements.collectionPulsePanel.classList.toggle("is-collapsed",Boolean(collapsed));elements.collectionPulseContent.hidden=Boolean(collapsed);elements.collectionPulseSummary.hidden=!collapsed;
+  elements.collectionPulseToggle.textContent=collapsed?"[ EXPAND ]":"[ COLLAPSE ]";elements.collectionPulseToggle.setAttribute("aria-expanded",collapsed?"false":"true");
+  try{localStorage.setItem(COLLECTION_PULSE_COLLAPSE_KEY,collapsed?"1":"0")}catch(_){}
+}
+try{setCollectionPulseCollapsed(localStorage.getItem(COLLECTION_PULSE_COLLAPSE_KEY)==="1")}catch(_){setCollectionPulseCollapsed(false)}
+elements.collectionPulseToggle?.addEventListener("click",()=>setCollectionPulseCollapsed(elements.collectionPulseToggle.getAttribute("aria-expanded")!=="false"));
 
 function renderCollectionPulse(){
   if(!elements.collectionPulsePanel) return;
@@ -214,14 +241,14 @@ function renderCollectionPulse(){
     elements.collectionPulseFirstVisit.hidden = false;
     elements.collectionPulseBody.hidden = true;
     elements.collectionPulseAge.textContent = "BASELINE";
-    saveCollectionPulseVisit();
+    if(collectionPulseSalesData || Number.isFinite(collectionPulseCurrentFloorEth)) saveCollectionPulseVisit();
     return;
   }
 
   elements.collectionPulseFirstVisit.hidden = true;
   elements.collectionPulseBody.hidden = false;
   elements.collectionPulseAge.textContent =
-    `LAST CHECK · ${collectionPulseAgeText(collectionPulsePrevious.visitedAt)}`;
+    `LAST VISIT · ${collectionPulseAgeText(collectionPulsePrevious.visitedAt)}`;
 
   const sales = Array.isArray(collectionPulseSalesData?.sales)
     ? collectionPulseSalesData.sales

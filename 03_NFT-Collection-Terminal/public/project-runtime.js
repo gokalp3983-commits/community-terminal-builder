@@ -75,6 +75,24 @@
     });
     document.documentElement.style.setProperty("--nft-terminal-label", '"MARKET UPDATE"');
 
+    const additionalLinksHost = document.getElementById("additionalLinks");
+    if (additionalLinksHost) {
+      const links = Array.isArray(c.links?.additionalLinks) ? c.links.additionalLinks.slice(0, 5) : [];
+      additionalLinksHost.innerHTML = "";
+      links.filter((item) => item && item.label && item.url).forEach((item) => {
+        const row = document.createElement("div");
+        row.className = `additional-terminal-link${item.highlight ? " is-highlighted" : ""}`;
+        const label = document.createElement("span");
+        label.className = "additional-terminal-link-label";
+        label.textContent = `[ ${String(item.label).replace(/^\[|\]$/g, "")} ]`;
+        const link = document.createElement("a");
+        link.href = item.url; link.target = "_blank"; link.rel = "noopener noreferrer";
+        link.textContent = item.text || `Open ${item.label}`;
+        row.append(label, link); additionalLinksHost.appendChild(row);
+      });
+      additionalLinksHost.hidden = !additionalLinksHost.children.length;
+    }
+
     const openSeaUrl = c.links.openSea || (c.nft?.openSeaSlug ? `https://opensea.io/collection/${c.nft.openSeaSlug}/overview` : "");
     document.querySelectorAll("[data-opensea-link]").forEach((e) => {
       e.href = openSeaUrl || "#";

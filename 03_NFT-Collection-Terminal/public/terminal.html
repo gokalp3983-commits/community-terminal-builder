@@ -135,6 +135,8 @@
         </a>
       </section>
 
+      <div id="additionalLinks" class="additional-terminal-links" aria-label="Additional project links" hidden></div>
+
       <section class="blockscout-wallet-check" aria-label="Check NFT wallet status">
         <form id="blockscoutWalletForm" class="blockscout-check-form" novalidate>
           <span class="official-mint-label">[ WALLET ]</span>
@@ -310,14 +312,19 @@
       </section>
 
 
-      <div id="collectionPulsePanel" class="collection-market collection-pulse-panel" aria-label="Collection Pulse since last visit">
-        <div class="dashboard-header">
+      <section id="collectionPulsePanel" class="collection-market collection-pulse-panel collapsible-panel" aria-label="Collection Pulse since last visit">
+        <div class="dashboard-header collapsible-panel-header">
           <h3>Collection Pulse / Since Last Visit</h3>
-          <div class="collection-status-wrap">
-            <span id="collectionPulseStatus" class="data-status">BASELINE SET</span>
-            <span id="collectionPulseUpdated" class="collection-updated">Local browser baseline</span>
+          <div class="collapsible-panel-controls">
+            <div class="collection-status-wrap">
+              <span id="collectionPulseStatus" class="data-status">BASELINE SET</span>
+              <span id="collectionPulseUpdated" class="collection-updated">Local browser baseline</span>
+            </div>
+            <button id="collectionPulseToggle" class="panel-toggle" type="button" aria-expanded="true" aria-controls="collectionPulseBody">[ COLLAPSE ]</button>
           </div>
         </div>
+        <div id="collectionPulseSummary" class="collapsed-panel-summary" hidden>[ PULSE ] Return-visit comparison</div>
+        <div id="collectionPulseBody" class="collapsible-panel-body">
 
         <div id="collectionPulseBaseline" class="collection-pulse-baseline">
           <span class="cyan">[ BASELINE SET ]</span>
@@ -350,13 +357,14 @@
             <div id="pulseTopSale" class="metric-value">—</div>
           </article>
           <article class="metric">
-            <div class="metric-label">Time Since Last Check</div>
+            <div class="metric-label">Time Since Last Visit</div>
             <div id="pulseElapsed" class="metric-value compact-value">—</div>
           </article>
         </div>
 
         <div id="collectionPulseNote" class="api-note" hidden></div>
-      </div>
+        </div>
+      </section>
 
 
       <section id="nftWhalesPanel" class="nft-whales-panel collapsible-panel" aria-label="NFT holder analytics">

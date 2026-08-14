@@ -135,6 +135,8 @@
         </a>
       </section>
 
+      <div id="additionalLinks" class="additional-terminal-links" aria-label="Additional project links" hidden></div>
+
       <section class="blockscout-wallet-check" aria-label="Check NFT wallet status">
         <form id="blockscoutWalletForm" class="blockscout-check-form" novalidate>
           <div class="blockscout-check-heading">
@@ -315,14 +317,19 @@
 
 
 
-      <section id="collectionPulsePanel" class="collection-pulse-panel" aria-label="Collection activity since last visit">
-        <div class="collection-pulse-header">
+      <section id="collectionPulsePanel" class="collection-pulse-panel collapsible-panel" aria-label="Collection activity since last visit">
+        <div class="collection-pulse-header collapsible-panel-header">
           <div>
             <div class="collection-pulse-kicker">[ COLLECTION PULSE ]</div>
             <h3>Since Last Visit</h3>
           </div>
-          <span id="collectionPulseAge" class="collection-pulse-age">BASELINE</span>
+          <div class="collapsible-panel-controls">
+            <span id="collectionPulseAge" class="collection-pulse-age">BASELINE</span>
+            <button id="collectionPulseToggle" class="panel-toggle" type="button" aria-expanded="true" aria-controls="collectionPulseContent">[ COLLAPSE ]</button>
+          </div>
         </div>
+        <div id="collectionPulseSummary" class="collapsed-panel-summary" hidden>[ PULSE ] Return-visit comparison</div>
+        <div id="collectionPulseContent" class="collapsible-panel-body">
 
         <div id="collectionPulseFirstVisit" class="collection-pulse-baseline">
           <span class="green">[ BASELINE SET ]</span>
@@ -359,6 +366,7 @@
           <div id="collectionPulseNote" class="collection-pulse-note">
             Comparing available collection activity with your previous visit.
           </div>
+        </div>
         </div>
       </section>
 

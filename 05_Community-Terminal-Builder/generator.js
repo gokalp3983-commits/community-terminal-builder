@@ -67,6 +67,12 @@ function normalize(input) {
   if (nftRequested && !nft) throw new Error("NFT contract is required when NFT Terminal is enabled.");
   const nftEnabled = nftRequested && Boolean(nft);
   const requestedNftMode = ["single","multiple","terminal"].includes(text(input.nft?.mode)) ? text(input.nft?.mode) : "single";
+  const additionalLinks = (Array.isArray(input.links?.additionalLinks) ? input.links.additionalLinks : []).slice(0, 5).map((item) => ({
+    label: text(item?.label).replace(/^\[|\]$/g, "").slice(0, 24),
+    text: text(item?.text).slice(0, 120),
+    url: normalizeExternalUrl(item?.url),
+    highlight: bool(item?.highlight, false),
+  })).filter((item) => item.label && item.url);
   const openSeaUrl = normalizeExternalUrl(input.links?.openSea);
   const derivedOpenSeaSlug = openSeaSlugFromUrl(openSeaUrl);
   const openSeaSlug = derivedOpenSeaSlug || text(input.nft?.openSeaSlug);
@@ -85,7 +91,7 @@ function normalize(input) {
       home: text(input.links?.home) || "/", whales: text(input.links?.whales) || "/whales",
       intel: text(input.links?.intel) || "/intel", pulse: text(input.links?.pulse) || "/pulse", timeline: text(input.links?.timeline) || "/timeline", nft: requestedNftMode === "terminal" ? "/nft/terminal" : (text(input.links?.nft) || "/nft"), website: normalizeExternalUrl(input.links?.website),
       x: normalizeXUrl(input.links?.x), telegram: normalizeExternalUrl(input.links?.telegram), explorer: normalizeExternalUrl(input.links?.explorer),
-      dexScreener: normalizeExternalUrl(input.links?.dexScreener), openSea: openSeaUrl,
+      dexScreener: normalizeExternalUrl(input.links?.dexScreener), openSea: openSeaUrl, additionalLinks,
     },
     nftSettings: (() => {
       const requestedMode = requestedNftMode;
@@ -213,7 +219,7 @@ function profileSource(p) {
     contracts: { token:p.token, nft:p.nft },
     market: { dexScreenerChainId:p.dexChain, blockscoutApiBase:p.blockscout, refreshMs:30000, cacheTtlMs:30000 },
     branding: { mascot:p.mascotPath, mascotAlt:`${p.name} mascot`, themeColor:p.colors.background, colors:p.colors },
-    links: { home:p.links.home, modules:{whales:p.links.whales,intel:p.links.intel,nft:p.links.nft,pulse:p.links.pulse,timeline:p.links.timeline}, website:p.links.website,x:p.links.x,telegram:p.links.telegram,explorer:p.links.explorer,dexScreener:p.links.dexScreener,openSea:p.links.openSea },
+    links: { home:p.links.home, modules:{whales:p.links.whales,intel:p.links.intel,nft:p.links.nft,pulse:p.links.pulse,timeline:p.links.timeline}, website:p.links.website,x:p.links.x,telegram:p.links.telegram,explorer:p.links.explorer,dexScreener:p.links.dexScreener,openSea:p.links.openSea,additionalLinks:p.links.additionalLinks },
     nft: p.nftSettings,
     timeline: { events: [] },
     features: p.features,
@@ -233,7 +239,7 @@ function landingPublicConfig(p) {
   return {
     project:{id:p.id,name:p.name,displayName:p.name,ticker:p.ticker,version:p.version,description:p.description,ecosystem:p.ecosystem,promptUser:p.promptUser,promptHost:p.promptHost},
     branding:{mascot:p.mascotPath,mascotAlt:`${p.name} mascot`,themeColor:p.colors.background,colors:p.colors},
-    links:{home:p.links.home,modules:{whales:p.links.whales,intel:p.links.intel,nft:p.links.nft,pulse:p.links.pulse,timeline:p.links.timeline},website:p.links.website,x:p.links.x,telegram:p.links.telegram,explorer:p.links.explorer,dexScreener:p.links.dexScreener,openSea:p.links.openSea},
+    links:{home:p.links.home,modules:{whales:p.links.whales,intel:p.links.intel,nft:p.links.nft,pulse:p.links.pulse,timeline:p.links.timeline},website:p.links.website,x:p.links.x,telegram:p.links.telegram,explorer:p.links.explorer,dexScreener:p.links.dexScreener,openSea:p.links.openSea,additionalLinks:p.links.additionalLinks},
     features:p.features,
     moduleOrder:["whales","intel","nft","pulse","timeline"],
     modules:{

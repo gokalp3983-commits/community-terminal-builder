@@ -91,6 +91,14 @@ const elements = {
     document.getElementById("openSeaKeyNote"),
   collectionUpdated:
     document.getElementById("collectionUpdated"),
+  collectionPulsePanel:
+    document.getElementById("collectionPulsePanel"),
+  collectionPulseToggle:
+    document.getElementById("collectionPulseToggle"),
+  collectionPulseSummary:
+    document.getElementById("collectionPulseSummary"),
+  collectionPulseBody:
+    document.getElementById("collectionPulseBody"),
   collectionPulseStatus:
     document.getElementById("collectionPulseStatus"),
   collectionPulseUpdated:
@@ -895,12 +903,25 @@ async function refreshCollectionStats(){
 }
 
 
-const COLLECTION_PULSE_STORAGE_KEY = `${CFG.project?.id || "nft"}:collection-pulse:last-visit:v1`;
+const COLLECTION_PULSE_STORAGE_KEY = `${CFG.project?.id || "nft"}:collection-pulse:last-visit:v2`;
+const COLLECTION_PULSE_SESSION_KEY = `${CFG.project?.id || "nft"}:collection-pulse:visit-session:v2`;
+const COLLECTION_PULSE_COLLAPSE_KEY = `${CFG.project?.id || "nft"}:collection-pulse:collapsed:v1`;
 let collectionPulsePrevious = null;
 let collectionPulseVisitStartedAt = Date.now();
 let collectionPulseCurrentFloor = null;
 let collectionPulseSalesPayload = null;
 let collectionPulseSavedThisVisit = false;
+
+function initializeCollectionPulseVisit(){
+  try{
+    const sessionRaw=sessionStorage.getItem(COLLECTION_PULSE_SESSION_KEY);
+    const session=sessionRaw?JSON.parse(sessionRaw):null;
+    const startedAt=Number(session?.startedAt);
+    if(Number.isFinite(startedAt)&&startedAt>0){collectionPulseVisitStartedAt=startedAt;collectionPulseSavedThisVisit=Boolean(session?.baselineSaved);return;}
+    collectionPulseVisitStartedAt=Date.now();
+    sessionStorage.setItem(COLLECTION_PULSE_SESSION_KEY,JSON.stringify({startedAt:collectionPulseVisitStartedAt,baselineSaved:false}));
+  }catch(_){collectionPulseVisitStartedAt=Date.now()}
+}
 
 function readCollectionPulseBaseline(){
   try{
@@ -930,6 +951,7 @@ function saveCollectionPulseBaseline(){
         : null,
     }));
     collectionPulseSavedThisVisit = true;
+    try{sessionStorage.setItem(COLLECTION_PULSE_SESSION_KEY,JSON.stringify({startedAt:collectionPulseVisitStartedAt,baselineSaved:true}))}catch(_){}
   }catch(_){
     // The module remains readable even when browser storage is unavailable.
   }
@@ -996,7 +1018,7 @@ function renderCollectionPulse(){
 
   elements.collectionPulseStatus.textContent = "SINCE LAST VISIT";
   elements.collectionPulseStatus.classList.add("live");
-  elements.collectionPulseUpdated.textContent = `Previous check ${pulseElapsedText(Date.now() - collectionPulsePrevious.timestamp)} ago`;
+  elements.collectionPulseUpdated.textContent = `Last visit ${pulseElapsedText(Date.now() - collectionPulsePrevious.timestamp)} ago`;
   elements.collectionPulseBaseline.hidden = true;
   elements.collectionPulseMetrics.hidden = false;
 
@@ -1054,7 +1076,17 @@ function renderCollectionPulse(){
   }
 }
 
+initializeCollectionPulseVisit();
 collectionPulsePrevious = readCollectionPulseBaseline();
+function setCollectionPulseCollapsed(collapsed){
+  if(!elements.collectionPulsePanel||!elements.collectionPulseToggle||!elements.collectionPulseBody||!elements.collectionPulseSummary)return;
+  elements.collectionPulsePanel.classList.toggle("is-collapsed",Boolean(collapsed));
+  elements.collectionPulseBody.hidden=Boolean(collapsed);elements.collectionPulseSummary.hidden=!collapsed;
+  elements.collectionPulseToggle.textContent=collapsed?"[ EXPAND ]":"[ COLLAPSE ]";elements.collectionPulseToggle.setAttribute("aria-expanded",collapsed?"false":"true");
+  try{localStorage.setItem(COLLECTION_PULSE_COLLAPSE_KEY,collapsed?"1":"0")}catch(_){}
+}
+try{setCollectionPulseCollapsed(localStorage.getItem(COLLECTION_PULSE_COLLAPSE_KEY)==="1")}catch(_){setCollectionPulseCollapsed(false)}
+elements.collectionPulseToggle?.addEventListener("click",()=>setCollectionPulseCollapsed(elements.collectionPulseToggle.getAttribute("aria-expanded")!=="false"));
 renderCollectionPulse();
 
 

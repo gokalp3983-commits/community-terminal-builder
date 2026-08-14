@@ -1,0 +1,10 @@
+"use strict";
+const assert=require("assert");const {generate}=require("./generator");
+const input={projectName:"LINKPULSE",ticker:"LP",tokenContract:"",nftContract:"0x2222222222222222222222222222222222222222",features:{whaleTracker:false,memeIntel:false,communityPulse:false,timeline:false,nftTerminal:true,liveMarket:false},links:{openSea:"https://opensea.io/collection/linkpulse",additionalLinks:[{label:"BOT",text:"Click to access Sniper Bot.",url:"https://bot.example",highlight:true}]},nft:{mode:"terminal",collectionName:"Link Pulse",supply:100}};
+const out=generate(input);const text=(suffix)=>{const e=out.entries.find(x=>x.name.endsWith(suffix));return e?e.data.toString("utf8"):""};
+const cfg=text("/config/projects/linkpulse.js");assert(cfg.includes('"additionalLinks"'));assert(cfg.includes('Click to access Sniper Bot.'));assert(cfg.includes('https://bot.example'));
+const terminal=text("/03_NFT-Collection-Terminal/public/terminal.html");assert(terminal.includes('id="additionalLinks"'));assert(terminal.includes('collectionPulseToggle'));assert(terminal.includes('Time Since Last Visit'));assert(!terminal.includes('Time Since Last Check'));
+const runtime=text("/03_NFT-Collection-Terminal/public/project-runtime.js");assert(runtime.includes('additional-terminal-link'));assert(runtime.includes('is-highlighted'));
+const script=text("/03_NFT-Collection-Terminal/public/script.js");assert(script.includes('sessionStorage.getItem(COLLECTION_PULSE_SESSION_KEY)'));assert(script.includes('Last visit ${pulseElapsedText'));assert(!script.includes('Previous check ${pulseElapsedText'));
+assert.deepEqual(out.project.links.additionalLinks,[{label:"BOT",text:"Click to access Sniper Bot.",url:"https://bot.example",highlight:true}]);
+console.log("PASS Chapter 22 since-last-visit + additional-links regression");

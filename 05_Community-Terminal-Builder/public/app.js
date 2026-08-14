@@ -52,6 +52,36 @@ function normalizeXUrl(value){
   const candidate=/^https?:\/\//i.test(raw)?raw:`https://${raw.replace(/^\/+/,"")}`;
   try{const url=new URL(candidate);if(/(^|\.)twitter\.com$/i.test(url.hostname))url.hostname="x.com";return url.href.replace(/\/$/,"")}catch{return candidate}
 }
+function normalizeAdditionalLinkUrl(value){
+  const raw=String(value||"").trim();if(!raw)return "";
+  try{return new URL(/^https?:\/\//i.test(raw)?raw:`https://${raw.replace(/^\/+/,"")}`).href}catch{return raw}
+}
+function additionalLinksPayload(){
+  return [...document.querySelectorAll("#additional-links-list .additional-link-row")].map(row=>({
+    label:String(row.querySelector('[data-additional="label"]')?.value||"").trim().replace(/^\[|\]$/g,"").slice(0,24),
+    text:String(row.querySelector('[data-additional="text"]')?.value||"").trim().slice(0,120),
+    url:normalizeAdditionalLinkUrl(row.querySelector('[data-additional="url"]')?.value),
+    highlight:Boolean(row.querySelector('[data-additional="highlight"]')?.checked),
+  })).filter(item=>item.label&&item.url).slice(0,5);
+}
+function renderAdditionalLinks(items=[]){
+  const host=document.querySelector("#additional-links-list");if(!host)return;host.innerHTML="";
+  (Array.isArray(items)?items:[]).slice(0,5).forEach(addAdditionalLinkRow);
+}
+function addAdditionalLinkRow(item={}){
+  const host=document.querySelector("#additional-links-list");if(!host||host.children.length>=5)return;
+  const row=document.createElement("div");row.className="additional-link-row";
+  row.innerHTML=`<label><span>Label</span><input data-additional="label" placeholder="BOT" maxlength="24"></label><label class="additional-link-text"><span>Link text</span><input data-additional="text" placeholder="Click to access Sniper Bot." maxlength="120"></label><label class="additional-link-url"><span>URL</span><input data-additional="url" placeholder="https://..."></label><label class="additional-link-highlight"><input data-additional="highlight" type="checkbox"><span>Highlight red</span></label><button class="additional-link-remove" type="button" aria-label="Remove additional link">REMOVE</button>`;
+  row.querySelector('[data-additional="label"]').value=item.label||"";
+  row.querySelector('[data-additional="text"]').value=item.text||"";
+  row.querySelector('[data-additional="url"]').value=item.url||"";
+  row.querySelector('[data-additional="highlight"]').checked=Boolean(item.highlight);
+  row.querySelectorAll("input").forEach(input=>input.addEventListener("input",update));
+  row.querySelector('[data-additional="highlight"]').addEventListener("change",update);
+  row.querySelector(".additional-link-remove").addEventListener("click",()=>{row.remove();update()});
+  host.appendChild(row);
+}
+document.querySelector("#add-additional-link")?.addEventListener("click",()=>{addAdditionalLinkRow();update()});
 function nowIso(){return new Date().toISOString()}
 function readProjects(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}")||{}}catch{return {}}}
 function writeProjects(projects){localStorage.setItem(STORAGE_KEY,JSON.stringify(projects))}
@@ -237,7 +267,7 @@ async function refreshBuilderMascotPreview(){
 
 async function payload(){const mint=syncNftMintSchedule();return {
   projectName:val("projectName"),ticker:val("ticker"),version:val("version"),description:val("description"),promptUser:terminalUserFromTicker(val("ticker")),promptHost:"robinhood",ecosystem:val("ecosystem"),tokenContract:val("tokenContract"),nftContract:val("nftContract"),dexScreenerChainId:val("dexScreenerChainId"),blockscoutApiBase:val("blockscoutApiBase"),
-  links:{home:val("home"),website:val("website"),x:normalizeXUrl(val("x")),telegram:val("telegram"),explorer:val("explorer"),dexScreener:val("dexScreener"),openSea:val("openSea")},
+  links:{home:val("home"),website:val("website"),x:normalizeXUrl(val("x")),telegram:val("telegram"),explorer:val("explorer"),dexScreener:val("dexScreener"),openSea:val("openSea"),additionalLinks:additionalLinksPayload()},
   nft:{openSeaSlug:syncOpenSeaSlug(),collectionName:val("nftCollectionName"),supply:val("nftSupply"),standard:val("nftStandard"),symbol:val("nftSymbol"),metadataUriMethod:val("nftMetadataUriMethod"),mode:mint.mode||nftMintMode(),mintAt:mint.ok&&!mint.disabled&&mint.mode!=="terminal"?mint.iso:"",mintEndAt:mint.ok&&!mint.disabled&&mint.mode==="single"?mint.endIso:"",mintPrice:mint.ok&&!mint.disabled&&mint.mode==="single"?mint.price:"",mintLimit:mint.ok&&!mint.disabled&&mint.mode==="single"?mint.limit:"",mintPhases:mint.ok&&!mint.disabled&&mint.mode==="multiple"?mint.phases.map(({id,label,name,startsAt,endsAt,price,limit,timezone})=>({id,label,name,startsAt,endsAt,price,limit,timezone})):[],timezone:mint.timeZone||val("nftMintTimezone")||browserTimeZone()},
   features:{whaleTracker:checked("whaleTracker"),memeIntel:checked("memeIntel"),communityPulse:checked("communityPulse"),timeline:checked("timeline"),nftTerminal:checked("nftTerminal"),liveMarket:checked("liveMarket")},
   mascot:await mascotPayload()
@@ -380,11 +410,11 @@ function setValue(name,value){const el=form.elements[name];if(!el)return;if(el.t
 function applyPayload(p){
   confirmedMintSignature="";pastScheduleWarningSignature="";nftExplicitlyDisabled=Boolean(p.nftContract&&!p.features?.nftTerminal);lastNftContractValue=String(p.nftContract||"").trim();
   setValue("projectName",p.projectName);setValue("ticker",p.ticker);setValue("version",p.version||"1.0.0");setValue("description",p.description);setValue("promptUser",terminalIdentityFromTicker(p.ticker));setValue("promptHost","robinhood");setValue("ecosystem",p.ecosystem||"Robinhood Chain");setValue("tokenContract",p.tokenContract);setValue("nftContract",p.nftContract);setValue("dexScreenerChainId",p.dexScreenerChainId||"robinhood");setValue("blockscoutApiBase",p.blockscoutApiBase||"https://robinhoodchain.blockscout.com/api/v2");
-  for(const k of ["home","website","x","telegram","explorer","dexScreener","openSea"])setValue(k,p.links?.[k]);
+  for(const k of ["home","website","x","telegram","explorer","dexScreener","openSea"])setValue(k,p.links?.[k]);renderAdditionalLinks(p.links?.additionalLinks||[]);
   setValue("openSeaSlug",p.nft?.openSeaSlug);setValue("nftCollectionName",p.nft?.collectionName);setValue("nftSupply",p.nft?.supply);setValue("nftStandard",p.nft?.standard||"");setValue("nftSymbol",p.nft?.symbol||"");setValue("nftMetadataUriMethod",p.nft?.metadataUriMethod||"");setValue("nftMintPrice",p.nft?.mintPrice||"");setValue("nftMintLimit",p.nft?.mintLimit||"");for(const k of ["whaleTracker","memeIntel","communityPulse","timeline","nftTerminal","liveMarket"])setValue(k,p.features?.[k] ?? (["communityPulse","timeline"].includes(k)?true:undefined));setNftMintConfiguration(p.nft||{});
   persistedMascot=p.mascot||null; mascotInput.value=""; syncMascotFileName(); refreshBuilderMascotPreview(); update();
 }
-function resetForm(){form.reset();confirmedMintSignature="";pastScheduleWarningSignature="";nftExplicitlyDisabled=false;lastNftContractValue="";setValue("promptUser","");setValue("version","1.0.0");setValue("promptHost","robinhood");setValue("ecosystem","Robinhood Chain");setValue("dexScreenerChainId","robinhood");setValue("blockscoutApiBase","https://robinhoodchain.blockscout.com/api/v2");setValue("nftMintMode","");setValue("nftMintTimezone",browserTimeZone());renderNftPhaseEditor();syncNftMintModeUI();setValue("whaleTracker",true);setValue("memeIntel",true);setValue("communityPulse",true);setValue("timeline",true);setValue("liveMarket",true);activeProjectId="";persistedMascot=null;mascotInput.value="";syncMascotFileName();refreshBuilderMascotPreview();localStorage.removeItem(SETTINGS_KEY);update();status.textContent="[ NEW ] Blank project workspace ready.";loadDeployment()}
+function resetForm(){form.reset();renderAdditionalLinks([]);confirmedMintSignature="";pastScheduleWarningSignature="";nftExplicitlyDisabled=false;lastNftContractValue="";setValue("promptUser","");setValue("version","1.0.0");setValue("promptHost","robinhood");setValue("ecosystem","Robinhood Chain");setValue("dexScreenerChainId","robinhood");setValue("blockscoutApiBase","https://robinhoodchain.blockscout.com/api/v2");setValue("nftMintMode","");setValue("nftMintTimezone",browserTimeZone());renderNftPhaseEditor();syncNftMintModeUI();setValue("whaleTracker",true);setValue("memeIntel",true);setValue("communityPulse",true);setValue("timeline",true);setValue("liveMarket",true);activeProjectId="";persistedMascot=null;mascotInput.value="";syncMascotFileName();refreshBuilderMascotPreview();localStorage.removeItem(SETTINGS_KEY);update();status.textContent="[ NEW ] Blank project workspace ready.";loadDeployment()}
 function refreshProjectList(){
   const projects=readProjects(); const current=savedProjectsSelect.value; savedProjectsSelect.innerHTML='<option value="">LOAD SAVED PROJECT...</option>';
   Object.values(projects).sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).forEach(item=>{const option=document.createElement("option");option.value=item.id;option.textContent=`${item.name} // ${item.state} // ${new Date(item.updatedAt).toLocaleDateString()}`;savedProjectsSelect.append(option)});

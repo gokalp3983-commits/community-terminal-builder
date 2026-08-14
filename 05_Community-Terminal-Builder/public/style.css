@@ -486,3 +486,12 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
   background:#1b0509!important;
   box-shadow:0 0 20px rgba(255,90,103,.15)!important;
 }
+
+
+/* Chapter 22 — reusable Additional Links builder */
+.additional-links-builder{margin-top:18px;padding-top:14px;border-top:1px solid rgba(0,255,65,.18)}
+.additional-links-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px}
+.additional-links-heading>div{display:flex;flex-direction:column;gap:3px}.additional-links-heading small{color:var(--muted)}
+.additional-links-list{display:grid;gap:10px}.additional-link-row{display:grid;grid-template-columns:minmax(90px,.55fr) minmax(180px,1.3fr) minmax(220px,1.5fr) auto auto;gap:8px;align-items:end;padding:10px;border:1px solid rgba(0,255,65,.16);background:rgba(0,0,0,.16)}
+.additional-link-row label{margin:0}.additional-link-highlight{display:flex!important;align-items:center;gap:7px;padding-bottom:8px;white-space:nowrap}.additional-link-highlight input{width:auto!important}.additional-link-remove{border-color:rgba(255,70,70,.65)!important;color:#ff5a5a!important}
+@media(max-width:900px){.additional-link-row{grid-template-columns:1fr}.additional-links-heading{align-items:flex-start;flex-direction:column}.additional-link-highlight{padding-bottom:0}}
