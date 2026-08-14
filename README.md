@@ -1794,3 +1794,10 @@ The Chapter 21 data providers, analytics, generation architecture, configuration
 - Applied the rule to the canonical shared generated footer, NFT template fallbacks, and the Whale Tracker, Meme Intel, Community Pulse, and Timeline runtime footer fallbacks.
 - Updated Chapter 22 regression coverage so a project whose name differs from its ticker must render the Project Name in the footer title.
 
+
+
+### Pre-simplification past-mint warning interaction fix — 14 Aug 2026
+- **KEEP THIS SCHEDULE** now acknowledges the exact past mint date/time signature for the active Builder session.
+- Merely clicking/focusing native date-time controls, or editing price, limits, labels, links, and other non-time fields, no longer reopens the past-schedule warning.
+- A materially changed past mint date/time remains eligible for one warning for the new schedule.
+- No mint schedule generation, countdown lifecycle, deployment, or visual styling was changed.

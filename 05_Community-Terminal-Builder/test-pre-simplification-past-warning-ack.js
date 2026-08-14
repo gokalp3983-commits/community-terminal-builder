@@ -1,0 +1,10 @@
+"use strict";
+const fs=require("fs"),assert=require("assert");
+const app=fs.readFileSync("public/app.js","utf8");
+assert.match(app,/let pastScheduleAcknowledgedSignature="";/,"Acknowledged past schedule signature missing");
+assert.match(app,/if\(!edit\)\{const schedule=nftMintSchedule\(\);const sig=pastScheduleTimeSignature\(schedule\);if\(sig\)pastScheduleAcknowledgedSignature=sig;/,"KEEP THIS SCHEDULE must acknowledge the exact schedule signature");
+assert.match(app,/pastScheduleAcknowledgedSignature===sig/,"Acknowledged schedule must suppress repeat warning");
+assert.match(app,/function mintScheduleTargetChangesTime\(target\)/,"Time-field change filter missing");
+assert.match(app,/mintScheduleBlock\.addEventListener\("input",\(\)=>invalidateMintConfirmation\(\)\)/,"Input events must not trigger past warning");
+assert.match(app,/mintScheduleBlock\.addEventListener\("change",event=>invalidateMintConfirmation\(\{warnPast:mintScheduleTargetChangesTime\(event\.target\)\}\)\)/,"Only actual time-field changes should trigger warning check");
+console.log("Pre-simplification past warning acknowledgement regression checks passed.");
