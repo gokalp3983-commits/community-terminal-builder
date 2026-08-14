@@ -13,7 +13,7 @@ for(const rel of [
   ok(src.includes('if (!currentSrc)'),`${rel}: only hydrates mascot when src is absent`);
 }
 const input={
-  projectName:"POLISH",ticker:"$POLISH",version:"1.0.0",description:"Chapter 22 final polish",promptUser:"polish",promptHost:"terminal",ecosystem:"Robinhood Chain",
+  projectName:"Polish Project",ticker:"$POLISH",version:"1.0.0",description:"Chapter 22 final polish",promptUser:"polish",promptHost:"terminal",ecosystem:"Robinhood Chain",
   tokenContract:"0x1111111111111111111111111111111111111111",nftContract:"0x2222222222222222222222222222222222222222",
   dexScreenerChainId:"robinhood",blockscoutApiBase:"https://robinhoodchain.blockscout.com/api/v2",
   links:{website:"https://example.com",x:"@polish",openSea:"https://opensea.io/collection/polish"},
@@ -27,8 +27,11 @@ const g=generate(input);
 const footers=g.entries.filter(e=>e.name.endsWith('/public/canonical-footer.js')).map(e=>String(Buffer.isBuffer(e.data)?e.data.toString('utf8'):e.data));
 ok(footers.length>=1,"generated canonical footers found");
 for(const footer of footers){
-  ok(footer.includes("official POLISH team."),"footer uses plain normalized ticker");
-  ok(!footer.includes("official $POLISH team."),"footer never auto-prefixes $ ticker");
+  ok(footer.includes("POLISH PROJECT Community Terminal"),"footer title uses project name");
+  ok(!footer.includes("POLISH Community Terminal"),"footer title does not substitute ticker for project name");
+  ok(footer.includes("official POLISH PROJECT team."),"footer disclaimer uses project name");
+  ok(!footer.includes("official POLISH team."),"footer disclaimer does not substitute ticker for project name");
+  ok(!footer.includes("official $POLISH team."),"footer disclaimer never uses dollar-prefixed ticker");
 }
 for(const suffix of [
   '/03_NFT-Collection-Terminal/public/project-runtime.js'
@@ -38,4 +41,4 @@ for(const suffix of [
   const src=String(Buffer.isBuffer(entry.data)?entry.data.toString('utf8'):entry.data);
   ok(src.includes('const currentSrc = String(e.getAttribute("src") || "")'),"generated NFT runtime preserves SSR mascot src");
 }
-console.log("Chapter 22 final polish mascot + footer regression: PASS");
+console.log("Chapter 22 final polish mascot + project-name footer regression: PASS");

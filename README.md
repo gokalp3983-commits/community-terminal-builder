@@ -1763,3 +1763,19 @@ The Chapter 21 data providers, analytics, generation architecture, configuration
 - Canonical generated pages include a small style-readiness guard so navigation does not visibly flash raw unstyled HTML while stylesheets are still arriving.
 - Mascot/logo upload now includes optional **REMOVE BACKGROUND (BETA)** processing with an in-Builder preview and a **USE ORIGINAL** fallback. The original upload is never silently modified.
 - Landing terminal height is content-driven so the green border ends shortly after Available Terminals/footer rather than filling unused viewport space.
+
+### Pre-simplification footer identity alignment (14 Aug 2026)
+
+- Changed the generated footer disclaimer to use **Project Name** rather than **Ticker**: `Not affiliated with or endorsed by the official <Project Name> team.`
+- This keeps the disclaimer identity aligned with the project name used by the Community Terminal header, while ticker-specific labels remain unchanged elsewhere.
+- Applied the rule to the canonical shared generated footer, NFT template fallbacks, and the Whale Tracker, Meme Intel, Community Pulse, and Timeline runtime footer fallbacks.
+- Updated Chapter 22 regression coverage so a project whose name differs from its ticker must render the project name in the disclaimer.
+
+### Pre-simplification footer title identity alignment (14 Aug 2026)
+
+- Changed the generated footer title from **Ticker + `Community Terminal`** to **Project Name + `Community Terminal`**.
+- The `ver 1.0` line and all existing footer styling remain unchanged.
+- This aligns the footer title with the Project Name used by the main Community Terminal header and the already-corrected project-team disclaimer.
+- Applied the rule to the canonical shared generated footer, NFT template fallbacks, and the Whale Tracker, Meme Intel, Community Pulse, and Timeline runtime footer fallbacks.
+- Updated Chapter 22 regression coverage so a project whose name differs from its ticker must render the Project Name in the footer title.
+
