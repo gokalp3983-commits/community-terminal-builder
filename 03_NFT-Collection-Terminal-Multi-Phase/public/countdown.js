@@ -11,6 +11,7 @@ const phases = configuredPhases.map((phase) => ({
 }));
 const MINT_AT = new Date(window.PROJECT_CONFIG?.nft?.mintAt || phases[0]?.startsAt || "1970-01-01T00:00:00Z");
 let overallLiveSet = false;
+let completeAnnounced = false;
 
 function responsiveStatusCopy(desktopText, mobileText){
   return `<span class="log-copy-desktop">${desktopText}</span><span class="log-copy-mobile">${mobileText}</span>`;
@@ -153,6 +154,23 @@ function setOverallComplete(){
     `<span class="green">[ COMPLETE ]</span> ${responsiveStatusCopy("__CTB_PROJECT_NAME_UPPER__ mint schedule has concluded.", "Mint complete.")}`;
   $("mintReady").innerHTML =
     `<span class="green">[ READY ]</span> ${responsiveStatusCopy("NFT Terminal is tracking collection activity.", "Tracking active.")}`;
+
+  // If the page is opened after the full schedule has already completed,
+  // surface the existing lifecycle modal immediately. The page-level guard
+  // prevents the one-second render loop from reopening it after dismissal.
+  const completionModal = $("phaseLiveModal");
+  if (completionModal) {
+    $("phaseLiveTag").textContent = "[ MINT COMPLETE ]";
+    $("phaseLiveTitle").textContent = "THE __CTB_PROJECT_NAME_UPPER__ MINT IS COMPLETE";
+    $("phaseLiveText").textContent =
+      "The mint schedule has concluded. Visit the NFT Terminal for collection activity or view the collection on OpenSea.";
+    const closeButton = $("phaseLiveStay");
+    if (closeButton) closeButton.textContent = "[ CLOSE ]";
+    if (!completeAnnounced) {
+      completeAnnounced = true;
+      completionModal.hidden = false;
+    }
+  }
 }
 
 function livePhaseSummary(now = Date.now()){

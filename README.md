@@ -1,3 +1,11 @@
+## Pre-Simplification Completed-Mint Popup + Mobile Link Cleanup (14 Aug 2026)
+
+- Multi-phase NFT countdown pages now show the existing lifecycle modal immediately when the page is opened after the full mint schedule has already completed.
+- The completion modal is guarded per page load so the one-second countdown/render loop does not reopen it after the visitor closes it.
+- The modal changes to `[ MINT COMPLETE ]`, uses the project name in the completion title, and keeps the existing terminal/OpenSea completion guidance.
+- On mobile/touch layouts only, project/social command rows hide the redundant ice-blue destination-name column because the orange command tag already identifies the destination; the action text remains unchanged and clickable.
+- Desktop link geometry, mint/countdown timing, NFT terminal behavior, generator/deployment logic, and all other CTB styling remain unchanged.
+
 ## Pre-Simplification Mobile Countdown Polish (14 Aug 2026)
 
 - Added a mobile-only responsive correction for NFT mint countdown pages.

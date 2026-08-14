@@ -500,3 +500,23 @@
   .phase-detail-label{min-width:0!important;white-space:normal!important}
   .phase-countdown-value{white-space:normal!important;overflow-wrap:normal!important}
 }
+
+
+/* Pre-simplification mobile link label cleanup — orange tag is the mobile identity. */
+@media (max-width:760px), (hover:none) and (pointer:coarse){
+  .launch-links-line.project-launch-link{
+    grid-template-columns:10ch minmax(0,1fr)!important;
+    row-gap:0!important;
+    align-items:baseline!important;
+  }
+  .launch-links-line.project-launch-link>span:first-child{
+    grid-column:1!important;
+    grid-row:1!important;
+  }
+  .launch-links-line.project-launch-link .project-launch-label,
+  .launch-links-line.project-launch-link .project-launch-colon{display:none!important}
+  .launch-links-line.project-launch-link a{
+    grid-column:2!important;
+    grid-row:1!important;
+  }
+}
