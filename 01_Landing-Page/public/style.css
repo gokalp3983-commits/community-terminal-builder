@@ -912,3 +912,8 @@ html,body{background:#000!important}
 #terminal-footer .ctb-footer-opensea{display:block;margin:0 0 10px;text-align:center}
 #terminal-footer .builder-signature{margin-top:0}
 #terminal-footer .builder-signature-disclaimer{margin-top:4px}
+
+
+/* Post-acceptance cleanup: content-driven landing height */
+.terminal{min-height:0!important}
+@media(max-width:760px){.terminal{min-height:0!important}}

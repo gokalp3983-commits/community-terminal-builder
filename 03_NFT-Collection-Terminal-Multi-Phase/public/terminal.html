@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <style id="ctb-style-guard">html{background:#020806}html:not(.ctb-styles-ready) body{visibility:hidden}</style>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style id="critical-first-paint">
@@ -52,7 +53,8 @@
   <meta name="twitter:image" content="{{SOCIAL_IMAGE_URL}}">
   <title>{{PROJECT_NAME}} NFT Collection Terminal</title>
   <link rel="icon" type="image/png" href="__CTB_MASCOT_PATH__">
-  <link rel="stylesheet" href="/style.css?v=ctb-canonical-nft">
+  <link rel="stylesheet" href="/style.css?v=ctb-canonical-nft" onload="document.documentElement.classList.add('ctb-styles-ready')">
+  <script>setTimeout(()=>document.documentElement.classList.add("ctb-styles-ready"),1800)</script>
 </head>
 <body class="postmint-resolving">
   <div class="nft-terminal-workspace">

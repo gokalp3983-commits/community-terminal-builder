@@ -1754,3 +1754,12 @@ The Chapter 21 data providers, analytics, generation architecture, configuration
 - The cumulative line updates while the page remains open, uses the actual configured phase names, and is slightly larger/more prominent than the removed generic subtitle while remaining secondary to the main mint-live heading.
 - In CTB's Terminal Ready deployment decision area, **DEPLOY / CONFIRM & DEPLOY** remain green while **CLOSE** is now red to prevent accidental cancellation when the two actions are adjacent.
 - Added Chapter 22 regression coverage for the cumulative phase logic, the final-phase collapse behavior, and the red/green deployment decision hierarchy.
+
+
+## Post-acceptance cleanup — deployment readiness, mint warning, mascot cleanup, landing height (14 Aug 2026)
+
+- Past mint schedule warnings are now keyed only to the actual schedule date/time values, so editing price, wallet limit, phase label/name, links, or other non-time fields does not repeatedly reopen the warning. A materially changed past schedule can warn again.
+- Connected deployment now waits up to three minutes for the public terminal and requires two consecutive successful public checks before declaring the website ready. The verification checks the public entry page, health/status, enabled module routes, and Landing CSS/JS when Landing is enabled.
+- Canonical generated pages include a small style-readiness guard so navigation does not visibly flash raw unstyled HTML while stylesheets are still arriving.
+- Mascot/logo upload now includes optional **REMOVE BACKGROUND (BETA)** processing with an in-Builder preview and a **USE ORIGINAL** fallback. The original upload is never silently modified.
+- Landing terminal height is content-driven so the green border ends shortly after Available Terminals/footer rather than filling unused viewport space.

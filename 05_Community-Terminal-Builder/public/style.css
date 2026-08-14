@@ -495,3 +495,9 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
 .additional-links-list{display:grid;gap:10px}.additional-link-row{display:grid;grid-template-columns:minmax(90px,.55fr) minmax(180px,1.3fr) minmax(220px,1.5fr) auto auto;gap:8px;align-items:end;padding:10px;border:1px solid rgba(0,255,65,.16);background:rgba(0,0,0,.16)}
 .additional-link-row label{margin:0}.additional-link-highlight{display:flex!important;align-items:center;gap:7px;padding-bottom:8px;white-space:nowrap}.additional-link-highlight input{width:auto!important}.additional-link-remove{border-color:rgba(255,70,70,.65)!important;color:#ff5a5a!important}
 @media(max-width:900px){.additional-link-row{grid-template-columns:1fr}.additional-links-heading{align-items:flex-start;flex-direction:column}.additional-link-highlight{padding-bottom:0}}
+
+
+/* Post-acceptance cleanup: optional mascot background removal */
+.mascot-background-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}
+.mascot-background-tools button{padding:7px 10px;font-size:.68rem}
+.mascot-background-tools small{width:100%;color:var(--muted);font-size:.66rem}

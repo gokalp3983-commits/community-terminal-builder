@@ -131,12 +131,17 @@ const server = http.createServer((req,res) => {
         const statusResult=await probe("/status");
         const routes=[];
         for(const name of ["whales","intel","nft","pulse","timeline"]){if(expected[name])routes.push({name,...await probe(`/${name}`)});}
+        const landingExpected=Boolean(statusResult.data?.modules?.landing);
+        const homeLooksRendered=home.status===200&&(/COMMUNITY TERMINAL/i.test(home.text)||/NFT Collection Terminal|MINT IS LIVE|MINT COUNTDOWN/i.test(home.text));
+        const style=landingExpected?await probe("/style.css"):null;
+        const script=landingExpected?await probe("/script.js"):null;
         const checks=[
-          {name:"Landing Page",pass:home.status===200},
+          {name:"Public entry page",pass:homeLooksRendered},
           {name:"Security headers",pass:home.headers["x-content-type-options"]==="nosniff"},
           {name:"/healthz",pass:health.status===200&&health.data?.ok===true},
           {name:"/status",pass:statusResult.status===200&&statusResult.data?.ok===true},
-          ...routes.map(item=>({name:`/${item.name}`,pass:item.status===200}))
+          ...(landingExpected?[{name:"Landing stylesheet",pass:style?.status===200&&/text\/css/i.test(style?.headers?.["content-type"]||"")},{name:"Landing script",pass:script?.status===200&&/javascript/i.test(script?.headers?.["content-type"]||"")}]:[]),
+          ...routes.map(item=>({name:`/${item.name}`,pass:item.status===200&&item.text.length>80}))
         ];
         json(res,checks.every(x=>x.pass)?200:422,{ok:checks.every(x=>x.pass),url:base,checkedAt:new Date().toISOString(),checks,status:statusResult.data||null});
       }catch(error){json(res,400,{ok:false,error:error.message,code:"PUBLIC_ACCEPTANCE_FAILED"});}

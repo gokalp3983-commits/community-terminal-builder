@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <style id="ctb-style-guard">html{background:#020806}html:not(.ctb-styles-ready) body{visibility:hidden}</style>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#020704">
@@ -9,8 +10,9 @@
     content="{{PROJECT_NAME}} Whale Activity Tracker — community-built {{PROJECT_ECOSYSTEM}} analytics."
   >
   <title>{{PROJECT_NAME}} Whale Activity Tracker</title>
-  <link rel="stylesheet" href="/style.css">
-  <link rel="stylesheet" href="/whale.css">
+  <link rel="stylesheet" href="/style.css" onload="document.documentElement.classList.add('ctb-styles-ready')">
+  <link rel="stylesheet" href="/whale.css" onload="document.documentElement.classList.add('ctb-styles-ready')">
+  <script>setTimeout(()=>document.documentElement.classList.add("ctb-styles-ready"),1800)</script>
 </head>
 <body>
   <div id="terminal-workspace" class="terminal-workspace">

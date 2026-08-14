@@ -1,13 +1,15 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <style id="ctb-style-guard">html{background:#020806}html:not(.ctb-styles-ready) body{visibility:hidden}</style>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#020704">
   <meta name="description" content="{{PROJECT_NAME}} Meme Intelligence Terminal — community-built {{PROJECT_ECOSYSTEM}} market intelligence.">
   <title>{{PROJECT_NAME}} Meme Intelligence Terminal</title>
-  <link rel="stylesheet" href="/style.css">
-  <link rel="stylesheet" href="/intel.css">
+  <link rel="stylesheet" href="/style.css" onload="document.documentElement.classList.add('ctb-styles-ready')">
+  <link rel="stylesheet" href="/intel.css" onload="document.documentElement.classList.add('ctb-styles-ready')">
+  <script>setTimeout(()=>document.documentElement.classList.add("ctb-styles-ready"),1800)</script>
 </head>
 <body>
   <div id="terminal-workspace" class="terminal-workspace">

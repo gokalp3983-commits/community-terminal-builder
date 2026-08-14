@@ -17,6 +17,7 @@ const guidedModeButton=document.querySelector("#guided-mode");
 const advancedModeButton=document.querySelector("#advanced-mode");
 let activeProjectId="";
 let persistedMascot=null;
+let processedMascot=null;
 let nftMintConfirmResolver=null;
 let confirmedMintSignature="";
 let pastScheduleWarningSignature="";
@@ -252,6 +253,7 @@ async function optimizeMascot(file){
   }catch{return {dataBase64:original.split(",")[1],extension:(file.name.split(".").pop()||"png").toLowerCase(),name:file.name,optimized:false}}
 }
 async function mascotPayload(){
+  if(processedMascot)return processedMascot;
   const f=document.querySelector("#mascot").files[0];
   if(!f)return persistedMascot;
   return optimizeMascot(f);
@@ -262,8 +264,33 @@ function mascotDataUriFromPayload(asset){
 }
 async function refreshBuilderMascotPreview(){
   const image=document.querySelector("#builder-mascot-preview");const box=document.querySelector("#builder-brand-preview");if(!image||!box)return;
-  try{const file=document.querySelector("#mascot").files[0];let src="";if(file)src=await fileDataUrl(file);else src=mascotDataUriFromPayload(persistedMascot);image.src=src;box.hidden=!src;if(src)image.alt=`${val("projectName")||"Project"} logo preview`;}catch{image.removeAttribute("src");box.hidden=true;}
+  try{const file=document.querySelector("#mascot").files[0];let src=processedMascot?mascotDataUriFromPayload(processedMascot):"";if(!src&&file)src=await fileDataUrl(file);else if(!src)src=mascotDataUriFromPayload(persistedMascot);image.src=src;box.hidden=!src;if(src)image.alt=`${val("projectName")||"Project"} logo preview`;}catch{image.removeAttribute("src");box.hidden=true;}
 }
+
+async function removeMascotBackground(){
+  const file=mascotInput.files[0];
+  const source=file?await fileDataUrl(file):mascotDataUriFromPayload(persistedMascot);
+  if(!source)throw new Error("Select a mascot/logo first.");
+  const image=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=source});
+  const max=512,scale=Math.min(1,max/Math.max(image.naturalWidth||1,image.naturalHeight||1));
+  const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+  const ctx=canvas.getContext("2d",{alpha:true,willReadFrequently:true});ctx.drawImage(image,0,0,canvas.width,canvas.height);
+  const frame=ctx.getImageData(0,0,canvas.width,canvas.height),d=frame.data,w=canvas.width,h=canvas.height;
+  const samples=[];const take=(x,y)=>{const i=(y*w+x)*4;samples.push([d[i],d[i+1],d[i+2]])};
+  for(let x=0;x<w;x+=Math.max(1,Math.floor(w/24))){take(x,0);take(x,h-1)}
+  for(let y=0;y<h;y+=Math.max(1,Math.floor(h/24))){take(0,y);take(w-1,y)}
+  const bg=[0,1,2].map(c=>Math.round(samples.reduce((s,p)=>s+p[c],0)/samples.length));
+  const tolerance=52,soft=26,visited=new Uint8Array(w*h),queue=[];
+  const distanceAt=(x,y)=>{const i=(y*w+x)*4,dr=d[i]-bg[0],dg=d[i+1]-bg[1],db=d[i+2]-bg[2];return Math.sqrt(dr*dr+dg*dg+db*db)};
+  const push=(x,y)=>{if(x<0||y<0||x>=w||y>=h)return;const n=y*w+x;if(visited[n]||distanceAt(x,y)>tolerance+soft)return;visited[n]=1;queue.push(n)};
+  for(let x=0;x<w;x++){push(x,0);push(x,h-1)}for(let y=0;y<h;y++){push(0,y);push(w-1,y)}
+  for(let q=0;q<queue.length;q++){const n=queue[q],x=n%w,y=Math.floor(n/w),i=n*4,dist=distanceAt(x,y);d[i+3]=dist<=tolerance?0:Math.round(255*(dist-tolerance)/soft);push(x-1,y);push(x+1,y);push(x,y-1);push(x,y+1)}
+  ctx.putImageData(frame,0,0);const out=canvas.toDataURL("image/png");
+  processedMascot={dataBase64:out.split(",")[1],extension:"png",name:(file?.name||persistedMascot?.name||"mascot").replace(/\.[^.]+$/,"")+"-transparent.png",optimized:true,width:w,height:h,backgroundRemoved:true};
+  await refreshBuilderMascotPreview();
+  const state=document.querySelector("#mascot-background-state");if(state)state.textContent="[ PREVIEW ] Transparent version ready. Use Original to undo.";
+}
+function useOriginalMascot(){processedMascot=null;refreshBuilderMascotPreview();const state=document.querySelector("#mascot-background-state");if(state)state.textContent="[ ORIGINAL ] Uploaded image will be used as-is.";}
 
 async function payload(){const mint=syncNftMintSchedule();return {
   projectName:val("projectName"),ticker:val("ticker"),version:val("version"),description:val("description"),promptUser:terminalUserFromTicker(val("ticker")),promptHost:"robinhood",ecosystem:val("ecosystem"),tokenContract:val("tokenContract"),nftContract:val("nftContract"),dexScreenerChainId:val("dexScreenerChainId"),blockscoutApiBase:val("blockscoutApiBase"),
@@ -404,7 +431,9 @@ const mascotInput=document.querySelector("#mascot");
 const mascotFileName=document.querySelector("#mascot-file-name");
 function syncMascotFileName(){mascotFileName.textContent=mascotInput.files[0]?.name||persistedMascot?.name||"No file selected"}
 function syncMascotWarning(){const warning=document.querySelector("#mascot-warning");if(warning)warning.hidden=Boolean(mascotInput.files[0]||persistedMascot)}
-mascotInput.addEventListener("change",()=>{persistedMascot=null;syncMascotFileName();refreshBuilderMascotPreview();update()});
+mascotInput.addEventListener("change",()=>{persistedMascot=null;processedMascot=null;syncMascotFileName();refreshBuilderMascotPreview();const state=document.querySelector("#mascot-background-state");if(state)state.textContent="[ ORIGINAL ] Uploaded image will be used as-is.";update()});
+document.querySelector("#remove-mascot-background")?.addEventListener("click",async()=>{const state=document.querySelector("#mascot-background-state");try{if(state)state.textContent="[ WORKING ] Removing edge-connected background...";await removeMascotBackground();update()}catch(error){if(state)state.textContent=`[ WARN ] ${error.message}`}});
+document.querySelector("#use-original-mascot")?.addEventListener("click",()=>{useOriginalMascot();update()});
 
 function setValue(name,value){const el=form.elements[name];if(!el)return;if(el.type==="checkbox")el.checked=Boolean(value);else el.value=value??""}
 function applyPayload(p){
@@ -412,9 +441,9 @@ function applyPayload(p){
   setValue("projectName",p.projectName);setValue("ticker",p.ticker);setValue("version",p.version||"1.0.0");setValue("description",p.description);setValue("promptUser",terminalIdentityFromTicker(p.ticker));setValue("promptHost","robinhood");setValue("ecosystem",p.ecosystem||"Robinhood Chain");setValue("tokenContract",p.tokenContract);setValue("nftContract",p.nftContract);setValue("dexScreenerChainId",p.dexScreenerChainId||"robinhood");setValue("blockscoutApiBase",p.blockscoutApiBase||"https://robinhoodchain.blockscout.com/api/v2");
   for(const k of ["home","website","x","telegram","explorer","dexScreener","openSea"])setValue(k,p.links?.[k]);renderAdditionalLinks(p.links?.additionalLinks||[]);
   setValue("openSeaSlug",p.nft?.openSeaSlug);setValue("nftCollectionName",p.nft?.collectionName);setValue("nftSupply",p.nft?.supply);setValue("nftStandard",p.nft?.standard||"");setValue("nftSymbol",p.nft?.symbol||"");setValue("nftMetadataUriMethod",p.nft?.metadataUriMethod||"");setValue("nftMintPrice",p.nft?.mintPrice||"");setValue("nftMintLimit",p.nft?.mintLimit||"");for(const k of ["whaleTracker","memeIntel","communityPulse","timeline","nftTerminal","liveMarket"])setValue(k,p.features?.[k] ?? (["communityPulse","timeline"].includes(k)?true:undefined));setNftMintConfiguration(p.nft||{});
-  persistedMascot=p.mascot||null; mascotInput.value=""; syncMascotFileName(); refreshBuilderMascotPreview(); update();
+  persistedMascot=p.mascot||null; processedMascot=null; mascotInput.value=""; syncMascotFileName(); refreshBuilderMascotPreview(); update();
 }
-function resetForm(){form.reset();renderAdditionalLinks([]);confirmedMintSignature="";pastScheduleWarningSignature="";nftExplicitlyDisabled=false;lastNftContractValue="";setValue("promptUser","");setValue("version","1.0.0");setValue("promptHost","robinhood");setValue("ecosystem","Robinhood Chain");setValue("dexScreenerChainId","robinhood");setValue("blockscoutApiBase","https://robinhoodchain.blockscout.com/api/v2");setValue("nftMintMode","");setValue("nftMintTimezone",browserTimeZone());renderNftPhaseEditor();syncNftMintModeUI();setValue("whaleTracker",true);setValue("memeIntel",true);setValue("communityPulse",true);setValue("timeline",true);setValue("liveMarket",true);activeProjectId="";persistedMascot=null;mascotInput.value="";syncMascotFileName();refreshBuilderMascotPreview();localStorage.removeItem(SETTINGS_KEY);update();status.textContent="[ NEW ] Blank project workspace ready.";loadDeployment()}
+function resetForm(){form.reset();renderAdditionalLinks([]);confirmedMintSignature="";pastScheduleWarningSignature="";nftExplicitlyDisabled=false;lastNftContractValue="";setValue("promptUser","");setValue("version","1.0.0");setValue("promptHost","robinhood");setValue("ecosystem","Robinhood Chain");setValue("dexScreenerChainId","robinhood");setValue("blockscoutApiBase","https://robinhoodchain.blockscout.com/api/v2");setValue("nftMintMode","");setValue("nftMintTimezone",browserTimeZone());renderNftPhaseEditor();syncNftMintModeUI();setValue("whaleTracker",true);setValue("memeIntel",true);setValue("communityPulse",true);setValue("timeline",true);setValue("liveMarket",true);activeProjectId="";persistedMascot=null;processedMascot=null;mascotInput.value="";syncMascotFileName();refreshBuilderMascotPreview();localStorage.removeItem(SETTINGS_KEY);update();status.textContent="[ NEW ] Blank project workspace ready.";loadDeployment()}
 function refreshProjectList(){
   const projects=readProjects(); const current=savedProjectsSelect.value; savedProjectsSelect.innerHTML='<option value="">LOAD SAVED PROJECT...</option>';
   Object.values(projects).sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).forEach(item=>{const option=document.createElement("option");option.value=item.id;option.textContent=`${item.name} // ${item.state} // ${new Date(item.updatedAt).toLocaleDateString()}`;savedProjectsSelect.append(option)});
@@ -578,6 +607,7 @@ function resetQuickDeployUi(){
 function showBuildComplete(project){const prior=readDeployments()[deploymentId()]||{};const mode=document.querySelector("#connected-release-mode");mode.value=(prior.connected?.serviceId||prior.publicUrl)?"update":(mode.value==="update"?"update":"create");document.querySelector("#built-project").textContent=`${String(project.projectName||"COMMUNITY").toUpperCase()} COMMUNITY TERMINAL`;document.querySelector("#built-modules").innerHTML=enabledModuleNames(project).map(x=>`<span>${x}</span>`).join("");setBuiltLiveUrl(prior.publicUrl||"");resetQuickDeployUi();document.querySelector("#quick-deploy-state").textContent=integrationReady?`[ READY ] Generated package is ready. ${mode.value==="create"?"First deployment":"Existing deployment update"} path selected.`:"[ READY ] Generated package is ready. Connected deployment is unavailable; ZIP download remains available.";document.querySelector("#build-complete").showModal()}
 
 function mintSignature(schedule){return schedule&&schedule.ok?`${val("nftContract")}|${val("nftCollectionName")}|${val("nftSupply")}|${schedule.mode||"single"}|${schedule.iso}|${schedule.endIso||""}|${schedule.timeZone}|${schedule.price||""}|${schedule.limit||""}|${JSON.stringify((schedule.phases||[]).map(x=>[x.label,x.name,x.startsAt,x.endsAt,x.price,x.limit,x.timezone]))}`:""}
+function pastScheduleTimeSignature(schedule){return schedule&&schedule.ok?`${schedule.mode||"single"}|${schedule.iso||""}|${schedule.endIso||""}|${schedule.timeZone||""}|${JSON.stringify((schedule.phases||[]).map(x=>[x.startsAt||"",x.endsAt||"",x.timezone||""]))}`:""}
 function closeNftMintConfirmation(result){const dialog=document.querySelector("#nft-mint-confirm");if(dialog.open)dialog.close();const resolve=nftMintConfirmResolver;nftMintConfirmResolver=null;if(resolve)resolve(result)}
 function confirmNftMintSchedule(schedule){
   const dialog=document.querySelector("#nft-mint-confirm"),state=document.querySelector("#nft-mint-confirm-state"),diff=schedule.instant.getTime()-Date.now();
@@ -592,7 +622,7 @@ async function requestMintConfirmation(){
 function closePastScheduleWarning(edit){const dialog=document.querySelector("#nft-past-warning");if(dialog?.open)dialog.close();if(edit)setTimeout(()=>{if(nftMintMode()==="multiple")document.querySelector("#nft-phase-list [data-phase-field=startDate]")?.focus();else form.elements.nftMintDate?.focus()},0)}
 function warnIfPastSchedule(){
   if(!checked("nftTerminal"))return;const schedule=nftMintSchedule();if(!schedule.ok||schedule.mode==="terminal"||!schedule.instant||schedule.instant.getTime()>=Date.now())return;
-  const sig=mintSignature(schedule);if(!sig||pastScheduleWarningSignature===sig)return;pastScheduleWarningSignature=sig;
+  const sig=pastScheduleTimeSignature(schedule);if(!sig||pastScheduleWarningSignature===sig)return;pastScheduleWarningSignature=sig;
   document.querySelector("#nft-past-warning-mint").textContent=formatMintForReview(schedule);document.querySelector("#nft-past-warning-now").textContent=formatComputerTime();const dialog=document.querySelector("#nft-past-warning");if(dialog&&!dialog.open)dialog.showModal();
 }
 function invalidateMintConfirmation(){confirmedMintSignature="";syncNftMintSchedule();syncMintConfirmationState();setTimeout(warnIfPastSchedule,0)}
@@ -730,16 +760,16 @@ function showDeploymentSuccessDialog(publicUrl){
   if(!dialog.open)dialog.showModal();
 }
 
-async function waitForPublicTerminalReady(publicUrl,{timeoutMs=90000,intervalMs=3000}={}){
+async function waitForPublicTerminalReady(publicUrl,{timeoutMs=180000,intervalMs=4000}={}){
   const url=String(publicUrl||"").trim();if(!url)return false;
   const expected={whales:Boolean(form.elements.whaleTracker.checked),intel:Boolean(form.elements.memeIntel.checked),nft:Boolean(form.elements.nftTerminal.checked),pulse:Boolean(form.elements.communityPulse.checked),timeline:Boolean(form.elements.timeline.checked)};
-  const started=Date.now();
+  const started=Date.now();let consecutive=0;
   while(Date.now()-started<timeoutMs){
     try{
       const response=await fetch("/api/verify-terminal",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url,expected})});
       const data=await response.json().catch(()=>({}));
-      if(response.ok&&data.ok)return true;
-    }catch{}
+      if(response.ok&&data.ok){consecutive+=1;if(consecutive>=2)return true}else consecutive=0;
+    }catch{consecutive=0}
     await new Promise(resolve=>setTimeout(resolve,intervalMs));
   }
   return false;
